@@ -1,0 +1,25 @@
+{
+  "competicao": "Mundial de Clubes FIFA 2012",
+  "mandante": "Corinthians",
+  "visitante": "Chelsea",
+  "local_tag": "NEUTRO",
+  "data": "16 de dezembro de 2012",
+  "estadio": "International Stadium Yokohama",
+  "placar_real": { "mandante": 1, "visitante": 0 },
+  "formacao": "4-3-3",
+  "jogadores_visiveis": [
+    { "nome": "Cássio", "posicao_abrev": "GOL", "top": 88, "left": 50 },
+    { "nome": "Alessandro", "posicao_abrev": "LAT", "top": 68, "left": 82 },
+    { "nome": "Fábio Santos", "posicao_abrev": "LAT", "top": 68, "left": 18 },
+    { "nome": "Ralf", "posicao_abrev": "VOL", "top": 46, "left": 65 },
+    { "nome": "Elias", "posicao_abrev": "VOL", "top": 46, "left": 35 },
+    { "nome": "Emerson Sheik", "posicao_abrev": "ATA", "top": 18, "left": 75 }
+  ],
+  "jogadores_ocultos": [
+    { "slot_id": "slot-1", "posicao_abrev": "ZAG", "top": 72, "left": 60, "nome_correto": "Chicão" },
+    { "slot_id": "slot-2", "posicao_abrev": "ZAG", "top": 72, "left": 40, "nome_correto": "Leandro Castán" },
+    { "slot_id": "slot-3", "posicao_abrev": "VOL", "top": 48, "left": 50, "nome_correto": "Paulinho" },
+    { "slot_id": "slot-4", "posicao_abrev": "ATA", "top": 12, "left": 50, "nome_correto": "Paolo Guerrero" },
+    { "slot_id": "slot-5", "posicao_abrev": "ATA", "top": 18, "left": 25, "nome_correto": "Jorge Henrique" }
+  ]
+}

@@ -920,7 +920,8 @@ photoTutorialCloseBtn.addEventListener("click", () => {
    Desafio diário (mesma sequência pra todo mundo, no mesmo dia): compara
    estatísticas de 11 jogadores em sequência (1 referência inicial + 10
    comparações). Acerta se adivinha se o próximo jogador tem MAIS ou MENOS
-   que o atual. Precisa de pelo menos 7 acertos em 10 pra vencer.
+   que o atual — a referência sempre avança pro jogador seguinte, acertando
+   ou errando. Precisa de pelo menos 7 acertos em 10 pra vencer.
 
    IMPORTANTE: o jogadores.json agora tem o campo "jogos" (número de
    partidas disputadas pelo Corinthians), usado como estatística de
@@ -1140,7 +1141,9 @@ function responderMM(direcaoEscolhida) {
         mmRoundResultEl.innerHTML = `❌ Essa não! <strong>${candidato.nome}</strong> tinha ${statCand} ${rotuloStatMM()}.`;
     }
 
-    if (correto) referenciaAtualMM = candidato;
+    // O jogador de referência sempre avança pro próximo candidato,
+    // acertando ou errando — só a pontuação (acertosMM) depende do acerto.
+    referenciaAtualMM = candidato;
     rodadaAtualMM++;
 
     estadoMMDiario.rodadaAtual = rodadaAtualMM;
@@ -1194,6 +1197,361 @@ backHomeBtnMM.addEventListener("click", () => {
     maisMenosView.classList.add("hidden");
     homeView.classList.remove("hidden");
 });
+
+/* ==========================================================================
+   TIMÃODLE — ONZE INICIAL (protótipo do "Modo Escalação")
+   Ainda SEM persistência diária de propósito — é um protótipo funcional
+   pra validar a mecânica antes de polir (semente por data, mais partidas
+   de exemplo, etc. ficam pra depois).
+
+   Fluxo: 1) a pessoa palpita o placar final; 2) confirma e o resultado
+   real é revelado; 3) o card do onze inicial aparece, com um único campo
+   de busca (sem modal) — a cada nome digitado, o jogo confere sozinho se
+   esse nome corresponde a algum jogador ainda oculto e revela o slot
+   certo automaticamente, ou mostra "Fora" se não fazia parte do time.
+
+   Estrutura de dados (escalacao-exemplo.json):
+   {
+     "competicao": string, "mandante": string, "visitante": string,
+     "local_tag": string, "data": string, "estadio": string,
+     "placar_real": { "mandante": number, "visitante": number },
+     "jogadores_visiveis": [{ nome, posicao_abrev, top, left }],   // dados já revelados
+     "jogadores_ocultos":  [{ slot_id, posicao_abrev, top, left, nome_correto }] // a adivinhar
+   }
+   "top" e "left" são porcentagens (0-100) de posição no campo.
+   ========================================================================== */
+
+const escalacaoView = document.getElementById("escalacaoView");
+const btnPlayEscalacao = document.getElementById("btnPlayEscalacao");
+const backHomeBtnEsc = document.getElementById("backHomeBtnEsc");
+
+// Card de contexto / palpite de placar
+const escCompeticaoEl = document.getElementById("escCompeticao");
+const escConfrontoEl = document.getElementById("escConfronto");
+const escLocalTagEl = document.getElementById("escLocalTag");
+const escDataEstadioEl = document.getElementById("escDataEstadio");
+const escScoreGuessEl = document.getElementById("escScoreGuess");
+const escEscudoMandanteEl = document.getElementById("escEscudoMandante");
+const escNomeMandanteEl = document.getElementById("escNomeMandante");
+const escCrestVisitanteEl = document.getElementById("escCrestVisitante");
+const escNomeVisitanteEl = document.getElementById("escNomeVisitante");
+const escScoreMandanteInput = document.getElementById("escScoreMandante");
+const escScoreVisitanteInput = document.getElementById("escScoreVisitante");
+const escConfirmarPlacarBtn = document.getElementById("escConfirmarPlacar");
+const escResultadoFinalEl = document.getElementById("escResultadoFinal");
+const escEscudoMandante2El = document.getElementById("escEscudoMandante2");
+const escNomeMandante2El = document.getElementById("escNomeMandante2");
+const escCrestVisitante2El = document.getElementById("escCrestVisitante2");
+const escNomeVisitante2El = document.getElementById("escNomeVisitante2");
+const escPlacarFinalEl = document.getElementById("escPlacarFinal");
+const escPalpitePlacarResultadoEl = document.getElementById("escPalpitePlacarResultado");
+
+// Card do onze inicial
+const escLineupCardEl = document.getElementById("escLineupCard");
+const escalacaoProgressEl = document.getElementById("escalacaoProgress");
+const escalacaoDotsEl = document.getElementById("escalacaoDots");
+const escalacaoFaltamEl = document.getElementById("escalacaoFaltam");
+const pitchFieldEl = document.getElementById("pitchField");
+const escalacaoSearchInput = document.getElementById("escalacaoSearchInput");
+const escalacaoAutocompleteList = document.getElementById("escalacaoAutocompleteList");
+const escalacaoFeedbackEl = document.getElementById("escalacaoFeedback");
+const escalacaoForaListEl = document.getElementById("escalacaoForaList");
+const escalacaoEndMessageEl = document.getElementById("escalacaoEndMessage");
+
+let dadosEscalacao = null;
+let nomesJaResolvidos = new Set(); // nomes já revelados (visíveis + ocultos acertados)
+let nomesForaDaLista = [];
+let acertosEscalacao = 0;
+let selectedIndexEsc = -1;
+
+// Ignora acentos e maiúsculas/minúsculas na busca.
+function normalizarBusca(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
+async function carregarEscalacao() {
+    try {
+        const response = await fetch('escalacao-exemplo.json');
+        dadosEscalacao = await response.json();
+    } catch (error) {
+        console.error("Erro ao carregar escalacao-exemplo.json:", error);
+        dadosEscalacao = null;
+    }
+}
+
+function fotoOuGenerico(nome) {
+    const slug = slugify(nome);
+    return JOGADORES_COM_FOTO.includes(nome) ? `${PASTA_FOTOS}${slug}.jpg` : "";
+}
+
+// ---------- ETAPA 1: contexto da partida + palpite de placar ----------
+function iniciarTelaEscalacao() {
+    if (!dadosEscalacao) {
+        escConfrontoEl.innerText = "Não foi possível carregar a partida de exemplo.";
+        return;
+    }
+
+    escCompeticaoEl.innerText = dadosEscalacao.competicao;
+    escConfrontoEl.innerText = `${dadosEscalacao.mandante} — ${dadosEscalacao.visitante}`;
+    escLocalTagEl.innerText = dadosEscalacao.local_tag;
+    escDataEstadioEl.innerText = `${dadosEscalacao.data} · ${dadosEscalacao.estadio}`;
+
+    escNomeMandanteEl.innerText = dadosEscalacao.mandante;
+    escNomeVisitanteEl.innerText = dadosEscalacao.visitante;
+    escCrestVisitanteEl.innerText = dadosEscalacao.visitante.slice(0, 3).toUpperCase();
+
+    escScoreGuessEl.classList.remove("hidden");
+    escResultadoFinalEl.classList.add("hidden");
+    escLineupCardEl.classList.add("hidden");
+    escalacaoEndMessageEl.classList.add("hidden");
+    escScoreMandanteInput.value = "";
+    escScoreVisitanteInput.value = "";
+}
+
+function confirmarPalpitePlacar() {
+    const palpiteMandante = parseInt(escScoreMandanteInput.value, 10);
+    const palpiteVisitante = parseInt(escScoreVisitanteInput.value, 10);
+
+    if (isNaN(palpiteMandante) || isNaN(palpiteVisitante)) {
+        escScoreMandanteInput.focus();
+        return;
+    }
+
+    const real = dadosEscalacao.placar_real;
+    const acertouPlacar = palpiteMandante === real.mandante && palpiteVisitante === real.visitante;
+
+    escNomeMandante2El.innerText = dadosEscalacao.mandante;
+    escNomeVisitante2El.innerText = dadosEscalacao.visitante;
+    escCrestVisitante2El.innerText = dadosEscalacao.visitante.slice(0, 3).toUpperCase();
+    escPlacarFinalEl.innerText = `${real.mandante}–${real.visitante}`;
+
+    escPalpitePlacarResultadoEl.className = `match-score-guess-result ${acertouPlacar ? "acertou" : "errou"}`;
+    escPalpitePlacarResultadoEl.innerText = acertouPlacar
+        ? `✓ Acertaste ${palpiteMandante}–${palpiteVisitante}!`
+        : `✗ Disseste ${palpiteMandante}–${palpiteVisitante}`;
+
+    escScoreGuessEl.classList.add("hidden");
+    escResultadoFinalEl.classList.remove("hidden");
+    escLineupCardEl.classList.remove("hidden");
+
+    iniciarOnzeInicial();
+}
+
+escConfirmarPlacarBtn.addEventListener("click", confirmarPalpitePlacar);
+
+// ---------- ETAPA 2: onze inicial ----------
+function iniciarOnzeInicial() {
+    nomesJaResolvidos = new Set(dadosEscalacao.jogadores_visiveis.map(j => j.nome));
+    nomesForaDaLista = [];
+    acertosEscalacao = 0;
+    escalacaoFeedbackEl.classList.add("hidden");
+    escalacaoForaListEl.classList.add("hidden");
+    escalacaoSearchInput.value = "";
+    escalacaoSearchInput.disabled = false;
+    fecharAutocompleteEsc();
+
+    atualizarProgressoEscalacao();
+    renderizarFaltam();
+    renderizarCampo();
+}
+
+function renderizarCampo() {
+    pitchFieldEl.innerHTML = "";
+
+    dadosEscalacao.jogadores_visiveis.forEach(j => {
+        pitchFieldEl.appendChild(criarChipVisivel(j.nome, j.top, j.left));
+    });
+
+    dadosEscalacao.jogadores_ocultos.forEach(slot => {
+        const jaResolvido = nomesJaResolvidos.has(slot.nome_correto);
+        const chip = jaResolvido
+            ? criarChipVisivel(slot.nome_correto, slot.top, slot.left, true)
+            : criarChipOculto(slot);
+        pitchFieldEl.appendChild(chip);
+    });
+}
+
+function criarChipVisivel(nome, top, left, revelado = false) {
+    const chip = document.createElement("div");
+    chip.className = "player-chip";
+    chip.style.top = `${top}%`;
+    chip.style.left = `${left}%`;
+
+    const foto = fotoOuGenerico(nome);
+    const dotHtml = foto
+        ? `<img src="${foto}" class="chip-dot" style="object-fit:cover;object-position:center top;">`
+        : `<span class="chip-dot"></span>`;
+
+    chip.innerHTML = `${dotHtml}<span class="chip-label${revelado ? " correct" : ""}">${nome}</span>`;
+    return chip;
+}
+
+function criarChipOculto(slot) {
+    const chip = document.createElement("div");
+    chip.className = "player-chip";
+    chip.style.top = `${slot.top}%`;
+    chip.style.left = `${slot.left}%`;
+    chip.dataset.slotId = slot.slot_id;
+    chip.innerHTML = `<span class="slot-btn" id="slot-btn-${slot.slot_id}">?</span>
+        <span class="chip-label-slot">${slot.posicao_abrev}</span>`;
+    return chip;
+}
+
+function renderizarFaltam() {
+    escalacaoFaltamEl.innerHTML = '<span class="lineup-faltam-label">FALTAM</span>';
+    dadosEscalacao.jogadores_ocultos
+        .filter(slot => !nomesJaResolvidos.has(slot.nome_correto))
+        .forEach(slot => {
+            const pill = document.createElement("span");
+            pill.className = "faltam-pill";
+            pill.innerText = slot.posicao_abrev;
+            escalacaoFaltamEl.appendChild(pill);
+        });
+}
+
+function atualizarProgressoEscalacao() {
+    const total = dadosEscalacao.jogadores_ocultos.length;
+    escalacaoProgressEl.innerText = `${acertosEscalacao}/${total}`;
+
+    escalacaoDotsEl.innerHTML = "";
+    for (let i = 0; i < total; i++) {
+        const dot = document.createElement("span");
+        dot.className = "dot-attempt";
+        if (i < acertosEscalacao) dot.classList.add("used");
+        escalacaoDotsEl.appendChild(dot);
+    }
+}
+
+function renderizarForaList() {
+    if (nomesForaDaLista.length === 0) {
+        escalacaoForaListEl.classList.add("hidden");
+        return;
+    }
+    escalacaoForaListEl.classList.remove("hidden");
+    escalacaoForaListEl.innerHTML = `<strong>Fora:</strong> ${nomesForaDaLista.join(", ")}`;
+}
+
+function fecharAutocompleteEsc() {
+    escalacaoAutocompleteList.innerHTML = "";
+    selectedIndexEsc = -1;
+}
+
+function mostrarFeedbackEsc(texto) {
+    escalacaoFeedbackEl.classList.remove("hidden");
+    escalacaoFeedbackEl.innerText = texto;
+    setTimeout(() => escalacaoFeedbackEl.classList.add("hidden"), 2200);
+}
+
+// Busca em TODA a base de jogadores (não só os 11 da partida) — assim
+// errar de propósito mostra corretamente que o jogador "tá fora".
+escalacaoSearchInput.addEventListener("input", function () {
+    const valor = normalizarBusca(this.value.trim());
+    fecharAutocompleteEsc();
+    if (!valor) return;
+
+    const filtrados = jogadores.filter(j => normalizarBusca(j.nome).includes(valor)).slice(0, 8);
+
+    filtrados.forEach(j => {
+        const item = document.createElement("div");
+        const foto = fotoOuGenerico(j.nome);
+        const avatarHtml = foto
+            ? `<img src="${foto}" class="autocomplete-avatar-img">`
+            : `<span class="autocomplete-avatar-img"></span>`;
+        item.innerHTML = `${avatarHtml}<span>${j.nome}</span>`;
+        item.dataset.nome = j.nome;
+        item.addEventListener("click", () => processarPalpiteEscalacao(j.nome));
+        escalacaoAutocompleteList.appendChild(item);
+    });
+});
+
+escalacaoSearchInput.addEventListener("keydown", function (e) {
+    const items = escalacaoAutocompleteList.getElementsByTagName("div");
+    if (items.length === 0) return;
+
+    if (e.key === "ArrowDown") {
+        e.preventDefault();
+        selectedIndexEsc = (selectedIndexEsc + 1) % items.length;
+        Array.from(items).forEach((el, i) => el.classList.toggle("autocomplete-active", i === selectedIndexEsc));
+    } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        selectedIndexEsc = (selectedIndexEsc - 1 + items.length) % items.length;
+        Array.from(items).forEach((el, i) => el.classList.toggle("autocomplete-active", i === selectedIndexEsc));
+    } else if (e.key === "Enter") {
+        e.preventDefault();
+        const idx = selectedIndexEsc >= 0 ? selectedIndexEsc : 0;
+        processarPalpiteEscalacao(items[idx].dataset.nome);
+    }
+});
+
+document.addEventListener("click", function (e) {
+    if (e.target !== escalacaoSearchInput) fecharAutocompleteEsc();
+});
+
+// ==========================================================================
+// LÓGICA DE VALIDAÇÃO
+// O jogo descobre sozinho onde o nome digitado se encaixa — não precisa
+// escolher o slot manualmente.
+// ==========================================================================
+function processarPalpiteEscalacao(nomeDigitado) {
+    escalacaoSearchInput.value = "";
+    fecharAutocompleteEsc();
+    escalacaoSearchInput.focus();
+
+    if (nomesJaResolvidos.has(nomeDigitado)) {
+        mostrarFeedbackEsc("Esse já está no onze.");
+        return;
+    }
+
+    const slot = dadosEscalacao.jogadores_ocultos.find(s => s.nome_correto === nomeDigitado);
+
+    if (!slot) {
+        if (!nomesForaDaLista.includes(nomeDigitado)) {
+            nomesForaDaLista.push(nomeDigitado);
+            renderizarForaList();
+        }
+        return;
+    }
+
+    nomesJaResolvidos.add(nomeDigitado);
+    acertosEscalacao++;
+
+    const btn = document.getElementById(`slot-btn-${slot.slot_id}`);
+    if (btn) btn.classList.add("correct");
+
+    atualizarProgressoEscalacao();
+    renderizarFaltam();
+
+    setTimeout(() => {
+        renderizarCampo();
+
+        if (acertosEscalacao >= dadosEscalacao.jogadores_ocultos.length) {
+            escalacaoSearchInput.disabled = true;
+            escalacaoEndMessageEl.classList.remove("hidden");
+            escalacaoEndMessageEl.innerHTML = "🏆 Escalação completa! Você identificou os 11 titulares.";
+            dispararConfetes();
+        }
+    }, 500);
+}
+
+// Navegação
+btnPlayEscalacao.addEventListener("click", async () => {
+    homeView.classList.add("hidden");
+    escalacaoView.classList.remove("hidden");
+
+    const tarefas = [];
+    if (jogadores.length === 0) tarefas.push(carregarJogadores());
+    if (JOGADORES_COM_FOTO.length === 0) tarefas.push(carregarManifestoFotos());
+    if (!dadosEscalacao) tarefas.push(carregarEscalacao());
+
+    if (tarefas.length > 0) await Promise.all(tarefas);
+    iniciarTelaEscalacao();
+});
+
+backHomeBtnEsc.addEventListener("click", () => {
+    escalacaoView.classList.add("hidden");
+    homeView.classList.remove("hidden");
+});
+
 
 // ==========================================================================
 // INICIALIZAÇÃO GERAL — fica no final do arquivo de propósito, depois de

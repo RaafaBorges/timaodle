@@ -113,11 +113,11 @@
                         </div>
                     </button>
 
-                    <button class="pokedle-btn disabled" disabled title="Em breve">
-                        <span class="btn-title">MODO DUELO</span>
+                    <button class="pokedle-btn active" id="btnPlayEscalacao">
+                        <span class="btn-title">ONZE INICIAL</span>
                         <div class="btn-pill">
-                            <span class="pill-icon">🔒</span>
-                            <span class="pill-text">Em breve</span>
+                            <span class="pill-icon">🧩</span>
+                            <span class="pill-text">Complete a escalação (protótipo)</span>
                         </div>
                     </button>
                 </div>
@@ -241,6 +241,97 @@
                 <button id="mmNextBtn" class="share-btn hidden">Próxima rodada ➜</button>
 
                 <p id="mmEndMessage" class="daily-end-message hidden"></p>
+            </section>
+
+            <!-- TELA DO JOGO — ONZE INICIAL (protótipo) -->
+            <section id="escalacaoView" class="game-view hidden">
+
+                <div class="game-sticky-top">
+                    <div class="daily-status-bar">
+                        <button id="backHomeBtnEsc" class="back-btn" title="Voltar">⬅</button>
+                        <span class="daily-label">🧩 Onze Inicial</span>
+                    </div>
+                </div>
+
+                <!-- CARD DE CONTEXTO DA PARTIDA -->
+                <div class="match-card">
+                    <p class="match-competicao" id="escCompeticao">—</p>
+                    <h2 class="match-confronto" id="escConfronto">— x —</h2>
+                    <div class="match-meta">
+                        <span class="match-local-tag" id="escLocalTag">—</span>
+                        <span id="escDataEstadio">—</span>
+                    </div>
+
+                    <!-- PASSO 1: palpite de placar -->
+                    <div id="escScoreGuess" class="match-score-guess">
+                        <p class="match-score-question">COMO ACABOU?</p>
+                        <div class="match-score-row">
+                            <div class="match-team">
+                                <img id="escEscudoMandante" class="match-crest" src="assets/escudo.png" alt="">
+                                <span id="escNomeMandante">—</span>
+                            </div>
+                            <div class="match-score-inputs">
+                                <input type="number" min="0" max="20" id="escScoreMandante" class="score-input" inputmode="numeric">
+                                <span>–</span>
+                                <input type="number" min="0" max="20" id="escScoreVisitante" class="score-input" inputmode="numeric">
+                            </div>
+                            <div class="match-team">
+                                <span id="escCrestVisitante" class="match-crest match-crest-generic">?</span>
+                                <span id="escNomeVisitante">—</span>
+                            </div>
+                        </div>
+                        <button id="escConfirmarPlacar" class="form-submit-btn">Confirmar</button>
+                    </div>
+
+                    <!-- PASSO 2: resultado final revelado -->
+                    <div id="escResultadoFinal" class="match-result hidden">
+                        <p class="match-result-label">RESULTADO FINAL</p>
+                        <div class="match-score-row">
+                            <div class="match-team">
+                                <img id="escEscudoMandante2" class="match-crest" src="assets/escudo.png" alt="">
+                                <span id="escNomeMandante2">—</span>
+                            </div>
+                            <span class="match-final-score" id="escPlacarFinal">—</span>
+                            <div class="match-team">
+                                <span id="escCrestVisitante2" class="match-crest match-crest-generic">?</span>
+                                <span id="escNomeVisitante2">—</span>
+                            </div>
+                        </div>
+                        <span class="match-score-guess-result" id="escPalpitePlacarResultado"></span>
+                    </div>
+                </div>
+
+                <!-- CARD DO ONZE INICIAL -->
+                <div id="escLineupCard" class="lineup-card hidden">
+                    <div class="lineup-header">
+                        <span class="lineup-title">O ONZE INICIAL</span>
+                        <div class="lineup-progress">
+                            <span id="escalacaoProgress">0/5</span>
+                            <span class="mm-dots" id="escalacaoDots"></span>
+                        </div>
+                    </div>
+
+                    <div class="lineup-faltam" id="escalacaoFaltam">
+                        <span class="lineup-faltam-label">FALTAM</span>
+                    </div>
+
+                    <div class="search-box">
+                        <input type="text" id="escalacaoSearchInput" placeholder="Escreve o nome de um jogador..." autocomplete="off">
+                        <div id="escalacaoAutocompleteList" class="autocomplete-items autocomplete-avatar"></div>
+                    </div>
+
+                    <div class="pitch-container">
+                        <div class="pitch" id="pitchField"></div>
+                    </div>
+
+                    <p id="escalacaoFeedback" class="escalacao-feedback hidden"></p>
+                    <p id="escalacaoForaList" class="escalacao-fora hidden"></p>
+                </div>
+
+                <p id="escalacaoEndMessage" class="daily-end-message hidden"></p>
+
+                <p class="escalacao-hint">Modo em <strong>beta</strong>: protótipo pra validação, ainda sem
+                    persistência diária.</p>
             </section>
 
         </main>
