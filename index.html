@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timãodle - Adivinha o Jogador do Corinthians</title>
+    <meta name="description" content="Adivinhe o jogador secreto do Corinthians! Um desafio novo todo dia, estilo Wordle, feito por um torcedor pra torcedores do Timão.">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="assets/favicon-48.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon-180.png">
+
+    <!-- Open Graph (WhatsApp, Facebook, LinkedIn, etc.) -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Timãodle">
+    <meta property="og:title" content="Timãodle — Adivinhe o jogador secreto do Corinthians">
+    <meta property="og:description" content="Um desafio novo todo dia, estilo Wordle. Projeto de fã, feito por torcedor pra torcedor do Timão.">
+    <meta property="og:image" content="https://raafaborges.github.io/timaodle/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:url" content="https://raafaborges.github.io/timaodle/">
+    <meta property="og:locale" content="pt_BR">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Timãodle — Adivinhe o jogador secreto do Corinthians">
+    <meta name="twitter:description" content="Um desafio novo todo dia, estilo Wordle. Projeto de fã, feito por torcedor pra torcedor do Timão.">
+    <meta name="twitter:image" content="https://raafaborges.github.io/timaodle/assets/og-image.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+
+<body class="app-shell">
+
+    <!-- CABEÇALHO — barra de largura total, fixa no topo -->
+    <header class="pokedle-header">
+        <div class="header-inner">
+            <div class="top-nav-icons">
+                <div class="logo-box">
+                    <img class="logo-shield" src="assets/escudo.png" alt="Escudo do Corinthians">
+                    <h1>TIMÃODLE</h1>
+                </div>
+
+                <!-- Botão de Ajuda (Hover/Tooltip) -->
+                <div class="help-container">
+                    <button class="icon-btn help-btn" title="Como Jogar">?</button>
+                    <div class="help-tooltip">
+                        <h3>COMO JOGAR</h3>
+                        <p>Adivinhe o jogador do Corinthians em cada tentativa.</p>
+                        <div class="help-rules-grid">
+                            <span class="rule-label"><span class="dot green"></span>Verde</span>
+                            <span class="rule-desc">Atributo correto!</span>
+
+                            <span class="rule-label"><span class="dot yellow"></span>Amarelo</span>
+                            <span class="rule-desc">Correspondência parcial (ex: mesmo título em comum).</span>
+
+                            <span class="rule-label"><span class="dot red"></span>Vermelho</span>
+                            <span class="rule-desc">Incorreto.</span>
+
+                            <span class="rule-label">Setas (↑ / ↓)</span>
+                            <span class="rule-desc">Indicam se o número correto é maior ou menor.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="subtitle">Adivinhe o jogador secreto do Corinthians!</p>
+        </div>
+    </header>
+
+    <div class="main-wrapper">
+
+        <!-- CONTEÚDO CENTRAL (fica entre o header fixo e o footer) -->
+        <main id="pageContent" class="page-content">
+
+            <!-- TELA INICIAL (aqui entrarão outros modos no futuro) -->
+            <div id="homeView" class="home-menu">
+                <p id="welcomeGreeting" class="welcome-greeting hidden"></p>
+
+                <div class="home-daily-info">
+                    <span class="home-daily-timer">Próximo desafio em <strong id="timerCountdownHome">--:--:--</strong></span>
+                    <span class="home-daily-yesterday">O jogador de ontem foi: <strong id="yesterdayPlayer">carregando...</strong></span>
+                </div>
+
+                <div class="mode-buttons-container">
+                    <button class="pokedle-btn active" id="btnPlayDiario">
+                        <span class="btn-title">MODO DIÁRIO</span>
+                        <div class="btn-pill">
+                            <span class="pill-icon">🗓️</span>
+                            <span class="pill-text">1 desafio novo a cada dia</span>
+                        </div>
+                    </button>
+
+                    <button class="pokedle-btn active" id="btnPlayFoto">
+                        <span class="btn-title">MODO FOTO</span>
+                        <div class="btn-pill">
+                            <span class="pill-icon">🖼️</span>
+                            <span class="pill-text">Adivinhe pela imagem borrada</span>
+                        </div>
+                    </button>
+
+                    <button class="pokedle-btn active" id="btnPlayMaisMenos">
+                        <span class="btn-title">JOGOU MAIS OU MENOS</span>
+                        <div class="btn-pill">
+                            <span class="pill-icon">⚖️</span>
+                            <span class="pill-text">Compare estatísticas, 10 rodadas</span>
+                        </div>
+                    </button>
+
+                    <button class="pokedle-btn disabled" disabled title="Em breve">
+                        <span class="btn-title">MODO DUELO</span>
+                        <div class="btn-pill">
+                            <span class="pill-icon">🔒</span>
+                            <span class="pill-text">Em breve</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TELA DO JOGO — MODO DIÁRIO -->
+            <section id="gameView" class="game-view hidden">
+
+                <!-- Bloco fixo no topo da área de jogo: status, busca e cabeçalho das colunas -->
+                <div class="game-sticky-top">
+                    <div class="daily-status-bar">
+                        <button id="backHomeBtn" class="back-btn" title="Voltar">⬅</button>
+                        <span class="daily-label">🗓️ Desafio do dia</span>
+                        <span class="daily-timer">Próximo em <strong id="timerCountdown">--:--:--</strong></span>
+                    </div>
+
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="Digite o nome de um jogador..." autocomplete="off">
+                        <div id="autocompleteList" class="autocomplete-items"></div>
+                    </div>
+
+                    <div class="board-header">
+                        <div class="col">JOGADOR</div>
+                        <div class="col">POSIÇÃO</div>
+                        <div class="col">NACIONALIDADE</div>
+                        <div class="col">ESTREIA</div>
+                        <div class="col">PÉ</div>
+                        <div class="col">TÍTULOS</div>
+                        <div class="col">GOLS</div>
+                        <div class="col">ASSISTÊNCIAS</div>
+                    </div>
+                </div>
+
+                <!-- Lista de tentativas — é a única parte que efetivamente rola -->
+                <div id="attemptsContainer" class="board-body"></div>
+
+                <p id="dailyEndMessage" class="daily-end-message hidden"></p>
+                <button id="shareResultBtn" class="share-btn hidden">📤 Compartilhar resultado</button>
+            </section>
+
+            <!-- TELA DO JOGO — MODO FOTO -->
+            <section id="photoView" class="game-view hidden">
+
+                <div class="game-sticky-top">
+                    <div class="daily-status-bar">
+                        <button id="backHomeBtnFoto" class="back-btn" title="Voltar">⬅</button>
+                        <span class="daily-label">🖼️ Modo Foto</span>
+                        <span id="photoDifficultyBadge" class="difficulty-badge hidden"></span>
+                        <span class="daily-timer" id="photoAttemptsLabel">Tentativa 0/6</span>
+                    </div>
+
+                    <div class="search-box">
+                        <input type="text" id="photoSearchInput" placeholder="Digite o nome de um jogador..." autocomplete="off">
+                        <div id="photoAutocompleteList" class="autocomplete-items"></div>
+                    </div>
+                </div>
+
+                <div class="photo-card">
+                    <img id="photoImg" class="photo-img" src="" alt="Jogador do Corinthians (borrado)">
+                    <button id="photoGrayscaleToggle" class="photo-toggle-overlay-btn active" aria-pressed="true"
+                        title="Alternar preto-e-branco">🎨</button>
+                </div>
+
+                <div class="photo-dots" id="photoDots"></div>
+
+                <div id="photoAttemptsList" class="photo-attempts-list"></div>
+
+                <p id="photoEndMessage" class="daily-end-message hidden"></p>
+            </section>
+
+            <!-- TELA DO JOGO — JOGOU MAIS OU MENOS -->
+            <section id="maisMenosView" class="game-view hidden">
+
+                <div class="game-sticky-top">
+                    <div class="daily-status-bar">
+                        <button id="backHomeBtnMM" class="back-btn" title="Voltar">⬅</button>
+                        <span class="daily-label">⚖️ Mais ou Menos</span>
+                        <span class="daily-timer" id="mmRoundLabel">Rodada 0/10</span>
+                    </div>
+                </div>
+
+                <div class="mm-card">
+                    <div class="mm-dots" id="mmDots"></div>
+
+                    <div class="mm-player-row">
+                        <img id="mmRefFoto" class="mm-avatar" src="" alt="Jogador de referência">
+                        <div class="mm-player-info">
+                            <span class="mm-player-name" id="mmRefNome">—</span>
+                            <span class="mm-player-meta" id="mmRefMeta">—</span>
+                        </div>
+                        <div class="mm-player-stat-block">
+                            <span class="mm-player-stat" id="mmRefStat">—</span>
+                            <span class="mm-stat-label" id="mmRefStatLabel">JOGOS</span>
+                        </div>
+                    </div>
+
+                    <div class="mm-divider"><span id="mmDividerText">FEZ MAIS OU MENOS JOGOS?</span></div>
+
+                    <div class="mm-player-row">
+                        <img id="mmCandFoto" class="mm-avatar" src="" alt="Jogador a comparar">
+                        <div class="mm-player-info">
+                            <span class="mm-player-name" id="mmCandNome">—</span>
+                            <span class="mm-player-meta" id="mmCandMeta">—</span>
+                        </div>
+                        <div class="mm-player-stat-block">
+                            <span class="mm-player-stat" id="mmCandStat">?</span>
+                            <span class="mm-stat-label" id="mmCandStatLabel">JOGOS</span>
+                        </div>
+                    </div>
+
+                    <div class="mm-guess-buttons" id="mmGuessButtons">
+                        <button id="mmBtnMais" class="mm-guess-btn mm-btn-mais">▲ Mais</button>
+                        <button id="mmBtnMenos" class="mm-guess-btn mm-btn-menos">▼ Menos</button>
+                    </div>
+
+                    <p class="mm-caption">Rodada <span id="mmCaptionRound">1</span> de 10 — em caso de empate,
+                        qualquer resposta conta.</p>
+                </div>
+
+                <p id="mmRoundResult" class="daily-end-message hidden"></p>
+                <button id="mmNextBtn" class="share-btn hidden">Próxima rodada ➜</button>
+
+                <p id="mmEndMessage" class="daily-end-message hidden"></p>
+            </section>
+
+        </main>
+
+        <!-- RODAPÉ FIXO NA BASE -->
+        <footer class="pokedle-footer">
+            <div class="footer-box">
+                <p>O Quiz do Bando de Loucos!</p>
+                <div class="social-links">
+                    <span class="badge">🦅 Corinthians</span>
+                    <span class="badge">🖤 Vai Corinthians!</span>
+                </div>
+            </div>
+            <p class="copyright">timaodle.net — 2026<br>Este é um projeto de fã sem vínculo oficial com o clube.</p>
+            <nav class="legal-links">
+                <a href="contato.html">Contato</a>
+                <span class="legal-sep">·</span>
+                <a href="privacidade.html">Política de Privacidade</a>
+                <span class="legal-sep">·</span>
+                <a href="cookies.html">Cookies</a>
+                <span class="legal-sep">·</span>
+                <a href="termos.html">Termos de Uso</a>
+            </nav>
+        </footer>
+
+    </div>
+
+    <!-- ⚠️ BOTÃO DE RESET — SÓ PARA TESTES, REMOVER ANTES DE LANÇAR DE VERDADE -->
+    <button id="devResetBtn" class="dev-reset-btn" title="[DEV] Resetar todo o progresso salvo">🔄 DEV</button>
+
+    <!-- WIDGET DE LINKS ÚTEIS -->
+    <div class="useful-links-widget" id="usefulLinksWidget">
+        <button class="useful-links-btn" id="usefulLinksBtn" aria-expanded="false" title="Links úteis">
+            <span id="usefulLinksArrow">❯</span>
+        </button>
+        <div class="useful-links-panel">
+            <h3>LINKS ÚTEIS</h3>
+            <p>Novo na fiel ou quer se aprofundar na história, nos ídolos e em tudo que faz o Corinthians ser
+                gigante? O <strong>Meu Timão</strong> é o maior e mais completo portal só sobre o clube.</p>
+            <a href="https://www.meutimao.com.br/" target="_blank" rel="noopener noreferrer"
+                class="useful-links-cta">Visitar Meu Timão ↗</a>
+        </div>
+    </div>
+
+    <!-- MODAL DE BOAS-VINDAS (aparece só na primeira visita) -->
+    <div id="welcomeModal" class="modal hidden">
+        <div class="modal-content">
+            <h2>🖤 Bem-vindo à Fiel!</h2>
+            <p class="welcome-text">Antes de começar, como podemos te chamar?</p>
+            <div class="form-field">
+                <input type="text" id="welcomeNameInput" placeholder="Seu nome ou apelido" maxlength="24">
+            </div>
+            <button id="welcomeSubmitBtn" class="form-submit-btn">Começar</button>
+        </div>
+    </div>
+
+    <!-- MODAL DE TUTORIAL DO MODO FOTO (aparece só na primeira vez que abre esse modo) -->
+    <div id="photoTutorialModal" class="modal hidden">
+        <div class="modal-content">
+            <h2>🖼️ Modo Foto</h2>
+            <p class="welcome-text">A foto começa borrada e em preto-e-branco — cada palpite "foca" um pouco mais.
+                Prefere ver com cor desde já? É só tocar no botão <strong>🎨</strong> no canto da foto, a qualquer
+                momento.</p>
+            <button id="photoTutorialCloseBtn" class="form-submit-btn">Entendi, vamos lá!</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
