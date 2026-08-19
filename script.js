@@ -7,6 +7,7 @@
 const CHAVE_ESTADO_DIARIO = "timaodle_daily_state";
 const CHAVE_STATS = "timaodle_stats";
 const CHAVE_USERNAME = "timaodle_username";
+const CHAVE_ESTADO_ESCALACAO = "timaodle_escalacao_daily_state";
 
 let jogadores = [];
 let jogadorSecreto = null;
@@ -268,13 +269,13 @@ function atualizarDestaqueAutocomplete(items) {
 // Evento de Digitação (Filtro do Autocomplete)
 searchInput.addEventListener("input", function () {
     if (!jogoAtivo) return;
-    const value = this.value.toLowerCase().trim();
+    const value = normalizarBusca(this.value.trim());
     fecharAutocomplete();
 
     if (!value) return;
 
     const filtrados = jogadores.filter(j =>
-        j.nome.toLowerCase().includes(value) &&
+        normalizarBusca(j.nome).includes(value) &&
         !(estadoDiario?.tentativas || []).includes(j.nome)
     );
 
@@ -831,13 +832,13 @@ function fazerPalpiteFoto(palpiteJogador) {
 // Autocomplete do Modo Foto — restrito só aos jogadores com foto
 photoSearchInput.addEventListener("input", function () {
     if (!fotoAtiva) return;
-    const value = this.value.toLowerCase().trim();
+    const value = normalizarBusca(this.value.trim());
     fecharAutocompleteFoto();
     if (!value) return;
 
     const jaTentados = tentativasFoto;
     const filtrados = jogadoresComFotoObjetos().filter(j =>
-        j.nome.toLowerCase().includes(value) && !jaTentados.includes(j.nome)
+        normalizarBusca(j.nome).includes(value) && !jaTentados.includes(j.nome)
     );
 
     filtrados.forEach(j => {
@@ -1257,26 +1258,83 @@ const escalacaoAutocompleteList = document.getElementById("escalacaoAutocomplete
 const escalacaoFeedbackEl = document.getElementById("escalacaoFeedback");
 const escalacaoForaListEl = document.getElementById("escalacaoForaList");
 const escalacaoEndMessageEl = document.getElementById("escalacaoEndMessage");
+const escCompletionCardEl = document.getElementById("escCompletionCard");
+const escResumoPlacarRealEl = document.getElementById("escResumoPlacarReal");
+const escResumoPalpiteEl = document.getElementById("escResumoPalpite");
+const escResumoPalpiteStatusEl = document.getElementById("escResumoPalpiteStatus");
+const escResumoAcertosEl = document.getElementById("escResumoAcertos");
+const escResumoErrosEl = document.getElementById("escResumoErros");
+const escResumoErrosDetalheEl = document.getElementById("escResumoErrosDetalhe");
+const escShareLineupBtn = document.getElementById("escShareLineupBtn");
 
+let PARTIDAS_ESCALACAO = [];
 let dadosEscalacao = null;
 let nomesJaResolvidos = new Set(); // nomes já revelados (visíveis + ocultos acertados)
 let nomesForaDaLista = [];
 let acertosEscalacao = 0;
+let errosEscalacao = 0;
 let selectedIndexEsc = -1;
+const MAX_OCULTOS_ESCALACAO = 3;
+let estadoEscalacao = null;
 
 // Ignora acentos e maiúsculas/minúsculas na busca.
 function normalizarBusca(str) {
     return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
 
-async function carregarEscalacao() {
+async function carregarPartidasEscalacao() {
     try {
-        const response = await fetch('escalacao-exemplo.json');
-        dadosEscalacao = await response.json();
+        const response = await fetch('partidas.json');
+        PARTIDAS_ESCALACAO = await response.json();
     } catch (error) {
-        console.error("Erro ao carregar escalacao-exemplo.json:", error);
-        dadosEscalacao = null;
+        console.error("Erro ao carregar partidas.json:", error);
+        PARTIDAS_ESCALACAO = [];
     }
+}
+
+// Sorteia a partida do dia (semente pela data) e, dentro dela, sorteia
+// quais 3 dos 11 titulares ficam ocultos — mesma sequência pra todo
+// mundo, no mesmo dia.
+function selecionarPartidaDoDia(dataStr) {
+    if (PARTIDAS_ESCALACAO.length === 0) return null;
+
+    const hashPartida = hashString(dataStr + "-onze");
+    const partida = PARTIDAS_ESCALACAO[hashPartida % PARTIDAS_ESCALACAO.length];
+
+    const hashSlots = hashString(dataStr + "-onze-slots-" + partida.id);
+    const indices = embaralharComSemente(
+        partida.titulares.map((_, i) => i),
+        hashSlots
+    );
+    const indicesOcultos = new Set(indices.slice(0, MAX_OCULTOS_ESCALACAO));
+
+    const jogadores_visiveis = [];
+    const jogadores_ocultos = [];
+    partida.titulares.forEach((j, i) => {
+        if (indicesOcultos.has(i)) {
+            jogadores_ocultos.push({
+                slot_id: `slot-${i}`,
+                posicao_abrev: j.posicao_abrev,
+                top: j.top,
+                left: j.left,
+                nome_correto: j.nome,
+            });
+        } else {
+            jogadores_visiveis.push({ nome: j.nome, posicao_abrev: j.posicao_abrev, top: j.top, left: j.left });
+        }
+    });
+
+    return {
+        competicao: partida.competicao,
+        mandante: partida.mandante,
+        visitante: partida.visitante,
+        local_tag: partida.local_tag,
+        data: partida.data,
+        estadio: partida.estadio,
+        placar_real: partida.placar_real,
+        jogadores_visiveis,
+        jogadores_ocultos,
+    };
 }
 
 function fotoOuGenerico(nome) {
@@ -1285,12 +1343,44 @@ function fotoOuGenerico(nome) {
 }
 
 // ---------- ETAPA 1: contexto da partida + palpite de placar ----------
-function iniciarTelaEscalacao() {
-    if (!dadosEscalacao) {
-        escConfrontoEl.innerText = "Não foi possível carregar a partida de exemplo.";
-        return;
+function carregarEstadoEscalacao() {
+    try {
+        return JSON.parse(localStorage.getItem(CHAVE_ESTADO_ESCALACAO));
+    } catch {
+        return null;
     }
+}
 
+function salvarEstadoEscalacao() {
+    if (!estadoEscalacao) return;
+    localStorage.setItem(CHAVE_ESTADO_ESCALACAO, JSON.stringify(estadoEscalacao));
+}
+
+function criarEstadoEscalacaoNovo(hoje) {
+    return {
+        data: hoje,
+        partidaId: dadosEscalacao.id || null,
+        etapa: "placar",
+        palpiteMandante: null,
+        palpiteVisitante: null,
+        nomesResolvidos: [],
+        nomesForaDaLista: [],
+        errosEscalacao: 0,
+        concluido: false
+    };
+}
+
+function sincronizarEstadoEscalacaoComPartida(hoje) {
+    const salvo = carregarEstadoEscalacao();
+    if (salvo && salvo.data === hoje && salvo.partidaId === (dadosEscalacao.id || null)) {
+        estadoEscalacao = salvo;
+    } else {
+        estadoEscalacao = criarEstadoEscalacaoNovo(hoje);
+        salvarEstadoEscalacao();
+    }
+}
+
+function aplicarContextoEscalacao() {
     escCompeticaoEl.innerText = dadosEscalacao.competicao;
     escConfrontoEl.innerText = `${dadosEscalacao.mandante} — ${dadosEscalacao.visitante}`;
     escLocalTagEl.innerText = dadosEscalacao.local_tag;
@@ -1299,13 +1389,54 @@ function iniciarTelaEscalacao() {
     escNomeMandanteEl.innerText = dadosEscalacao.mandante;
     escNomeVisitanteEl.innerText = dadosEscalacao.visitante;
     escCrestVisitanteEl.innerText = dadosEscalacao.visitante.slice(0, 3).toUpperCase();
+    escNomeMandante2El.innerText = dadosEscalacao.mandante;
+    escNomeVisitante2El.innerText = dadosEscalacao.visitante;
+    escCrestVisitante2El.innerText = dadosEscalacao.visitante.slice(0, 3).toUpperCase();
+}
+
+function restaurarResultadoEscalacao() {
+    const real = dadosEscalacao.placar_real;
+    const palpiteMandante = estadoEscalacao.palpiteMandante;
+    const palpiteVisitante = estadoEscalacao.palpiteVisitante;
+    const acertouPlacar = palpiteMandante === real.mandante && palpiteVisitante === real.visitante;
+
+    escPlacarFinalEl.innerText = `${real.mandante}–${real.visitante}`;
+    escPalpitePlacarResultadoEl.className = `match-score-guess-result ${acertouPlacar ? "acertou" : "errou"}`;
+    escPalpitePlacarResultadoEl.innerText = acertouPlacar
+        ? `✓ Acertaste ${palpiteMandante}–${palpiteVisitante}!`
+        : `✗ Disseste ${palpiteMandante}–${palpiteVisitante}`;
+
+    escScoreGuessEl.classList.add("hidden");
+    escResultadoFinalEl.classList.remove("hidden");
+    escLineupCardEl.classList.remove("hidden");
+}
+
+function iniciarTelaEscalacao() {
+    const hoje = getDataLocalString();
+    dadosEscalacao = selecionarPartidaDoDia(hoje);
+
+    if (!dadosEscalacao) {
+        escConfrontoEl.innerText = "Não foi possível carregar as partidas (partidas.json).";
+        return;
+    }
+
+    aplicarContextoEscalacao();
+    sincronizarEstadoEscalacaoComPartida(hoje);
 
     escScoreGuessEl.classList.remove("hidden");
     escResultadoFinalEl.classList.add("hidden");
     escLineupCardEl.classList.add("hidden");
     escalacaoEndMessageEl.classList.add("hidden");
+    escCompletionCardEl.classList.add("hidden");
     escScoreMandanteInput.value = "";
     escScoreVisitanteInput.value = "";
+
+    if (estadoEscalacao.etapa === "placar") return;
+
+    escScoreMandanteInput.value = estadoEscalacao.palpiteMandante ?? "";
+    escScoreVisitanteInput.value = estadoEscalacao.palpiteVisitante ?? "";
+    restaurarResultadoEscalacao();
+    restaurarEstadoOnzeInicial();
 }
 
 function confirmarPalpitePlacar() {
@@ -1317,23 +1448,12 @@ function confirmarPalpitePlacar() {
         return;
     }
 
-    const real = dadosEscalacao.placar_real;
-    const acertouPlacar = palpiteMandante === real.mandante && palpiteVisitante === real.visitante;
+    estadoEscalacao.palpiteMandante = palpiteMandante;
+    estadoEscalacao.palpiteVisitante = palpiteVisitante;
+    estadoEscalacao.etapa = "escalacao";
+    salvarEstadoEscalacao();
 
-    escNomeMandante2El.innerText = dadosEscalacao.mandante;
-    escNomeVisitante2El.innerText = dadosEscalacao.visitante;
-    escCrestVisitante2El.innerText = dadosEscalacao.visitante.slice(0, 3).toUpperCase();
-    escPlacarFinalEl.innerText = `${real.mandante}–${real.visitante}`;
-
-    escPalpitePlacarResultadoEl.className = `match-score-guess-result ${acertouPlacar ? "acertou" : "errou"}`;
-    escPalpitePlacarResultadoEl.innerText = acertouPlacar
-        ? `✓ Acertaste ${palpiteMandante}–${palpiteVisitante}!`
-        : `✗ Disseste ${palpiteMandante}–${palpiteVisitante}`;
-
-    escScoreGuessEl.classList.add("hidden");
-    escResultadoFinalEl.classList.remove("hidden");
-    escLineupCardEl.classList.remove("hidden");
-
+    restaurarResultadoEscalacao();
     iniciarOnzeInicial();
 }
 
@@ -1341,18 +1461,40 @@ escConfirmarPlacarBtn.addEventListener("click", confirmarPalpitePlacar);
 
 // ---------- ETAPA 2: onze inicial ----------
 function iniciarOnzeInicial() {
+    const resolvidos = Array.isArray(estadoEscalacao?.nomesResolvidos)
+        ? estadoEscalacao.nomesResolvidos
+        : [];
+    const fora = Array.isArray(estadoEscalacao?.nomesForaDaLista)
+        ? estadoEscalacao.nomesForaDaLista
+        : [];
+
     nomesJaResolvidos = new Set(dadosEscalacao.jogadores_visiveis.map(j => j.nome));
-    nomesForaDaLista = [];
-    acertosEscalacao = 0;
+    resolvidos.forEach(nome => nomesJaResolvidos.add(nome));
+    nomesForaDaLista = [...fora];
+    errosEscalacao = Number.isFinite(estadoEscalacao?.errosEscalacao)
+        ? estadoEscalacao.errosEscalacao
+        : nomesForaDaLista.length;
+    acertosEscalacao = dadosEscalacao.jogadores_ocultos.filter(slot => nomesJaResolvidos.has(slot.nome_correto)).length;
     escalacaoFeedbackEl.classList.add("hidden");
-    escalacaoForaListEl.classList.add("hidden");
     escalacaoSearchInput.value = "";
-    escalacaoSearchInput.disabled = false;
+    escalacaoSearchInput.disabled = Boolean(estadoEscalacao?.concluido);
     fecharAutocompleteEsc();
 
     atualizarProgressoEscalacao();
     renderizarFaltam();
+    renderizarForaList();
     renderizarCampo();
+
+    if (estadoEscalacao?.concluido) {
+        escalacaoEndMessageEl.classList.add("hidden");
+        renderizarResultadoConclusaoEscalacao();
+    } else {
+        escCompletionCardEl.classList.add("hidden");
+    }
+}
+
+function restaurarEstadoOnzeInicial() {
+    iniciarOnzeInicial();
 }
 
 function renderizarCampo() {
@@ -1505,15 +1647,28 @@ function processarPalpiteEscalacao(nomeDigitado) {
     const slot = dadosEscalacao.jogadores_ocultos.find(s => s.nome_correto === nomeDigitado);
 
     if (!slot) {
+        errosEscalacao++;
         if (!nomesForaDaLista.includes(nomeDigitado)) {
             nomesForaDaLista.push(nomeDigitado);
-            renderizarForaList();
         }
+        if (estadoEscalacao) {
+            estadoEscalacao.nomesForaDaLista = [...nomesForaDaLista];
+            estadoEscalacao.errosEscalacao = errosEscalacao;
+            salvarEstadoEscalacao();
+        }
+        renderizarForaList();
+        mostrarFeedbackEsc("Esse jogador não estava no onze inicial.");
         return;
     }
 
     nomesJaResolvidos.add(nomeDigitado);
     acertosEscalacao++;
+    if (estadoEscalacao) {
+        estadoEscalacao.nomesResolvidos = dadosEscalacao.jogadores_ocultos
+            .filter(s => nomesJaResolvidos.has(s.nome_correto))
+            .map(s => s.nome_correto);
+        salvarEstadoEscalacao();
+    }
 
     const btn = document.getElementById(`slot-btn-${slot.slot_id}`);
     if (btn) btn.classList.add("correct");
@@ -1526,12 +1681,101 @@ function processarPalpiteEscalacao(nomeDigitado) {
 
         if (acertosEscalacao >= dadosEscalacao.jogadores_ocultos.length) {
             escalacaoSearchInput.disabled = true;
-            escalacaoEndMessageEl.classList.remove("hidden");
-            escalacaoEndMessageEl.innerHTML = "🏆 Escalação completa! Você identificou os 11 titulares.";
+            if (estadoEscalacao) {
+                estadoEscalacao.etapa = "concluido";
+                estadoEscalacao.concluido = true;
+                estadoEscalacao.nomesResolvidos = dadosEscalacao.jogadores_ocultos.map(s => s.nome_correto);
+                salvarEstadoEscalacao();
+            }
+            escalacaoEndMessageEl.classList.add("hidden");
+            renderizarResultadoConclusaoEscalacao();
             dispararConfetes();
         }
     }, 500);
 }
+
+function renderizarResultadoConclusaoEscalacao() {
+    if (!dadosEscalacao || !estadoEscalacao) return;
+
+    const real = dadosEscalacao.placar_real;
+    const palpiteM = estadoEscalacao.palpiteMandante;
+    const palpiteV = estadoEscalacao.palpiteVisitante;
+    const acertouPlacar = palpiteM === real.mandante && palpiteV === real.visitante;
+    const total = dadosEscalacao.jogadores_ocultos.length;
+
+    escResumoPlacarRealEl.innerText = `${real.mandante}–${real.visitante}`;
+    escResumoPalpiteEl.innerText = `${palpiteM}–${palpiteV}`;
+    escResumoPalpiteStatusEl.innerText = acertouPlacar ? "✓ PLACAR EXATO" : "PLACAR DIFERENTE";
+    escResumoPalpiteStatusEl.className = `result-status ${acertouPlacar ? "acertou" : "errou"}`;
+    escResumoAcertosEl.innerText = `${acertosEscalacao}/${total}`;
+    escResumoErrosEl.innerText = String(errosEscalacao);
+
+    if (nomesForaDaLista.length > 0) {
+        escResumoErrosDetalheEl.classList.remove("hidden");
+        escResumoErrosDetalheEl.innerHTML = `<strong>Tentativas fora do onze:</strong> ${nomesForaDaLista.join(", ")}`;
+    } else {
+        escResumoErrosDetalheEl.classList.add("hidden");
+        escResumoErrosDetalheEl.innerHTML = "";
+    }
+
+    escCompletionCardEl.classList.remove("hidden");
+}
+
+function montarTextoCompartilhamentoEscalacao() {
+    const real = dadosEscalacao.placar_real;
+    const palpiteM = estadoEscalacao.palpiteMandante;
+    const palpiteV = estadoEscalacao.palpiteVisitante;
+    const acertouPlacar = palpiteM === real.mandante && palpiteV === real.visitante;
+    const total = dadosEscalacao.jogadores_ocultos.length;
+    const indicadorPlacar = acertouPlacar ? "🟨" : "⬛";
+    const jogadores = "🟨".repeat(acertosEscalacao) + "⬛".repeat(Math.max(0, total - acertosEscalacao));
+
+    return [
+        "TIMÃODLE — ONZE INICIAL ⚽",
+        `${dadosEscalacao.mandante} ${real.mandante}–${real.visitante} ${dadosEscalacao.visitante}`,
+        `${indicadorPlacar} Palpite: ${palpiteM}–${palpiteV}`,
+        `${jogadores} Jogadores: ${acertosEscalacao}/${total}`,
+        `❌ Erros: ${errosEscalacao}`,
+        "Vai Corinthians! 🖤🤍"
+    ].join("\n");
+}
+
+async function compartilharResultadoEscalacao() {
+    const texto = montarTextoCompartilhamentoEscalacao();
+    let copiado = false;
+
+    if (navigator.share) {
+        try {
+            await navigator.share({ text: texto });
+            return;
+        } catch (error) {
+            if (error?.name !== "AbortError") console.warn("Falha ao compartilhar resultado do Onze Inicial:", error);
+            if (error?.name === "AbortError") return;
+        }
+    }
+
+    try {
+        await navigator.clipboard.writeText(texto);
+        copiado = true;
+    } catch {
+        const area = document.createElement("textarea");
+        area.value = texto;
+        area.style.position = "fixed";
+        area.style.opacity = "0";
+        document.body.appendChild(area);
+        area.select();
+        copiado = document.execCommand("copy");
+        area.remove();
+    }
+
+    if (copiado) {
+        const original = escShareLineupBtn.innerText;
+        escShareLineupBtn.innerText = "Copiado! ✓";
+        setTimeout(() => { escShareLineupBtn.innerText = original; }, 1800);
+    }
+}
+
+escShareLineupBtn.addEventListener("click", compartilharResultadoEscalacao);
 
 // Navegação
 btnPlayEscalacao.addEventListener("click", async () => {
@@ -1541,7 +1785,7 @@ btnPlayEscalacao.addEventListener("click", async () => {
     const tarefas = [];
     if (jogadores.length === 0) tarefas.push(carregarJogadores());
     if (JOGADORES_COM_FOTO.length === 0) tarefas.push(carregarManifestoFotos());
-    if (!dadosEscalacao) tarefas.push(carregarEscalacao());
+    if (PARTIDAS_ESCALACAO.length === 0) tarefas.push(carregarPartidasEscalacao());
 
     if (tarefas.length > 0) await Promise.all(tarefas);
     iniciarTelaEscalacao();

@@ -33,6 +33,17 @@
     "assistencias": 15
   },
   {
+    "nome": "Alex",
+    "posicao": "Meia",
+    "nacionalidade": "Brasil",
+    "estreia": null,
+    "jogos": null,
+    "pe": null,
+    "titulos": null,
+    "gols": null,
+    "assistencias": null
+  },
+  {
     "nome": "Alex Santana",
     "posicao": "Volante",
     "nacionalidade": "Brasil",
@@ -176,6 +187,17 @@
     "assistencias": 2
   },
   {
+    "nome": "Bruno Henrique",
+    "posicao": "Meia",
+    "nacionalidade": "Brasil",
+    "estreia": null,
+    "jogos": null,
+    "pe": null,
+    "titulos": null,
+    "gols": null,
+    "assistencias": null
+  },
+  {
     "nome": "Cabeção",
     "posicao": "Goleiro",
     "nacionalidade": "Brasil",
@@ -187,6 +209,17 @@
     "assistencias": 0
   },
   {
+    "nome": "Camacho",
+    "posicao": "Volante",
+    "nacionalidade": "Brasil",
+    "estreia": null,
+    "jogos": null,
+    "pe": null,
+    "titulos": null,
+    "gols": null,
+    "assistencias": null
+  },
+  {
     "nome": "Carbone",
     "posicao": "Atacante",
     "nacionalidade": "Brasil",
@@ -196,6 +229,17 @@
     "titulos": "1x Rio-São Paulo, 3x Paulista",
     "gols": 135,
     "assistencias": 0
+  },
+  {
+    "nome": "Carlos Alberto",
+    "posicao": "Meia",
+    "nacionalidade": "Brasil",
+    "estreia": null,
+    "jogos": null,
+    "pe": null,
+    "titulos": null,
+    "gols": null,
+    "assistencias": null
   },
   {
     "nome": "Carlos Tevez",
@@ -262,6 +306,17 @@
     "titulos": "3x Rio-São Paulo, 5x Paulista",
     "gols": 305,
     "assistencias": 140
+  },
+  {
+    "nome": "Coelho",
+    "posicao": "Lateral",
+    "nacionalidade": "Brasil",
+    "estreia": null,
+    "jogos": null,
+    "pe": null,
+    "titulos": null,
+    "gols": null,
+    "assistencias": null
   },
   {
     "nome": "Cristian",
@@ -429,6 +484,17 @@
     "assistencias": 10
   },
   {
+    "nome": "Edu Dracena",
+    "posicao": "Zagueiro",
+    "nacionalidade": "Brasil",
+    "estreia": null,
+    "jogos": null,
+    "pe": null,
+    "titulos": null,
+    "gols": null,
+    "assistencias": null
+  },
+  {
     "nome": "Edvaldo",
     "posicao": "Zagueiro",
     "nacionalidade": "Brasil",
@@ -548,6 +614,17 @@
     "titulos": "1x Mundial, 2x BR, 1x Paulista",
     "gols": 11,
     "assistencias": 15
+  },
+  {
+    "nome": "Fábio Costa",
+    "posicao": "Goleiro",
+    "nacionalidade": "Brasil",
+    "estreia": null,
+    "jogos": null,
+    "pe": null,
+    "titulos": null,
+    "gols": null,
+    "assistencias": null
   },
   {
     "nome": "Fábio Santos",
@@ -682,6 +759,28 @@
     "assistencias": 1
   },
   {
+    "nome": "Gustavo Nery",
+    "posicao": "Lateral",
+    "nacionalidade": "Brasil",
+    "estreia": null,
+    "jogos": null,
+    "pe": null,
+    "titulos": null,
+    "gols": null,
+    "assistencias": null
+  },
+  {
+    "nome": "Henrique",
+    "posicao": "Zagueiro",
+    "nacionalidade": "Brasil",
+    "estreia": null,
+    "jogos": null,
+    "pe": null,
+    "titulos": null,
+    "gols": null,
+    "assistencias": null
+  },
+  {
     "nome": "Hugo",
     "posicao": "Lateral",
     "nacionalidade": "Brasil",
@@ -792,17 +891,6 @@
     "assistencias": 1
   },
   {
-    "nome": "Julio Cesar",
-    "posicao": "Goleiro",
-    "nacionalidade": "Brasil",
-    "estreia": 2005,
-    "jogos": 141,
-    "pe": "Direito",
-    "titulos": "1x Mundial, 1x Liberta, 2x BR, 1x Recopa, 1x Copa do Brasil, 3x Paulista",
-    "gols": 0,
-    "assistencias": 0
-  },
-  {
     "nome": "Junior Urso",
     "posicao": "Volante",
     "nacionalidade": "Brasil",
@@ -823,6 +911,17 @@
     "titulos": "2x BR, 1x Paulista",
     "gols": 65,
     "assistencias": 20
+  },
+  {
+    "nome": "Júlio César",
+    "posicao": "Goleiro",
+    "nacionalidade": "Brasil",
+    "estreia": 2005,
+    "jogos": 141,
+    "pe": "Direito",
+    "titulos": "1x Mundial, 1x Liberta, 2x BR, 1x Recopa, 1x Copa do Brasil, 3x Paulista",
+    "gols": 0,
+    "assistencias": 0
   },
   {
     "nome": "Leandro",
@@ -867,6 +966,17 @@
     "titulos": "1x BR, 1x Liberta, 1x Paulista",
     "gols": 50,
     "assistencias": 12
+  },
+  {
+    "nome": "Lucca",
+    "posicao": "Meia",
+    "nacionalidade": "Brasil",
+    "estreia": null,
+    "jogos": null,
+    "pe": null,
+    "titulos": null,
+    "gols": null,
+    "assistencias": null
   },
   {
     "nome": "Luizinho",
@@ -933,6 +1043,28 @@
     "titulos": "1x BR, 1x Paulista",
     "gols": 4,
     "assistencias": 0
+  },
+  {
+    "nome": "Marcelo Mattos",
+    "posicao": "Volante",
+    "nacionalidade": "Brasil",
+    "estreia": null,
+    "jogos": null,
+    "pe": null,
+    "titulos": null,
+    "gols": null,
+    "assistencias": null
+  },
+  {
+    "nome": "Marinho",
+    "posicao": "Zagueiro",
+    "nacionalidade": "Brasil",
+    "estreia": null,
+    "jogos": null,
+    "pe": null,
+    "titulos": null,
+    "gols": null,
+    "assistencias": null
   },
   {
     "nome": "Mateus Vital",
@@ -1111,6 +1243,17 @@
     "assistencias": 1
   },
   {
+    "nome": "Rafael Moura",
+    "posicao": "Atacante",
+    "nacionalidade": "Brasil",
+    "estreia": null,
+    "jogos": null,
+    "pe": null,
+    "titulos": null,
+    "gols": null,
+    "assistencias": null
+  },
+  {
     "nome": "Ralf",
     "posicao": "Volante",
     "nacionalidade": "Brasil",
@@ -1241,6 +1384,17 @@
     "titulos": "1x Copa do Brasil, 1x Paulista",
     "gols": 35,
     "assistencias": 12
+  },
+  {
+    "nome": "Rosinei",
+    "posicao": "Volante",
+    "nacionalidade": "Brasil",
+    "estreia": null,
+    "jogos": null,
+    "pe": null,
+    "titulos": null,
+    "gols": null,
+    "assistencias": null
   },
   {
     "nome": "Rui Rei",
@@ -1386,6 +1540,17 @@
     "assistencias": 0
   },
   {
+    "nome": "Uendel",
+    "posicao": "Lateral",
+    "nacionalidade": "Brasil",
+    "estreia": null,
+    "jogos": null,
+    "pe": null,
+    "titulos": null,
+    "gols": null,
+    "assistencias": null
+  },
+  {
     "nome": "Vaguinho",
     "posicao": "Atacante",
     "nacionalidade": "Brasil",
@@ -1417,6 +1582,50 @@
     "titulos": "1x Copa do Brasil, 2x Paulista",
     "gols": 105,
     "assistencias": 21
+  },
+  {
+    "nome": "Wallace",
+    "posicao": "Volante",
+    "nacionalidade": "Brasil",
+    "estreia": null,
+    "jogos": null,
+    "pe": null,
+    "titulos": null,
+    "gols": null,
+    "assistencias": null
+  },
+  {
+    "nome": "Wendel",
+    "posicao": "Meia",
+    "nacionalidade": "Brasil",
+    "estreia": null,
+    "jogos": null,
+    "pe": null,
+    "titulos": null,
+    "gols": null,
+    "assistencias": null
+  },
+  {
+    "nome": "William",
+    "posicao": "Zagueiro",
+    "nacionalidade": "Brasil",
+    "estreia": null,
+    "jogos": null,
+    "pe": null,
+    "titulos": null,
+    "gols": null,
+    "assistencias": null
+  },
+  {
+    "nome": "Willian",
+    "posicao": "Atacante",
+    "nacionalidade": "Brasil",
+    "estreia": null,
+    "jogos": null,
+    "pe": null,
+    "titulos": null,
+    "gols": null,
+    "assistencias": null
   },
   {
     "nome": "Wilson Mano",

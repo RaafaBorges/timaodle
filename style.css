@@ -2030,3 +2030,932 @@ input:focus-visible {
 @media (max-width: 480px) {
     .useful-links-panel { width: 230px; }
 }
+
+/* ========================================================================
+   LEITURA / HIERARQUIA — AJUSTE VISUAL 19/08/2026
+   Princípio: preto como base, branco para informação principal e dourado
+   para ações, números e elementos que precisam chamar atenção.
+   ======================================================================== */
+
+body {
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+/* Títulos e ações importantes ficam mais fortes e fáceis de escanear. */
+.btn-title {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 2.2px;
+    line-height: 1;
+}
+
+.pill-text {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.subtitle {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.45;
+}
+
+.daily-label {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.daily-timer {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.daily-end-message {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.6;
+}
+
+.share-btn,
+.form-submit-btn {
+    font-size: 15px;
+    font-weight: 800;
+}
+
+/* ------------------------------------------------------------------------
+   MAIS OU MENOS
+   ------------------------------------------------------------------------ */
+.mm-card {
+    gap: 20px;
+    padding: 22px 20px 24px;
+}
+
+.mm-player-name {
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+}
+
+.mm-player-meta {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.mm-player-stat {
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.mm-stat-label {
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.mm-divider span {
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.mm-guess-btn {
+    padding: 14px 12px;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.mm-caption {
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* ------------------------------------------------------------------------
+   ONZE INICIAL
+   ------------------------------------------------------------------------ */
+.match-card,
+.lineup-card {
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.38);
+}
+
+.match-competicao {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    color: var(--gold);
+    text-transform: uppercase;
+}
+
+.match-confronto {
+    font-family: var(--font-display);
+    font-size: 30px;
+    font-weight: 400;
+    letter-spacing: 1.5px;
+    color: var(--ink);
+    line-height: 1.05;
+}
+
+.match-meta {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-muted);
+}
+
+.match-local-tag {
+    color: var(--ink);
+    font-weight: 800;
+}
+
+.match-score-question {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    color: var(--gold);
+}
+
+.match-team span {
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.score-input {
+    width: 48px;
+    height: 48px;
+    font-size: 22px;
+    font-weight: 700;
+    border-width: 2px;
+}
+
+.match-final-score {
+    font-size: 36px;
+    font-weight: 700;
+}
+
+.match-result-label {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--gold);
+}
+
+.match-score-guess-result {
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.lineup-card {
+    padding: 20px;
+    gap: 16px;
+}
+
+.lineup-title {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    color: var(--ink);
+}
+
+.lineup-progress {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.lineup-faltam-label {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--gold);
+}
+
+.faltam-pill {
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 10px;
+}
+
+.escalacao-hint {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-muted);
+    line-height: 1.5;
+}
+
+.escalacao-feedback {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.escalacao-fora {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.6;
+}
+
+.player-chip {
+    width: 82px;
+}
+
+.player-chip .chip-dot {
+    width: 18px;
+    height: 18px;
+    border-width: 2px;
+}
+
+.player-chip .chip-label {
+    font-size: 10px;
+    font-weight: 800;
+    max-width: 82px;
+    padding: 3px 7px;
+}
+
+.chip-label-slot {
+    font-size: 9px;
+    font-weight: 800;
+}
+
+.slot-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.search-box input {
+    padding: 15px 17px;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.search-box input::placeholder {
+    font-weight: 500;
+}
+
+.autocomplete-items div {
+    padding: 12px 15px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* ------------------------------------------------------------------------
+   CABEÇALHO / HOME
+   ------------------------------------------------------------------------ */
+.logo-box h1 {
+    font-weight: 400;
+}
+
+.home-daily-timer,
+.home-daily-yesterday {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.pokedle-footer {
+    font-size: 13px;
+}
+
+.footer-box {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* Ouro é reservado para informação importante — sem transformar a tela
+   inteira em dourado. */
+.home-daily-timer strong,
+.home-daily-yesterday strong,
+.daily-timer strong,
+.daily-end-message strong {
+    font-weight: 800;
+}
+
+/* ------------------------------------------------------------------------
+   MOBILE: manter a legibilidade sem deixar o campo apertado.
+   ------------------------------------------------------------------------ */
+@media (max-width: 480px) {
+    .btn-title { font-size: 20px; }
+    .subtitle { font-size: 13px; }
+    .mm-player-name { font-size: 19px; }
+    .mm-player-stat { font-size: 29px; }
+    .match-confronto { font-size: 27px; }
+    .match-score-question { font-size: 14px; }
+    .lineup-title { font-size: 13px; }
+    .player-chip { width: 74px; }
+    .player-chip .chip-label { max-width: 74px; font-size: 9px; }
+    .search-box input { font-size: 15px; }
+}
+
+
+/* ==========================================================================\n   ONZE INICIAL — POLIMENTO VISUAL V2\n   Identidade: preto + branco + dourado. O campo usa um verde quase preto\n   apenas para preservar a leitura visual de um gramado.\n   ========================================================================== */
+.match-card,
+.lineup-card {
+    position: relative;
+    overflow: visible;
+}
+
+.match-card::before,
+.lineup-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 18px;
+    right: 18px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity: .9;
+}
+
+.match-card {
+    gap: 12px;
+    padding: 22px 20px 24px;
+    border-color: rgba(185, 151, 90, .28);
+}
+
+.match-competicao {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.match-confronto {
+    font-size: clamp(28px, 8vw, 34px);
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-shadow: 0 1px 0 #000;
+}
+
+.match-meta {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.match-local-tag {
+    padding: 4px 9px;
+    border: 1px solid rgba(185,151,90,.45);
+    border-radius: 999px;
+    background: var(--gold-soft);
+    color: var(--gold);
+    font-weight: 800;
+}
+
+.match-score-guess,
+.match-result {
+    width: 100%;
+    padding-top: 5px;
+}
+
+.match-score-question,
+.match-result-label {
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: 1px;
+}
+
+.match-score-row {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(80px, 1fr) auto minmax(80px, 1fr);
+    align-items: center;
+    gap: 10px;
+    margin: 12px 0 14px;
+}
+
+.match-team {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+}
+
+.match-team span {
+    font-size: 13px;
+    font-weight: 900;
+    color: var(--ink);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+.match-crest {
+    width: 42px;
+    height: 42px;
+}
+
+.match-crest-generic {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--gold);
+    border-radius: 50%;
+    background: var(--gold-soft);
+    color: var(--gold);
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.match-score-inputs {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--gold);
+}
+
+.score-input {
+    width: 52px;
+    height: 52px;
+    font-size: 24px;
+    font-weight: 900;
+    border: 2px solid var(--line);
+    background: #0f0f0e;
+}
+
+.score-input:focus {
+    border-color: var(--gold);
+}
+
+.form-submit-btn {
+    min-height: 46px;
+    padding: 11px 22px;
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: .3px;
+    text-transform: uppercase;
+}
+
+.match-final-score {
+    font-family: var(--font-display);
+    font-size: 42px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--ink);
+}
+
+.match-score-guess-result {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.lineup-card {
+    gap: 18px;
+    padding: 22px 20px 24px;
+    border-color: rgba(185, 151, 90, .28);
+}
+
+.lineup-header {
+    align-items: center;
+    padding-bottom: 2px;
+}
+
+.lineup-title {
+    font-size: 16px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: var(--ink);
+}
+
+.lineup-progress {
+    min-width: 56px;
+    justify-content: flex-end;
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--gold);
+}
+
+.lineup-progress .dot-attempt {
+    width: 7px;
+    height: 7px;
+    border: 1px solid var(--gold);
+}
+
+.lineup-faltam {
+    padding: 9px 10px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-m);
+    background: rgba(0,0,0,.18);
+}
+
+.lineup-faltam-label {
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: .7px;
+}
+
+.faltam-pill {
+    font-size: 11px;
+    font-weight: 900;
+    padding: 4px 10px;
+}
+
+.search-box input {
+    min-height: 50px;
+    padding: 13px 17px;
+    border-width: 2px;
+    border-radius: var(--radius-m);
+    font-size: 15px;
+    font-weight: 700;
+    background: #10100f;
+}
+
+.search-box input::placeholder {
+    font-weight: 600;
+}
+
+.autocomplete-items {
+    border-color: var(--gold);
+    border-radius: 0 0 var(--radius-m) var(--radius-m);
+}
+
+.autocomplete-items div {
+    min-height: 46px;
+    padding: 9px 12px;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--ink);
+}
+
+.autocomplete-items div:hover,
+.autocomplete-items .autocomplete-active {
+    background: var(--gold-soft);
+    color: var(--ink);
+}
+
+.pitch-container {
+    max-width: 350px;
+    padding: 3px;
+    border: 1px solid rgba(185,151,90,.25);
+    border-radius: calc(var(--radius-m) + 2px);
+    background: rgba(0,0,0,.22);
+}
+
+.pitch {
+    background-color: #101914;
+    background-image:
+        linear-gradient(rgba(185,151,90,.035), rgba(185,151,90,.035)),
+        repeating-linear-gradient(180deg, rgba(255,255,255,.018) 0, rgba(255,255,255,.018) 10%, transparent 10%, transparent 20%);
+    border: 1px solid rgba(255,255,255,.22);
+}
+
+.pitch::before,
+.pitch::after,
+.pitch-box-top,
+.pitch-box-bottom {
+    background-color: transparent;
+    border-color: rgba(255,255,255,.30);
+}
+
+.player-chip {
+    width: 84px;
+    gap: 4px;
+    z-index: 2;
+}
+
+.player-chip .chip-dot {
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--gold);
+    box-shadow: 0 2px 8px rgba(0,0,0,.45);
+}
+
+.player-chip .chip-label {
+    max-width: 84px;
+    padding: 3px 7px;
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 7px;
+    font-size: 9px;
+    font-weight: 900;
+    line-height: 1.15;
+    color: var(--ink);
+    background: rgba(11,11,10,.90);
+}
+
+.player-chip .chip-label.correct {
+    border-color: var(--gold);
+    color: #fff;
+    background: #5a4722;
+}
+
+.slot-btn {
+    width: 38px;
+    height: 38px;
+    border-width: 2px;
+    font-size: 18px;
+    font-weight: 900;
+    background: rgba(11,11,10,.70);
+    box-shadow: 0 2px 9px rgba(0,0,0,.45);
+}
+
+.slot-btn:hover {
+    transform: scale(1.06);
+    background: var(--gold-soft);
+}
+
+.chip-label-slot {
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: rgba(11,11,10,.78);
+    font-size: 9px;
+    font-weight: 900;
+    color: #fff;
+}
+
+.escalacao-feedback {
+    border-color: rgba(185,151,90,.35);
+    font-size: 14px;
+    font-weight: 900;
+    color: var(--ink);
+}
+
+.escalacao-fora {
+    padding: 8px 10px;
+    border-radius: var(--radius-s);
+    background: rgba(150,54,50,.08);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.escalacao-fora strong {
+    color: var(--gold);
+    font-weight: 900;
+}
+
+.escalacao-end-message,
+#escalacaoEndMessage {
+    width: min(400px, 100%);
+    border-color: var(--gold);
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.escalacao-hint {
+    max-width: 380px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-muted);
+}
+
+@media (max-width: 480px) {
+    .match-card,
+    .lineup-card {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    .match-score-row {
+        gap: 6px;
+    }
+
+    .match-team span {
+        font-size: 12px;
+    }
+
+    .match-crest {
+        width: 38px;
+        height: 38px;
+    }
+
+    .score-input {
+        width: 48px;
+        height: 48px;
+    }
+
+    .pitch-container {
+        max-width: 100%;
+    }
+
+    .player-chip {
+        width: 72px;
+    }
+
+    .player-chip .chip-label {
+        max-width: 72px;
+        font-size: 8px;
+    }
+
+    .player-chip .chip-dot {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+/* ==========================================================================
+   ONZE INICIAL — RESULTADO FINAL + SCROLLBAR DO APP
+   ========================================================================== */
+
+/* A área rolável agora ocupa a largura da viewport. Isso mantém o conteúdo
+   centralizado, mas leva a scrollbar para a borda direita da janela. */
+.app-shell .main-wrapper {
+    width: 100%;
+    max-width: none;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.app-shell .page-content {
+    width: 100%;
+    padding-left: max(16px, calc((100vw - 760px) / 2 + 16px));
+    padding-right: max(16px, calc((100vw - 760px) / 2 + 16px));
+    scrollbar-width: thin;
+    scrollbar-color: var(--gold) #11110f;
+}
+
+/* Chrome / Edge / Safari */
+.app-shell .page-content::-webkit-scrollbar,
+.autocomplete-items::-webkit-scrollbar {
+    width: 10px;
+}
+
+.app-shell .page-content::-webkit-scrollbar-track,
+.autocomplete-items::-webkit-scrollbar-track {
+    background: #11110f;
+    border-left: 1px solid var(--line-soft);
+}
+
+.app-shell .page-content::-webkit-scrollbar-thumb,
+.autocomplete-items::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #c9a760, var(--gold));
+    border: 2px solid #11110f;
+    border-radius: 999px;
+}
+
+.app-shell .page-content::-webkit-scrollbar-thumb:hover,
+.autocomplete-items::-webkit-scrollbar-thumb:hover {
+    background: #d5b66f;
+}
+
+.autocomplete-items {
+    scrollbar-width: thin;
+    scrollbar-color: var(--gold) var(--surface-2);
+}
+
+.lineup-result-card {
+    width: min(400px, 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 22px 20px;
+    border-radius: var(--radius-l);
+    border: 1px solid rgba(185, 151, 90, 0.62);
+    background:
+        radial-gradient(circle at 50% 0%, rgba(185, 151, 90, 0.14), transparent 42%),
+        linear-gradient(180deg, #181816, #11110f);
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.30);
+    text-align: center;
+}
+
+.lineup-result-kicker {
+    color: var(--gold);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1.4px;
+}
+
+.lineup-result-card h3 {
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 29px;
+    line-height: 1;
+    letter-spacing: 1.4px;
+    font-weight: 400;
+}
+
+.lineup-result-subtitle {
+    margin-top: -5px;
+    color: var(--ink-muted);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.lineup-result-score {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.lineup-result-score > div,
+.result-stat-box {
+    min-width: 0;
+    padding: 14px 10px;
+    border-radius: var(--radius-m);
+    border: 1px solid var(--line);
+    background: rgba(8, 8, 7, 0.62);
+}
+
+.result-metric-label,
+.result-stat-label {
+    display: block;
+    color: var(--ink-muted);
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.8px;
+}
+
+.lineup-result-score strong {
+    display: block;
+    margin-top: 5px;
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 31px;
+    line-height: 1;
+    letter-spacing: 1px;
+    font-weight: 400;
+}
+
+.result-status {
+    display: inline-block;
+    margin-top: 7px;
+    padding: 3px 7px;
+    border-radius: 999px;
+    font-size: 8.5px;
+    font-weight: 900;
+    letter-spacing: 0.35px;
+}
+
+.result-status.acertou {
+    color: #f3d68e;
+    border: 1px solid var(--gold);
+    background: var(--gold-soft);
+}
+
+.result-status.errou {
+    color: #f0b0a8;
+    border: 1px solid rgba(200, 79, 65, 0.75);
+    background: rgba(150, 54, 50, 0.14);
+}
+
+.lineup-result-stats {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.result-stat-value {
+    display: block;
+    margin-bottom: 3px;
+    color: var(--gold);
+    font-family: var(--font-display);
+    font-size: 28px;
+    line-height: 1;
+    letter-spacing: 1px;
+}
+
+.lineup-result-errors {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: var(--radius-s);
+    border: 1px solid rgba(200, 79, 65, 0.28);
+    background: rgba(150, 54, 50, 0.08);
+    color: var(--ink-muted);
+    font-size: 11px;
+    line-height: 1.55;
+}
+
+.lineup-result-errors strong {
+    color: #fff;
+    font-weight: 900;
+}
+
+.lineup-share-btn {
+    width: 100%;
+    margin-top: 2px;
+    border-color: var(--gold);
+    background: var(--gold);
+    color: #0b0b0a;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.lineup-share-btn:hover {
+    background: #c9a760;
+    color: #080807;
+}
+
+@media (max-width: 480px) {
+    .app-shell .page-content {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .lineup-result-card {
+        padding: 19px 14px;
+    }
+
+    .lineup-result-card h3 {
+        font-size: 26px;
+    }
+
+    .lineup-result-score strong {
+        font-size: 27px;
+    }
+}

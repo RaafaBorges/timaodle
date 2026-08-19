@@ -117,7 +117,7 @@
                         <span class="btn-title">ONZE INICIAL</span>
                         <div class="btn-pill">
                             <span class="pill-icon">🧩</span>
-                            <span class="pill-text">Complete a escalação (protótipo)</span>
+                            <span class="pill-text">Complete a escalação</span>
                         </div>
                     </button>
                 </div>
@@ -243,7 +243,7 @@
                 <p id="mmEndMessage" class="daily-end-message hidden"></p>
             </section>
 
-            <!-- TELA DO JOGO — ONZE INICIAL (protótipo) -->
+            <!-- TELA DO JOGO — ONZE INICIAL -->
             <section id="escalacaoView" class="game-view hidden">
 
                 <div class="game-sticky-top">
@@ -306,7 +306,7 @@
                     <div class="lineup-header">
                         <span class="lineup-title">O ONZE INICIAL</span>
                         <div class="lineup-progress">
-                            <span id="escalacaoProgress">0/5</span>
+                            <span id="escalacaoProgress">0/3</span>
                             <span class="mm-dots" id="escalacaoDots"></span>
                         </div>
                     </div>
@@ -328,10 +328,41 @@
                     <p id="escalacaoForaList" class="escalacao-fora hidden"></p>
                 </div>
 
+                <div id="escCompletionCard" class="lineup-result-card hidden" aria-live="polite">
+                    <div class="lineup-result-kicker">ONZE INICIAL</div>
+                    <h3>DESAFIO CONCLUÍDO</h3>
+                    <p class="lineup-result-subtitle">Seu resumo da partida de hoje</p>
+
+                    <div class="lineup-result-score">
+                        <div>
+                            <span class="result-metric-label">PLACAR REAL</span>
+                            <strong id="escResumoPlacarReal">—</strong>
+                        </div>
+                        <div>
+                            <span class="result-metric-label">SEU PALPITE</span>
+                            <strong id="escResumoPalpite">—</strong>
+                            <span id="escResumoPalpiteStatus" class="result-status"></span>
+                        </div>
+                    </div>
+
+                    <div class="lineup-result-stats">
+                        <div class="result-stat-box">
+                            <span class="result-stat-value" id="escResumoAcertos">3/3</span>
+                            <span class="result-stat-label">JOGADORES</span>
+                        </div>
+                        <div class="result-stat-box">
+                            <span class="result-stat-value" id="escResumoErros">0</span>
+                            <span class="result-stat-label">ERROS</span>
+                        </div>
+                    </div>
+
+                    <p id="escResumoErrosDetalhe" class="lineup-result-errors hidden"></p>
+                    <button id="escShareLineupBtn" class="share-btn lineup-share-btn">📤 Compartilhar resultado</button>
+                </div>
+
                 <p id="escalacaoEndMessage" class="daily-end-message hidden"></p>
 
-                <p class="escalacao-hint">Modo em <strong>beta</strong>: protótipo pra validação, ainda sem
-                    persistência diária.</p>
+                <p class="escalacao-hint">O desafio é diário e o progresso fica salvo neste navegador.</p>
             </section>
 
         </main>
