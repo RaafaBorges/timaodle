@@ -1,6 +1,6 @@
 # TIMÃODLE --- ROADMAP E CONTEXTO DO PROJETO
 
-**Versão do documento:** 1.6\
+**Versão do documento:** 1.7\
 **Data:** 19/08/2026\
 **Projeto:** Timãodle\
 **Objetivo deste arquivo:** servir como documento de contexto para
@@ -169,6 +169,8 @@ Mecânica:
 -   [x] Resultado
 -   [x] Confete
 -   [x] Tutorial
+-   [x] Persistir a identidade do jogador diário após o início do desafio
+-   [x] Fallback local para foto indisponível
 -   [ ] Completar fotos dos jogadores restantes
 
 ------------------------------------------------------------------------
@@ -238,6 +240,8 @@ Portanto:
 -   [x] Revisar seleção dos jogadores
 -   [ ] Completar fotos necessárias
 -   [x] Revisar balanceamento das comparações
+-   [x] Restringir o pool a jogadores fotografados com `jogos` numérico e finito
+-   [x] Fallback local para foto indisponível
 
 ------------------------------------------------------------------------
 
@@ -416,8 +420,9 @@ Não colocar uma lista gigante de fotos diretamente no `script.js`.
 -   [x] Fotos locais
 -   [x] Integração com jogadores
 -   [ ] Completar fotos dos jogadores
--   [ ] Validar fotos quebradas
--   [ ] Padronizar nomes de arquivos
+-   [x] Validar fotos quebradas e oferecer fallback visual
+-   [x] Padronizar nomes de arquivos atuais
+-   [x] Validar o manifesto defensivamente em runtime
 
 ------------------------------------------------------------------------
 
@@ -660,14 +665,14 @@ Depois disso, atualizar o checklist principal deste arquivo.
 
 # 17. PRÓXIMA TAREFA OFICIAL
 
-## 🎯 VALIDAR O MAIS OU MENOS V2 EM NAVEGADORES REAIS
+## 🎯 ADICIONAR FOTOS DOS 16 JOGADORES COM `JOGOS` VÁLIDO
 
 Próximos itens:
 
-1.  Testar manualmente as 10 rodadas, F5 e conclusão em navegadores desktop e mobile reais.
-2.  Conferir a cobertura e a qualidade das fotos usadas pelo modo.
-3.  Avaliar compartilhamento para o resultado final em uma etapa futura.
-4.  Monitorar a dificuldade percebida antes de alterar a meta de 7 acertos.
+1.  Adicionar, em lote controlado, fotos padronizadas dos 16 jogadores sem foto que já possuem `jogos` numérico válido.
+2.  Manter fora do Mais ou Menos os 20 jogadores com `jogos: null` até validação histórica.
+3.  Reexecutar a auditoria de manifesto, arquivos, dimensões e cobertura após o novo lote.
+4.  Testar manualmente Foto e Mais ou Menos, incluindo fallback e F5, em navegadores desktop e mobile reais.
 5.  Manter pendente a validação histórica das quatro partidas `4-2-3-1` do Onze Inicial.
 
 ------------------------------------------------------------------------
@@ -926,3 +931,38 @@ Pendências:
 
 Próximo passo:
 - validar o Mais ou Menos v2 de ponta a ponta em navegadores desktop e mobile reais.
+
+
+## 19/08/2026 — Camada de segurança do sistema de fotos
+
+Implementado:
+- manifesto validado em runtime como array, limitado a strings não vazias, sem duplicatas e com correspondência em `jogadores.json`;
+- pool do Mais ou Menos restrito a jogadores fotografados com `jogos` presente, do tipo `number` e finito;
+- jogadores fotografados sem `jogos` válido continuam permitidos exclusivamente no Modo Foto;
+- fallback reutilizável, local e sem dependências para falhas de imagem no Foto e no Mais ou Menos;
+- fallback remove o handler de erro antes de aplicar a silhueta, impedindo repetição infinita;
+- textos alternativos atualizados com o nome do jogador e estado de indisponibilidade;
+- nome do jogador secreto salvo no estado diário do Modo Foto;
+- estados antigos do Foto sem o nome salvo fazem um único sorteio determinístico e são migrados;
+- jogador já persistido permanece igual após F5 mesmo que o manifesto seja alterado;
+- algoritmo v2, seed diária, snapshots, 10 rodadas, meta de 7 e visual do Mais ou Menos preservados.
+
+Testado:
+- `node --check script.js` sem erros;
+- `git diff --check` sem erros de whitespace;
+- `jogadores.json`, `fotos-manifest.json` e `partidas.json` validados e confirmados sem alterações;
+- manifesto atual validado com 120 nomes e casos artificiais de duplicata, espaços, tipos inválidos e jogador inexistente;
+- pool atual confirmado com os mesmos 120 jogadores elegíveis;
+- casos artificiais com `jogos` nulo, ausente, textual e infinito rejeitados pelo Mais ou Menos;
+- jogador fotografado com `jogos` nulo confirmado como disponível no Modo Foto;
+- restauração do jogador diário confirmada após simulação de mudança no pool;
+- falha de imagem simulada com fallback aplicado, `alt` atualizado e handler removido sem loop;
+- estrutura CSS confirmada com 573 blocos balanceados.
+
+Pendências:
+- adicionar fotos dos 16 jogadores que já possuem `jogos` válido;
+- validar historicamente `jogos` dos 20 jogadores atualmente com valor `null` antes de liberá-los no Mais ou Menos;
+- testar visualmente o fallback e os fluxos completos em navegadores desktop e mobile reais.
+
+Próximo passo:
+- adicionar as fotos dos 16 jogadores com `jogos` válido e repetir a auditoria técnica do conjunto.

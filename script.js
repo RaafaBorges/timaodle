@@ -612,10 +612,26 @@ const CHAVE_TUTORIAL_FOTO = "timaodle_foto_tutorial_visto";
 // carregarManifestoFotos() lá embaixo).
 let JOGADORES_COM_FOTO = [];
 
+function validarManifestoFotos(manifesto) {
+    if (!Array.isArray(manifesto)) throw new Error("O manifesto de fotos precisa ser um array.");
+
+    const nomesCadastrados = new Set(jogadores.map(jogador => jogador.nome));
+    return [...new Set(
+        manifesto
+            .filter(entrada => typeof entrada === "string")
+            .map(entrada => entrada.trim())
+            .filter(nome => nome && nomesCadastrados.has(nome))
+    )];
+}
+
 async function carregarManifestoFotos() {
     try {
         const response = await fetch('fotos-manifest.json');
-        JOGADORES_COM_FOTO = await response.json();
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const manifesto = await response.json();
+        if (jogadores.length === 0) await carregarJogadores();
+        JOGADORES_COM_FOTO = validarManifestoFotos(manifesto);
     } catch (error) {
         console.error("Erro ao carregar fotos-manifest.json:", error);
         JOGADORES_COM_FOTO = [];
@@ -640,6 +656,30 @@ function slugify(nome) {
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/(^-|-$)/g, "");
+}
+
+const FOTO_INDISPONIVEL_DATA_URI = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" role="img" aria-label="Foto indisponível">
+        <rect width="480" height="480" fill="#11110f"/>
+        <circle cx="240" cy="170" r="72" fill="#25231e" stroke="#b9975a" stroke-width="8"/>
+        <path d="M112 380c12-82 58-126 128-126s116 44 128 126" fill="#25231e" stroke="#b9975a" stroke-width="8" stroke-linecap="round"/>
+        <text x="240" y="430" fill="#ffffff" font-family="Arial, sans-serif" font-size="28" font-weight="700" text-anchor="middle">Foto indisponível</text>
+    </svg>
+`)}`;
+
+function definirFotoJogador(elemento, jogador) {
+    if (!elemento || !jogador?.nome) return;
+
+    const nome = jogador.nome;
+    elemento.classList.remove("image-fallback");
+    elemento.alt = `Foto de ${nome}`;
+    elemento.onerror = () => {
+        elemento.onerror = null;
+        elemento.classList.add("image-fallback");
+        elemento.alt = `Foto indisponível de ${nome}`;
+        elemento.src = FOTO_INDISPONIVEL_DATA_URI;
+    };
+    elemento.src = `${PASTA_FOTOS}${slugify(nome)}.jpg`;
 }
 
 // Elementos da interface do Modo Foto
@@ -669,6 +709,17 @@ function jogadoresComFotoObjetos() {
     return jogadores.filter(j => JOGADORES_COM_FOTO.includes(j.nome));
 }
 
+function jogadorTemJogosValidosMM(jogador) {
+    return jogador
+        && Object.prototype.hasOwnProperty.call(jogador, CAMPO_STAT_MM)
+        && typeof jogador[CAMPO_STAT_MM] === "number"
+        && Number.isFinite(jogador[CAMPO_STAT_MM]);
+}
+
+function jogadoresElegiveisMM() {
+    return jogadoresComFotoObjetos().filter(jogadorTemJogosValidosMM);
+}
+
 // Mesma lógica de semente por data do Modo Diário, mas com um "tempero"
 // diferente (+"-foto") — assim o jogador do dia no Modo Foto normalmente
 // não é o mesmo do Modo Diário de atributos.
@@ -677,6 +728,13 @@ function sortearJogadorFotoDoDia(dataStr) {
     if (pool.length === 0) return null;
     const hash = hashString(dataStr + "-foto");
     return pool[hash % pool.length];
+}
+
+function obterJogadorFotoDoEstado(estado, dataStr) {
+    const jogadorSalvo = estado?.data === dataStr && typeof estado.jogadorNome === "string"
+        ? jogadores.find(jogador => jogador.nome === estado.jogadorNome)
+        : null;
+    return jogadorSalvo || sortearJogadorFotoDoDia(dataStr);
 }
 
 function carregarEstadoFoto() {
@@ -718,7 +776,8 @@ function calcularDificuldadeFoto(estreia) {
 
 function iniciarDesafioFotoDoDia() {
     const hoje = getDataLocalString();
-    jogadorSecretoFoto = sortearJogadorFotoDoDia(hoje);
+    const salvo = carregarEstadoFoto();
+    jogadorSecretoFoto = obterJogadorFotoDoEstado(salvo, hoje);
 
     photoEndMessageEl.classList.add("hidden");
     photoAttemptsListEl.innerHTML = "";
@@ -738,11 +797,14 @@ function iniciarDesafioFotoDoDia() {
     photoDifficultyBadgeEl.className = `difficulty-badge ${dificuldade.classe}`;
     photoDifficultyBadgeEl.classList.remove("hidden");
 
-    const salvo = carregarEstadoFoto();
-    photoImgEl.src = `${PASTA_FOTOS}${slugify(jogadorSecretoFoto.nome)}.jpg`;
+    definirFotoJogador(photoImgEl, jogadorSecretoFoto);
 
     if (salvo && salvo.data === hoje) {
         estadoFotoDiario = salvo;
+        if (estadoFotoDiario.jogadorNome !== jogadorSecretoFoto.nome) {
+            estadoFotoDiario.jogadorNome = jogadorSecretoFoto.nome;
+            salvarEstadoFoto(estadoFotoDiario);
+        }
         tentativasFoto = [...estadoFotoDiario.tentativas];
         fotoAtiva = estadoFotoDiario.status === "playing";
 
@@ -770,7 +832,12 @@ function iniciarDesafioFotoDoDia() {
             photoAttemptsLabelEl.innerText = `Tentativa ${tentativasFoto.length}/${MAX_TENTATIVAS_FOTO}`;
         }
     } else {
-        estadoFotoDiario = { data: hoje, tentativas: [], status: "playing" };
+        estadoFotoDiario = {
+            data: hoje,
+            jogadorNome: jogadorSecretoFoto.nome,
+            tentativas: [],
+            status: "playing"
+        };
         salvarEstadoFoto(estadoFotoDiario);
         tentativasFoto = [];
         fotoAtiva = true;
@@ -1130,7 +1197,7 @@ function construirSequenciaComFallbackMM(poolPriorizado, planoDificuldades, plan
 }
 
 function gerarDesafioMMV2(dataStr) {
-    const pool = jogadoresComFotoObjetos();
+    const pool = jogadoresElegiveisMM();
     if (pool.length < RODADAS_MM + 1) {
         return { sequencia: [], planoDificuldades: [], planoDirecoes: [], fallbacks: [] };
     }
@@ -1180,7 +1247,7 @@ function gerarDesafioMMV2(dataStr) {
 // Mantido somente para migrar com segurança partidas v1 iniciadas antes
 // da publicação do algoritmo balanceado.
 function gerarSequenciaMMV1(dataStr) {
-    const pool = jogadoresComFotoObjetos();
+    const pool = jogadoresElegiveisMM();
     if (pool.length < RODADAS_MM + 1) return [];
     return embaralharComSemente(pool, hashString(dataStr + "-mm")).slice(0, RODADAS_MM + 1);
 }
@@ -1211,7 +1278,7 @@ function restaurarSequenciaSalvaMM(estado) {
 
     if (Array.isArray(estado?.sequenciaNomes) && estado.sequenciaNomes.length === RODADAS_MM + 1) {
         const restaurada = estado.sequenciaNomes.map(nome => jogadores.find(j => j.nome === nome));
-        if (restaurada.every(Boolean)) return restaurada;
+        if (restaurada.every(jogadorTemJogosValidosMM)) return restaurada;
     }
     return [];
 }
@@ -1255,14 +1322,14 @@ function renderizarRodadaMM() {
     mmCandRowEl.classList.remove("answered", "answer-correct", "answer-wrong");
     mmCandStatEl.classList.remove("revealed");
 
-    mmRefFotoEl.src = `${PASTA_FOTOS}${slugify(referenciaAtualMM.nome)}.jpg`;
+    definirFotoJogador(mmRefFotoEl, referenciaAtualMM);
     mmRefNomeEl.innerText = referenciaAtualMM.nome;
     mmRefMetaEl.innerHTML = `${flagDoJogador(referenciaAtualMM.nacionalidade)} ${referenciaAtualMM.posicao}`;
     mmRefStatEl.innerText = referenciaAtualMM[CAMPO_STAT_MM];
     mmRefStatLabelEl.innerText = rotuloStatMM().toUpperCase();
 
     const candidato = sequenciaMM[rodadaAtualMM + 1];
-    mmCandFotoEl.src = `${PASTA_FOTOS}${slugify(candidato.nome)}.jpg`;
+    definirFotoJogador(mmCandFotoEl, candidato);
     mmCandNomeEl.innerText = candidato.nome;
     mmCandMetaEl.innerHTML = `${flagDoJogador(candidato.nacionalidade)} ${candidato.posicao}`;
     mmCandStatEl.innerText = "?";

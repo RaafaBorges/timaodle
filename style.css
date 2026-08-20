@@ -704,6 +704,12 @@ input:focus-visible {
     transition: filter 0.6s ease;
 }
 
+.photo-img.image-fallback {
+    filter: none !important;
+    transform: none;
+    object-position: center;
+}
+
 .photo-dots {
     display: flex;
     justify-content: center;
@@ -800,6 +806,10 @@ input:focus-visible {
     border: 2px solid var(--line);
     background-color: var(--surface);
     flex-shrink: 0;
+}
+
+.mm-avatar.image-fallback {
+    object-position: center;
 }
 
 .mm-player-info {
