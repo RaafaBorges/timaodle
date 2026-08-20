@@ -1,6 +1,6 @@
 # TIMÃODLE --- ROADMAP E CONTEXTO DO PROJETO
 
-**Versão do documento:** 1.7\
+**Versão do documento:** 1.8\
 **Data:** 19/08/2026\
 **Projeto:** Timãodle\
 **Objetivo deste arquivo:** servir como documento de contexto para
@@ -155,8 +155,8 @@ Mecânica:
 ### Dados atuais
 
 -   `jogadores.json`: aproximadamente 156 jogadores.
--   Jogadores com foto: aproximadamente 120.
--   Aproximadamente 36 jogadores ainda não possuem foto.
+-   Jogadores com foto: 136 de 156 (`87,18%`).
+-   20 jogadores ainda não possuem foto e têm `jogos: null`.
 
 ### Checklist
 
@@ -171,6 +171,7 @@ Mecânica:
 -   [x] Tutorial
 -   [x] Persistir a identidade do jogador diário após o início do desafio
 -   [x] Fallback local para foto indisponível
+-   [x] Integrar lote de 16 jogadores com `jogos` válido
 -   [ ] Completar fotos dos jogadores restantes
 
 ------------------------------------------------------------------------
@@ -238,7 +239,7 @@ Portanto:
 -   [x] Revisar resultado final
 -   [x] Adaptar layout para desktop, tablet, mobile e 360 px
 -   [x] Revisar seleção dos jogadores
--   [ ] Completar fotos necessárias
+-   [x] Completar fotos dos 136 jogadores com `jogos` válido
 -   [x] Revisar balanceamento das comparações
 -   [x] Restringir o pool a jogadores fotografados com `jogos` numérico e finito
 -   [x] Fallback local para foto indisponível
@@ -423,6 +424,7 @@ Não colocar uma lista gigante de fotos diretamente no `script.js`.
 -   [x] Validar fotos quebradas e oferecer fallback visual
 -   [x] Padronizar nomes de arquivos atuais
 -   [x] Validar o manifesto defensivamente em runtime
+-   [x] Integrar lote de 16 fotos em JPEG 480×480
 
 ------------------------------------------------------------------------
 
@@ -665,14 +667,14 @@ Depois disso, atualizar o checklist principal deste arquivo.
 
 # 17. PRÓXIMA TAREFA OFICIAL
 
-## 🎯 ADICIONAR FOTOS DOS 16 JOGADORES COM `JOGOS` VÁLIDO
+## 🎯 DEFINIR A PRÓXIMA FRENTE DO PROJETO
 
 Próximos itens:
 
-1.  Adicionar, em lote controlado, fotos padronizadas dos 16 jogadores sem foto que já possuem `jogos` numérico válido.
-2.  Manter fora do Mais ou Menos os 20 jogadores com `jogos: null` até validação histórica.
-3.  Reexecutar a auditoria de manifesto, arquivos, dimensões e cobertura após o novo lote.
-4.  Testar manualmente Foto e Mais ou Menos, incluindo fallback e F5, em navegadores desktop e mobile reais.
+1.  Decidir entre validar historicamente e fotografar os 20 jogadores com `jogos: null` ou retomar funcionalidades dos modos atuais.
+2.  Manter os 20 jogadores fora do Mais ou Menos enquanto `jogos` não for validado.
+3.  Testar manualmente Foto e Mais ou Menos, incluindo fallback e F5, em navegadores desktop e mobile reais.
+4.  Avaliar compartilhamento para o resultado final do Mais ou Menos.
 5.  Manter pendente a validação histórica das quatro partidas `4-2-3-1` do Onze Inicial.
 
 ------------------------------------------------------------------------
@@ -966,3 +968,32 @@ Pendências:
 
 Próximo passo:
 - adicionar as fotos dos 16 jogadores com `jogos` válido e repetir a auditoria técnica do conjunto.
+
+
+## 19/08/2026 — Integração do lote de 16 fotos
+
+Implementado:
+- adicionados ao manifesto Adílson Batista, Batata, Betão, Caçapava, Edvaldo, Fabinho, Felipe Augusto, Jairo, Jango, Jorge Henrique, Júlio César, Leandro Castán, Malcom, Pedrinho, Silvinho e Índio;
+- cobertura ampliada de `120/156` (`76,92%`) para `136/156` (`87,18%`);
+- pool do Modo Foto ampliado para 136 jogadores;
+- pool elegível do Mais ou Menos ampliado para 136 jogadores;
+- proteção contra `jogos` inválido e toda a lógica do algoritmo v2 preservadas.
+
+Testado:
+- 136 entradas únicas no manifesto e 136 arquivos físicos;
+- correspondência completa entre manifesto, arquivos e `jogadores.json`;
+- nenhuma entrada sem arquivo, arquivo órfão, colisão de slug ou diferença problemática de caixa;
+- todas as 136 imagens legíveis, em JPEG, com 480×480 e proporção 1:1;
+- os 136 jogadores do manifesto possuem `jogos` numérico e finito;
+- os 20 jogadores com `jogos: null` continuam fora do Mais ou Menos;
+- 1.680 datas do Mais ou Menos simuladas entre 2025 e 2029;
+- todos os 16 novos jogadores apareceram na simulação;
+- todas as sequências simuladas mantiveram 11 jogadores únicos e o plano 3/4/3, sem uso de fallback;
+- `node --check script.js`, validação dos JSONs e `git diff --check` executados sem erros.
+
+Pendências:
+- permanecem 20 jogadores sem foto e com `jogos: null`, aguardando validação histórica;
+- testar visualmente os modos Foto e Mais ou Menos em navegadores desktop e mobile reais.
+
+Próximo passo:
+- decidir entre validar/adicionar os 20 jogadores restantes ou continuar o desenvolvimento de funcionalidades dos modos atuais.
