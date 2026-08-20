@@ -944,6 +944,7 @@ const btnPlayMaisMenos = document.getElementById("btnPlayMaisMenos");
 const backHomeBtnMM = document.getElementById("backHomeBtnMM");
 const mmRoundLabelEl = document.getElementById("mmRoundLabel");
 const mmDotsEl = document.getElementById("mmDots");
+const mmHitsLabelEl = document.getElementById("mmHitsLabel");
 const mmRefFotoEl = document.getElementById("mmRefFoto");
 const mmRefNomeEl = document.getElementById("mmRefNome");
 const mmRefMetaEl = document.getElementById("mmRefMeta");
@@ -954,6 +955,7 @@ const mmCandNomeEl = document.getElementById("mmCandNome");
 const mmCandMetaEl = document.getElementById("mmCandMeta");
 const mmCandStatEl = document.getElementById("mmCandStat");
 const mmCandStatLabelEl = document.getElementById("mmCandStatLabel");
+const mmCandRowEl = document.getElementById("mmCandRow");
 const mmDividerTextEl = document.getElementById("mmDividerText");
 const mmCaptionRoundEl = document.getElementById("mmCaptionRound");
 const mmBtnMenos = document.getElementById("mmBtnMenos");
@@ -1025,6 +1027,7 @@ function renderizarDotsMM() {
         }
         mmDotsEl.appendChild(dot);
     }
+    mmHitsLabelEl.innerText = `${acertosMM} ${acertosMM === 1 ? "ACERTO" : "ACERTOS"}`;
 }
 
 const FLAGS_NACIONALIDADE = {
@@ -1040,7 +1043,10 @@ function renderizarRodadaMM() {
     mmCaptionRoundEl.innerText = rodadaAtualMM + 1;
     mmDividerTextEl.innerText = `FEZ MAIS OU MENOS ${rotuloStatMM().toUpperCase()}?`;
     mmRoundResultEl.classList.add("hidden");
+    mmRoundResultEl.classList.remove("correct", "wrong", "tie");
     mmNextBtn.classList.add("hidden");
+    mmCandRowEl.classList.remove("answered", "answer-correct", "answer-wrong");
+    mmCandStatEl.classList.remove("revealed");
 
     mmRefFotoEl.src = `${PASTA_FOTOS}${slugify(referenciaAtualMM.nome)}.jpg`;
     mmRefNomeEl.innerText = referenciaAtualMM.nome;
@@ -1061,6 +1067,8 @@ function renderizarRodadaMM() {
     mmBtnMais.innerHTML = `▲ Mais ${rotuloStatMM()}`;
     mmBtnMenos.classList.remove("correct", "wrong");
     mmBtnMais.classList.remove("correct", "wrong");
+    mmBtnMenos.classList.remove("correct-answer");
+    mmBtnMais.classList.remove("correct-answer");
 
     renderizarDotsMM();
 }
@@ -1121,14 +1129,21 @@ function responderMM(direcaoEscolhida) {
     const statRef = referenciaAtualMM[CAMPO_STAT_MM];
     const statCand = candidato[CAMPO_STAT_MM];
     const empate = statCand === statRef;
+    const direcaoCorreta = empate ? "empate" : (statCand > statRef ? "mais" : "menos");
     const correto = empate || (direcaoEscolhida === "mais" ? statCand > statRef : statCand < statRef);
 
     mmBtnMenos.disabled = true;
     mmBtnMais.disabled = true;
     const botaoEscolhido = direcaoEscolhida === "mais" ? mmBtnMais : mmBtnMenos;
     botaoEscolhido.classList.add(correto ? "correct" : "wrong");
+    if (!correto) {
+        const botaoCorreto = direcaoCorreta === "mais" ? mmBtnMais : mmBtnMenos;
+        botaoCorreto.classList.add("correct-answer");
+    }
 
     mmCandStatEl.innerText = statCand;
+    mmCandStatEl.classList.add("revealed");
+    mmCandRowEl.classList.add("answered", correto ? "answer-correct" : "answer-wrong");
 
     if (correto) acertosMM++;
     historicoMM.push({ candidato: candidato.nome, correto });
@@ -1136,11 +1151,14 @@ function responderMM(direcaoEscolhida) {
 
     mmRoundResultEl.classList.remove("hidden");
     if (empate) {
-        mmRoundResultEl.innerHTML = `🤝 Empate técnico (${statCand} ${rotuloStatMM()} pros dois) — contou como acerto!`;
+        mmRoundResultEl.classList.add("tie");
+        mmRoundResultEl.innerHTML = `<strong>EMPATE</strong><span>Os dois têm ${statCand} ${rotuloStatMM()}. Qualquer opção contou como acerto.</span>`;
     } else if (correto) {
-        mmRoundResultEl.innerHTML = `✅ Acertou! <strong>${candidato.nome}</strong> tinha ${statCand} ${rotuloStatMM()}.`;
+        mmRoundResultEl.classList.add("correct");
+        mmRoundResultEl.innerHTML = `<strong>ACERTOU — ERA ${direcaoCorreta.toUpperCase()}</strong><span>${candidato.nome} tem ${statCand} ${rotuloStatMM()} pelo Corinthians.</span>`;
     } else {
-        mmRoundResultEl.innerHTML = `❌ Essa não! <strong>${candidato.nome}</strong> tinha ${statCand} ${rotuloStatMM()}.`;
+        mmRoundResultEl.classList.add("wrong");
+        mmRoundResultEl.innerHTML = `<strong>A RESPOSTA ERA ${direcaoCorreta.toUpperCase()}</strong><span>${candidato.nome} tem ${statCand} ${rotuloStatMM()} pelo Corinthians.</span>`;
     }
 
     // O jogador de referência sempre avança pro próximo candidato,
@@ -1169,14 +1187,23 @@ function mostrarFimDeJogoMM(comAnimacao) {
     mmRoundResultEl.classList.add("hidden");
     mmNextBtn.classList.add("hidden");
     mmEndMessageEl.classList.remove("hidden");
+    maisMenosView.classList.add("resultado-final");
 
     const venceu = acertosMM >= MIN_ACERTOS_MM;
-    if (venceu) {
-        mmEndMessageEl.innerHTML = `🏆 Vitória! Você acertou <strong>${acertosMM}/${RODADAS_MM}</strong> comparações.`;
-        if (comAnimacao) dispararConfetes();
-    } else {
-        mmEndMessageEl.innerHTML = `😔 Não foi dessa vez — <strong>${acertosMM}/${RODADAS_MM}</strong> acertos (precisa de ${MIN_ACERTOS_MM}). Volte amanhã!`;
-    }
+    mmEndMessageEl.className = `mm-result-card ${venceu ? "won" : "lost"}`;
+    mmEndMessageEl.innerHTML = `
+        <span class="mm-result-kicker">MAIS OU MENOS</span>
+        <h3>${venceu ? "VITÓRIA!" : "NÃO FOI DESTA VEZ"}</h3>
+        <p>${venceu ? "Você bateu a meta do desafio diário." : `Você precisava de ${MIN_ACERTOS_MM} acertos para vencer.`}</p>
+        <div class="mm-result-score">
+            <strong>${acertosMM}<span>/${RODADAS_MM}</span></strong>
+            <small>ACERTOS</small>
+        </div>
+        <div class="mm-result-goal ${venceu ? "reached" : "missed"}">
+            ${venceu ? "✓ META DE 7 ALCANÇADA" : `FALTARAM ${MIN_ACERTOS_MM - acertosMM} PARA A META`}
+        </div>
+        <p class="mm-result-return">Novo desafio à meia-noite.</p>`;
+    if (venceu && comAnimacao) dispararConfetes();
 }
 
 mmBtnMenos.addEventListener("click", () => responderMM("menos"));

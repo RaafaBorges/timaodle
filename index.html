@@ -200,11 +200,19 @@
                 </div>
 
                 <div class="mm-card">
-                    <div class="mm-dots" id="mmDots"></div>
+                    <div class="mm-progress-panel">
+                        <div class="mm-progress-topline">
+                            <span class="mm-progress-label">PROGRESSO</span>
+                            <strong id="mmHitsLabel" class="mm-hits-label">0 ACERTOS</strong>
+                        </div>
+                        <div class="mm-dots" id="mmDots"></div>
+                        <p class="mm-goal">Objetivo: <strong>7 acertos</strong> em 10 rodadas</p>
+                    </div>
 
-                    <div class="mm-player-row">
+                    <div id="mmRefRow" class="mm-player-row mm-player-reference">
                         <img id="mmRefFoto" class="mm-avatar" src="" alt="Jogador de referência">
                         <div class="mm-player-info">
+                            <span class="mm-player-kicker">REFERÊNCIA ATUAL</span>
                             <span class="mm-player-name" id="mmRefNome">—</span>
                             <span class="mm-player-meta" id="mmRefMeta">—</span>
                         </div>
@@ -216,9 +224,10 @@
 
                     <div class="mm-divider"><span id="mmDividerText">FEZ MAIS OU MENOS JOGOS?</span></div>
 
-                    <div class="mm-player-row">
+                    <div id="mmCandRow" class="mm-player-row mm-player-candidate">
                         <img id="mmCandFoto" class="mm-avatar" src="" alt="Jogador a comparar">
                         <div class="mm-player-info">
+                            <span class="mm-player-kicker">PRÓXIMO JOGADOR</span>
                             <span class="mm-player-name" id="mmCandNome">—</span>
                             <span class="mm-player-meta" id="mmCandMeta">—</span>
                         </div>
@@ -237,10 +246,10 @@
                         qualquer resposta conta.</p>
                 </div>
 
-                <p id="mmRoundResult" class="daily-end-message hidden"></p>
-                <button id="mmNextBtn" class="share-btn hidden">Próxima rodada ➜</button>
+                <p id="mmRoundResult" class="mm-round-feedback hidden" aria-live="polite"></p>
+                <button id="mmNextBtn" class="share-btn mm-next-btn hidden">Próxima rodada ➜</button>
 
-                <p id="mmEndMessage" class="daily-end-message hidden"></p>
+                <div id="mmEndMessage" class="mm-result-card hidden" aria-live="polite"></div>
             </section>
 
             <!-- TELA DO JOGO — ONZE INICIAL -->

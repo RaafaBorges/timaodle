@@ -1,6 +1,6 @@
 # TIMÃODLE --- ROADMAP E CONTEXTO DO PROJETO
 
-**Versão do documento:** 1.4\
+**Versão do documento:** 1.5\
 **Data:** 19/08/2026\
 **Projeto:** Timãodle\
 **Objetivo deste arquivo:** servir como documento de contexto para
@@ -175,7 +175,7 @@ Mecânica:
 
 # 5. MODO MAIS OU MENOS
 
-## Estado: 🟢 FUNCIONAL / POLIMENTO PENDENTE
+## Estado: 🟢 FUNCIONAL / POLIMENTO VISUAL CONCLUÍDO
 
 Mecânica:
 
@@ -230,8 +230,11 @@ Portanto:
 -   [x] Persistência
 -   [x] Resultado
 -   [x] Estrutura visual inicial
--   [ ] Polimento visual seguindo a identidade do Timãodle
--   [ ] Melhorar feedback de acerto/erro
+-   [x] Polimento visual seguindo a identidade do Timãodle
+-   [x] Melhorar feedback de acerto/erro
+-   [x] Destacar rodada, acertos e meta de 7
+-   [x] Revisar resultado final
+-   [x] Adaptar layout para desktop, tablet, mobile e 360 px
 -   [ ] Revisar seleção dos jogadores
 -   [ ] Completar fotos necessárias
 -   [ ] Revisar balanceamento das comparações
@@ -466,13 +469,13 @@ Prioridade máxima.
 ## FASE 2 --- POLIMENTO DO MAIS OU MENOS
 
 ``` text
-[ ] Visual
-[ ] Feedback
-[ ] Animações
+[x] Visual
+[x] Feedback
+[x] Animações
 [ ] Balanceamento
 [ ] Seleção de jogadores
 [ ] Fotos
-[ ] Resultado final
+[x] Resultado final
 ```
 
 ------------------------------------------------------------------------
@@ -657,15 +660,15 @@ Depois disso, atualizar o checklist principal deste arquivo.
 
 # 17. PRÓXIMA TAREFA OFICIAL
 
-## 🎯 CONCLUIR A VALIDAÇÃO DO ONZE INICIAL
+## 🎯 VALIDAR O POLIMENTO DO MAIS OU MENOS
 
 Próximos itens:
 
-1.  Validar historicamente as quatro partidas declaradas como `4-2-3-1` cuja distribuição atual se parece com `4-2-2-2`.
-2.  Testar manualmente o fluxo completo em navegadores desktop e mobile reais.
-3.  Remover recursos de desenvolvimento antes da publicação final.
-4.  Expandir gradualmente o banco de partidas.
-5.  Depois, iniciar o polimento do Mais ou Menos.
+1.  Testar manualmente as 10 rodadas e a conclusão em navegadores desktop e mobile reais.
+2.  Revisar separadamente a seleção e o balanceamento das comparações.
+3.  Conferir a cobertura e a qualidade das fotos usadas pelo modo.
+4.  Avaliar compartilhamento para o resultado final em uma etapa futura.
+5.  Manter pendente a validação histórica das quatro partidas `4-2-3-1` do Onze Inicial.
 
 ------------------------------------------------------------------------
 
@@ -840,3 +843,37 @@ Pendências:
 
 Próximo passo:
 - realizar a validação histórica das quatro partidas `4-2-3-1`, sem alterar dados antes da confirmação.
+
+
+## 19/08/2026 — Mais ou Menos: polimento visual completo
+
+Implementado:
+- cards dos dois jogadores reorganizados, com fotos maiores e melhor enquadradas;
+- nomes em branco e número de jogos como principal destaque dourado;
+- progresso com 10 etapas, total de acertos e meta de 7 visíveis;
+- botões MAIS e MENOS maiores, distintos e adequados para toque;
+- estados hover, active, acerto, erro e indicação da resposta correta;
+- número de jogos do candidato revelado com animação curta;
+- feedback textual informa explicitamente se a resposta era MAIS, MENOS ou empate;
+- tela final própria com vitória/derrota, pontuação em 10 e situação da meta;
+- layout adaptado para desktop, tablet, mobile e telas de aproximadamente 360 px;
+- suporte a movimento reduzido preservado;
+- seleção diária, jogadores com foto, persistência, 10 rodadas, meta de 7 e comparação por `jogos` preservados.
+
+Testado:
+- `node --check script.js` executado sem erros;
+- referências entre IDs do HTML e JavaScript verificadas;
+- estrutura CSS e breakpoints verificados;
+- constantes de 10 rodadas, meta de 7 e campo `jogos` confirmadas;
+- chave existente de persistência confirmada;
+- `git diff --check` executado sem erros de whitespace;
+- `jogadores.json` e `partidas.json` confirmados sem alterações.
+
+Pendências:
+- teste visual e funcional manual das 10 rodadas em navegadores desktop e mobile reais;
+- revisar seleção e balanceamento das comparações em etapa separada;
+- revisar cobertura e qualidade das fotos usadas pelo modo;
+- avaliar compartilhamento do resultado, que ainda não existe no Mais ou Menos.
+
+Próximo passo:
+- validar manualmente o modo completo em desktop e mobile antes de revisar balanceamento e seleção.
