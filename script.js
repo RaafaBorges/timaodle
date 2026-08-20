@@ -8,20 +8,29 @@ const CHAVE_ESTADO_DIARIO = "timaodle_daily_state";
 const CHAVE_STATS = "timaodle_stats";
 const CHAVE_USERNAME = "timaodle_username";
 const CHAVE_ESTADO_ESCALACAO = "timaodle_escalacao_daily_state";
+const CHAVE_HISTORICO = "timaodle_history_v1";
+const VERSAO_HISTORICO = 1;
 
 let jogadores = [];
 let jogadorSecreto = null;
 let jogoAtivo = true;
 let selectedIndex = -1; // Índice do item selecionado no autocomplete via teclado
 
-// Estrutura de Estatísticas no localStorage (mantida em segundo plano,
-// sem exibição na interface por enquanto)
-let stats = JSON.parse(localStorage.getItem(CHAVE_STATS)) || {
-    jogos: 0,
-    vitorias: 0,
-    streak: 0,
-    maxStreak: 0
-};
+// Estatísticas legadas do Clássico. Não representam o streak geral e são
+// mantidas somente por compatibilidade com instalações existentes.
+function carregarEstatisticasLegadas() {
+    const padrao = { jogos: 0, vitorias: 0, streak: 0, maxStreak: 0 };
+    try {
+        const salvo = JSON.parse(localStorage.getItem(CHAVE_STATS));
+        return salvo && typeof salvo === "object" && !Array.isArray(salvo)
+            ? { ...padrao, ...salvo }
+            : padrao;
+    } catch {
+        return padrao;
+    }
+}
+
+let stats = carregarEstatisticasLegadas();
 
 // Elementos da Interface
 const homeView = document.getElementById("homeView");
@@ -97,6 +106,167 @@ function getDataLocalString() {
     return `${ano}-${mes}-${dia}`;
 }
 
+// ==========================================================================
+// HISTÓRICO E PROGRESSO DIÁRIO INTEGRADO — V1
+// Guarda apenas resumos; os saves detalhados dos modos continuam sendo a
+// fonte de verdade do desafio atual.
+// ==========================================================================
+
+function dataHistoricoValida(data) {
+    if (typeof data !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(data)) return false;
+    const [ano, mes, dia] = data.split("-").map(Number);
+    const conferida = new Date(Date.UTC(ano, mes - 1, dia));
+    return conferida.getUTCFullYear() === ano
+        && conferida.getUTCMonth() === mes - 1
+        && conferida.getUTCDate() === dia;
+}
+
+function quantidadeSegura(valor, maximo = Number.MAX_SAFE_INTEGER) {
+    return Number.isFinite(valor) ? Math.min(maximo, Math.max(0, Math.trunc(valor))) : 0;
+}
+
+function criarResumoModoBase() {
+    return { started: false, completed: false, outcome: null };
+}
+
+function criarResumoDiaVazio() {
+    return {
+        classic: { ...criarResumoModoBase(), attempts: 0 },
+        photo: { ...criarResumoModoBase(), attempts: 0 },
+        moreLess: { ...criarResumoModoBase(), hits: 0, rounds: 0 },
+        lineup: { ...criarResumoModoBase(), resolved: 0, total: 3, errors: 0, exactScore: null },
+        complete: false
+    };
+}
+
+function normalizarResumoClassico(estado) {
+    if (!estado || typeof estado !== "object" || !dataHistoricoValida(estado.data)) return null;
+    const completed = estado.status === "won";
+    return {
+        started: true,
+        completed,
+        outcome: completed ? "won" : null,
+        attempts: Array.isArray(estado.tentativas) ? estado.tentativas.length : 0
+    };
+}
+
+function normalizarResumoFoto(estado) {
+    if (!estado || typeof estado !== "object" || !dataHistoricoValida(estado.data)) return null;
+    const completed = estado.status === "won" || estado.status === "lost";
+    return {
+        started: true,
+        completed,
+        outcome: completed ? estado.status : null,
+        attempts: Array.isArray(estado.tentativas) ? estado.tentativas.length : 0
+    };
+}
+
+function normalizarResumoMaisMenos(estado) {
+    if (!estado || typeof estado !== "object" || !dataHistoricoValida(estado.data)) return null;
+    const rounds = quantidadeSegura(estado.rodadaAtual, 10);
+    const completed = rounds >= 10 && (estado.status === "won" || estado.status === "lost");
+    return {
+        started: true,
+        completed,
+        outcome: completed ? estado.status : null,
+        hits: quantidadeSegura(estado.acertos, 10),
+        rounds
+    };
+}
+
+function normalizarResumoOnzeInicial(estado) {
+    if (!estado || typeof estado !== "object" || !dataHistoricoValida(estado.data)) return null;
+    const completed = estado.concluido === true && estado.etapa === "concluido";
+    return {
+        started: true,
+        completed,
+        outcome: completed ? "won" : null,
+        resolved: Math.min(3, new Set(Array.isArray(estado.nomesResolvidos) ? estado.nomesResolvidos : []).size),
+        total: 3,
+        errors: quantidadeSegura(estado.errosEscalacao),
+        exactScore: typeof estado.exactScore === "boolean" ? estado.exactScore : null
+    };
+}
+
+function carregarHistorico() {
+    try {
+        const salvo = JSON.parse(localStorage.getItem(CHAVE_HISTORICO));
+        if (!salvo || salvo.version !== VERSAO_HISTORICO
+            || !salvo.days || typeof salvo.days !== "object" || Array.isArray(salvo.days)) {
+            return { version: VERSAO_HISTORICO, days: {} };
+        }
+        return salvo;
+    } catch {
+        return { version: VERSAO_HISTORICO, days: {} };
+    }
+}
+
+function salvarHistorico(historico) {
+    try {
+        localStorage.setItem(CHAVE_HISTORICO, JSON.stringify(historico));
+    } catch (error) {
+        console.warn("Não foi possível salvar o histórico diário:", error);
+    }
+}
+
+function lerJsonLocalStorage(chave) {
+    try {
+        return JSON.parse(localStorage.getItem(chave));
+    } catch {
+        return null;
+    }
+}
+
+function mesclarResumoModo(anterior, atual) {
+    if (anterior?.completed === true && atual?.completed !== true) return anterior;
+    return atual;
+}
+
+function calcularProgressoDoResumo(dia) {
+    const modos = [dia.classic, dia.photo, dia.moreLess, dia.lineup];
+    const started = modos.filter(modo => modo?.started === true).length;
+    const completed = modos.filter(modo => modo?.completed === true).length;
+    return {
+        started,
+        completed,
+        total: 4,
+        progress: `${completed}/4`,
+        complete: completed === 4
+    };
+}
+
+function sincronizarProgressoDiario() {
+    const historico = carregarHistorico();
+    const estados = [
+        ["classic", lerJsonLocalStorage(CHAVE_ESTADO_DIARIO), normalizarResumoClassico],
+        ["photo", lerJsonLocalStorage(CHAVE_ESTADO_FOTO), normalizarResumoFoto],
+        ["moreLess", lerJsonLocalStorage(CHAVE_ESTADO_MM), normalizarResumoMaisMenos],
+        ["lineup", lerJsonLocalStorage(CHAVE_ESTADO_ESCALACAO), normalizarResumoOnzeInicial]
+    ];
+
+    estados.forEach(([modo, estado, normalizar]) => {
+        const resumo = normalizar(estado);
+        if (!resumo) return;
+        const dia = historico.days[estado.data] && typeof historico.days[estado.data] === "object"
+            ? historico.days[estado.data]
+            : criarResumoDiaVazio();
+        dia[modo] = mesclarResumoModo(dia[modo], resumo);
+        dia.complete = calcularProgressoDoResumo(dia).complete;
+        historico.days[estado.data] = dia;
+    });
+
+    salvarHistorico(historico);
+    return historico;
+}
+
+function obterProgressoDiario(data = getDataLocalString()) {
+    const historico = carregarHistorico();
+    const dia = historico.days[data] && typeof historico.days[data] === "object"
+        ? historico.days[data]
+        : criarResumoDiaVazio();
+    return { data, ...calcularProgressoDoResumo(dia), modes: dia };
+}
+
 // Hash simples e determinístico (mesma string sempre gera o mesmo número)
 function hashString(str) {
     let hash = 0;
@@ -170,6 +340,7 @@ function carregarEstadoDiario() {
 
 function salvarEstadoDiario(estado) {
     localStorage.setItem(CHAVE_ESTADO_DIARIO, JSON.stringify(estado));
+    sincronizarProgressoDiario();
 }
 
 // Estado atual do desafio de hoje, mantido em memória e sincronizado
@@ -218,6 +389,8 @@ function iniciarDesafioDiario() {
     console.log("Desafio do dia:", hoje, "→ Jogador Secreto:", jogadorSecreto.nome);
 
     const salvo = carregarEstadoDiario();
+
+    if (salvo?.data) sincronizarProgressoDiario();
 
     if (salvo && salvo.data === hoje) {
         // Mesmo dia — restaura tentativas e status salvos
@@ -747,6 +920,7 @@ function carregarEstadoFoto() {
 
 function salvarEstadoFoto(estado) {
     localStorage.setItem(CHAVE_ESTADO_FOTO, JSON.stringify(estado));
+    sincronizarProgressoDiario();
 }
 
 function renderizarDotsFoto() {
@@ -777,6 +951,7 @@ function calcularDificuldadeFoto(estreia) {
 function iniciarDesafioFotoDoDia() {
     const hoje = getDataLocalString();
     const salvo = carregarEstadoFoto();
+    if (salvo?.data) sincronizarProgressoDiario();
     jogadorSecretoFoto = obterJogadorFotoDoEstado(salvo, hoje);
 
     photoEndMessageEl.classList.add("hidden");
@@ -1262,6 +1437,7 @@ function carregarEstadoMM() {
 
 function salvarEstadoMM(estado) {
     localStorage.setItem(CHAVE_ESTADO_MM, JSON.stringify(estado));
+    sincronizarProgressoDiario();
 }
 
 function snapshotSequenciaMM(sequencia) {
@@ -1353,6 +1529,8 @@ function iniciarDesafioMMDoDia() {
     maisMenosView.classList.remove("resultado-final");
 
     const salvo = carregarEstadoMM();
+
+    if (salvo?.data) sincronizarProgressoDiario();
 
     if (salvo && salvo.data === hoje) {
         estadoMMDiario = salvo;
@@ -1654,6 +1832,7 @@ function selecionarPartidaDoDia(dataStr) {
     });
 
     return {
+        id: partida.id,
         competicao: partida.competicao,
         mandante: partida.mandante,
         visitante: partida.visitante,
@@ -1683,6 +1862,7 @@ function carregarEstadoEscalacao() {
 function salvarEstadoEscalacao() {
     if (!estadoEscalacao) return;
     localStorage.setItem(CHAVE_ESTADO_ESCALACAO, JSON.stringify(estadoEscalacao));
+    sincronizarProgressoDiario();
 }
 
 function criarEstadoEscalacaoNovo(hoje) {
@@ -1695,14 +1875,33 @@ function criarEstadoEscalacaoNovo(hoje) {
         nomesResolvidos: [],
         nomesForaDaLista: [],
         errosEscalacao: 0,
+        exactScore: null,
         concluido: false
     };
 }
 
 function sincronizarEstadoEscalacaoComPartida(hoje) {
     const salvo = carregarEstadoEscalacao();
-    if (salvo && salvo.data === hoje && salvo.partidaId === (dadosEscalacao.id || null)) {
+    if (salvo?.data) sincronizarProgressoDiario();
+
+    const partidaIdAtual = dadosEscalacao.id || null;
+    const saveCompativel = salvo && salvo.data === hoje
+        && (salvo.partidaId === partidaIdAtual || salvo.partidaId == null);
+
+    if (saveCompativel) {
         estadoEscalacao = salvo;
+        let migrou = false;
+        if (estadoEscalacao.partidaId == null && partidaIdAtual != null) {
+            estadoEscalacao.partidaId = partidaIdAtual;
+            migrou = true;
+        }
+        if (estadoEscalacao.etapa !== "placar" && typeof estadoEscalacao.exactScore !== "boolean") {
+            const real = dadosEscalacao.placar_real;
+            estadoEscalacao.exactScore = estadoEscalacao.palpiteMandante === real.mandante
+                && estadoEscalacao.palpiteVisitante === real.visitante;
+            migrou = true;
+        }
+        if (migrou) salvarEstadoEscalacao();
     } else {
         estadoEscalacao = criarEstadoEscalacaoNovo(hoje);
         salvarEstadoEscalacao();
@@ -1779,6 +1978,8 @@ function confirmarPalpitePlacar() {
 
     estadoEscalacao.palpiteMandante = palpiteMandante;
     estadoEscalacao.palpiteVisitante = palpiteVisitante;
+    estadoEscalacao.exactScore = palpiteMandante === dadosEscalacao.placar_real.mandante
+        && palpiteVisitante === dadosEscalacao.placar_real.visitante;
     estadoEscalacao.etapa = "escalacao";
     salvarEstadoEscalacao();
 
@@ -2154,6 +2355,7 @@ carregarJogadores().then(() => {
 });
 
 carregarManifestoFotos();
+sincronizarProgressoDiario();
 
 // ⚠️ BOTÃO DE RESET — SÓ PARA TESTES, REMOVER ANTES DE LANÇAR DE VERDADE
 const devResetBtn = document.getElementById("devResetBtn");

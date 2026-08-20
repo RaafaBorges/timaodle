@@ -1,7 +1,7 @@
 # TIMÃODLE --- ROADMAP E CONTEXTO DO PROJETO
 
-**Versão do documento:** 1.8\
-**Data:** 19/08/2026\
+**Versão do documento:** 1.9\
+**Data:** 20/08/2026\
 **Projeto:** Timãodle\
 **Objetivo deste arquivo:** servir como documento de contexto para
 qualquer IA ou desenvolvedor que continuar o projeto (ChatGPT, Claude,
@@ -502,11 +502,14 @@ Prioridade máxima.
 ## FASE 4 --- ESTATÍSTICAS E EXPERIÊNCIA
 
 ``` text
+[x] Camada versionada de histórico e progresso diário
+[ ] Progresso diário integrado na Home
 [ ] Estatísticas gerais
 [ ] Sequência de vitórias
 [ ] Melhor sequência
 [ ] Taxa de acerto
-[ ] Histórico
+[x] Infraestrutura de histórico
+[ ] Interface de histórico/calendário
 [ ] Compartilhamento consistente
 [ ] Melhor tela de resultado
 ```
@@ -667,15 +670,15 @@ Depois disso, atualizar o checklist principal deste arquivo.
 
 # 17. PRÓXIMA TAREFA OFICIAL
 
-## 🎯 DEFINIR A PRÓXIMA FRENTE DO PROJETO
+## 🎯 PROGRESSO DIÁRIO INTEGRADO NA HOME
 
 Próximos itens:
 
-1.  Decidir entre validar historicamente e fotografar os 20 jogadores com `jogos: null` ou retomar funcionalidades dos modos atuais.
-2.  Manter os 20 jogadores fora do Mais ou Menos enquanto `jogos` não for validado.
-3.  Testar manualmente Foto e Mais ou Menos, incluindo fallback e F5, em navegadores desktop e mobile reais.
-4.  Avaliar compartilhamento para o resultado final do Mais ou Menos.
-5.  Manter pendente a validação histórica das quatro partidas `4-2-3-1` do Onze Inicial.
+1.  Usar `obterProgressoDiario()` para mostrar o estado dos quatro modos sem precisar abri-los.
+2.  Exibir quantidade iniciada, quantidade concluída e progresso de `0/4` a `4/4`.
+3.  Atualizar a Home ao carregar, ao voltar de um modo e após cada conclusão.
+4.  Manter streak, estatísticas, calendário e compartilhamento unificado como etapas futuras.
+5.  Preservar as chaves detalhadas atuais e usar `timaodle_history_v1` apenas como resumo histórico.
 
 ------------------------------------------------------------------------
 
@@ -997,3 +1000,54 @@ Pendências:
 
 Próximo passo:
 - decidir entre validar/adicionar os 20 jogadores restantes ou continuar o desenvolvimento de funcionalidades dos modos atuais.
+
+
+## 20/08/2026 — Histórico e progresso diário v1
+
+Implementado:
+- criada a chave versionada `timaodle_history_v1`;
+- histórico central indexado por data e limitado a resumos compactos dos quatro modos;
+- normalizadores independentes para Clássico, Foto, Mais ou Menos e Onze Inicial;
+- progresso reutilizável com modos iniciados, concluídos, total, texto `0/4` a `4/4` e indicador de dia completo;
+- derrotas no Foto e Mais ou Menos contam como desafios concluídos;
+- conclusão do Onze Inicial depende dos 3 jogadores, independentemente do palpite de placar;
+- sincronização central após os salvamentos dos quatro modos e durante a inicialização;
+- importação segura dos saves existentes, sem reconstruir histórico anterior;
+- leitura defensiva para histórico inexistente, malformado ou com versão inesperada;
+- leitura defensiva de `timaodle_stats`, mantido como legado exclusivo do Clássico;
+- ID real da partida incluído na seleção do Onze Inicial;
+- migração compatível de saves do Onze Inicial com `partidaId: null`, preservando progresso e registrando `exactScore`;
+- todas as chaves detalhadas anteriores preservadas.
+
+Estrutura resumida por dia:
+- `classic`: `started`, `completed`, `outcome`, `attempts`;
+- `photo`: `started`, `completed`, `outcome`, `attempts`;
+- `moreLess`: `started`, `completed`, `outcome`, `hits`, `rounds`;
+- `lineup`: `started`, `completed`, `outcome`, `resolved`, `total`, `errors`, `exactScore`;
+- `complete`: conclusão dos quatro modos.
+
+Testado:
+- `node --check script.js` e `git diff --check` sem erros;
+- saves e histórico inexistentes ou malformados;
+- importação do dia atual e compatibilidade com saves antigos;
+- sincronização repetida do mesmo dia sem duplicação;
+- mudança de data preservando o resumo anterior;
+- progresso `0/4`, `1/4`, `2/4`, `3/4` e `4/4`;
+- derrota no Foto e no Mais ou Menos contando como conclusão;
+- Onze Inicial concluído contando com `exactScore: false`;
+- Clássico em andamento não contando como concluído;
+- `timaodle_stats` malformado sem quebrar a inicialização;
+- JSONs de dados validados e confirmados sem alterações.
+
+Tamanho estimado:
+- aproximadamente 370 bytes por dia completo;
+- aproximadamente 132 KiB após 365 dias;
+- aproximadamente 396 KiB após 3 anos.
+
+Pendências:
+- histórico confiável começa nesta versão; dias anteriores não podem ser reconstruídos com segurança;
+- implementar o progresso diário integrado na Home;
+- streak, estatísticas, calendário, conclusão visual 4/4 e compartilhamento unificado permanecem futuros.
+
+Próximo passo:
+- implementar o progresso diário integrado na Home usando `obterProgressoDiario()`.
