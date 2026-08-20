@@ -2959,3 +2959,271 @@ body {
         font-size: 27px;
     }
 }
+
+/* ==========================================================================
+   ONZE INICIAL — POLIMENTO RESPONSIVO FINAL
+   Regras isoladas no modo para preservar as demais telas do jogo.
+   ========================================================================== */
+#escalacaoView {
+    max-width: 440px;
+    gap: 16px;
+}
+
+#escalacaoView .game-sticky-top,
+#escalacaoView .match-card,
+#escalacaoView .lineup-card,
+#escalacaoView .lineup-result-card {
+    width: 100%;
+    max-width: 430px;
+}
+
+#escalacaoView .match-card,
+#escalacaoView .lineup-card,
+#escalacaoView .lineup-result-card {
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.38);
+}
+
+#escalacaoView .match-confronto {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+}
+
+#escalacaoView .match-team span {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    text-wrap: balance;
+}
+
+#escalacaoView .search-box {
+    width: 100%;
+}
+
+#escalacaoView .search-box input {
+    width: 100%;
+    min-height: 52px;
+    padding-inline: 16px;
+    border-color: rgba(185, 151, 90, 0.48);
+    color: #fff;
+    caret-color: var(--gold);
+}
+
+#escalacaoView .search-box input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px var(--gold-soft);
+}
+
+#escalacaoView .autocomplete-items {
+    max-height: min(280px, 42vh);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: #11110f;
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.48);
+}
+
+#escalacaoView .autocomplete-items div {
+    min-height: 50px;
+    gap: 12px;
+    padding: 10px 14px;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+
+#escalacaoView .autocomplete-avatar-img {
+    width: 32px;
+    height: 32px;
+    border: 1px solid rgba(185, 151, 90, 0.55);
+}
+
+#escalacaoView .pitch-container {
+    width: 100%;
+    max-width: 380px;
+    padding: 4px;
+}
+
+#escalacaoView .pitch {
+    min-width: 0;
+    isolation: isolate;
+}
+
+#escalacaoView .player-chip {
+    width: 88px;
+    gap: 4px;
+    pointer-events: none;
+}
+
+#escalacaoView .player-chip .chip-dot {
+    width: 24px;
+    height: 24px;
+}
+
+#escalacaoView .player-chip .chip-label {
+    display: -webkit-box;
+    width: fit-content;
+    max-width: 88px;
+    min-height: 18px;
+    padding: 3px 6px;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-overflow: clip;
+    font-size: 9.5px;
+    line-height: 1.12;
+    text-wrap: balance;
+}
+
+#escalacaoView .slot-btn {
+    width: 40px;
+    height: 40px;
+}
+
+#escalacaoView .chip-label-slot {
+    font-size: 9.5px;
+}
+
+#escalacaoView .escalacao-feedback,
+#escalacaoView .escalacao-fora {
+    overflow-wrap: anywhere;
+    line-height: 1.45;
+}
+
+#escalacaoView .lineup-result-kicker,
+#escalacaoView .result-metric-label,
+#escalacaoView .result-stat-label {
+    color: #c8c5bb;
+}
+
+#escalacaoView .result-metric-label,
+#escalacaoView .result-stat-label {
+    font-size: 10px;
+}
+
+#escalacaoView .lineup-result-errors {
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+
+#escalacaoView .lineup-share-btn {
+    min-height: 48px;
+}
+
+@media (max-width: 480px) {
+    #escalacaoView {
+        gap: 14px;
+    }
+
+    #escalacaoView .match-card,
+    #escalacaoView .lineup-card,
+    #escalacaoView .lineup-result-card {
+        border-radius: 14px;
+    }
+
+    #escalacaoView .match-confronto {
+        font-size: clamp(25px, 8vw, 30px);
+        line-height: 1.08;
+    }
+
+    #escalacaoView .match-score-row {
+        grid-template-columns: minmax(66px, 1fr) auto minmax(66px, 1fr);
+    }
+
+    #escalacaoView .lineup-header {
+        gap: 10px;
+    }
+
+    #escalacaoView .lineup-title {
+        font-size: 14px;
+    }
+
+    #escalacaoView .lineup-progress {
+        flex-shrink: 0;
+        font-size: 18px;
+    }
+
+    #escalacaoView .pitch-container {
+        max-width: 360px;
+    }
+
+    #escalacaoView .player-chip {
+        width: 76px;
+    }
+
+    #escalacaoView .player-chip .chip-label {
+        max-width: 76px;
+        font-size: 9px;
+    }
+
+    #escalacaoView .player-chip .chip-dot {
+        width: 22px;
+        height: 22px;
+    }
+
+    #escalacaoView .lineup-result-score,
+    #escalacaoView .lineup-result-stats {
+        gap: 8px;
+    }
+
+    #escalacaoView .lineup-result-score > div,
+    #escalacaoView .result-stat-box {
+        padding: 13px 8px;
+    }
+}
+
+@media (max-width: 360px) {
+    .app-shell .page-content {
+        padding-left: 9px;
+        padding-right: 9px;
+    }
+
+    #escalacaoView .match-card,
+    #escalacaoView .lineup-card,
+    #escalacaoView .lineup-result-card {
+        padding-left: 11px;
+        padding-right: 11px;
+    }
+
+    #escalacaoView .match-score-row {
+        grid-template-columns: minmax(58px, 1fr) auto minmax(58px, 1fr);
+        gap: 4px;
+    }
+
+    #escalacaoView .match-team span {
+        font-size: 11px;
+    }
+
+    #escalacaoView .score-input {
+        width: 42px;
+        height: 46px;
+    }
+
+    #escalacaoView .player-chip {
+        width: 68px;
+    }
+
+    #escalacaoView .player-chip .chip-label {
+        max-width: 68px;
+        padding-inline: 4px;
+        font-size: 8.5px;
+    }
+
+    #escalacaoView .player-chip .chip-dot {
+        width: 20px;
+        height: 20px;
+    }
+
+    #escalacaoView .slot-btn {
+        width: 36px;
+        height: 36px;
+    }
+
+    #escalacaoView .lineup-result-card h3 {
+        font-size: 24px;
+    }
+
+    #escalacaoView .result-status {
+        white-space: normal;
+    }
+}

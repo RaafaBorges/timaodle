@@ -1,6 +1,6 @@
 # TIMÃODLE --- ROADMAP E CONTEXTO DO PROJETO
 
-**Versão do documento:** 1.1\
+**Versão do documento:** 1.2\
 **Data:** 19/08/2026\
 **Projeto:** Timãodle\
 **Objetivo deste arquivo:** servir como documento de contexto para
@@ -288,6 +288,8 @@ A persistência do Onze Inicial já foi implementada: partida diária, palpite d
 -   [ ] Contador para próximo desafio
 -   [x] Melhorar feedback do palpite
 -   [x] Melhorar campo
+-   [x] Polimento responsivo e visual do campo, busca e resultado
+-   [x] Proteger nomes longos no campo em desktop e mobile
 -   [ ] Melhorar posições dos jogadores
 -   [x] Melhorar autocomplete
 -   [ ] Testar em mobile
@@ -424,7 +426,7 @@ Estado:
   Diário          ✅
   Foto            ✅
   Mais ou Menos   ✅
-  Onze Inicial    ❌ / incompleta
+  Onze Inicial    ✅
 
 ### Objetivo
 
@@ -445,14 +447,14 @@ Todos os modos diários devem:
 Prioridade máxima.
 
 ``` text
-[ ] Persistência
-[ ] Estado da partida
-[ ] Palpite do placar
-[ ] Descoberta de jogadores
-[ ] Recuperação após F5
-[ ] Finalização
-[ ] Resultado
-[ ] Compartilhamento
+[x] Persistência
+[x] Estado da partida
+[x] Palpite do placar
+[x] Descoberta de jogadores
+[x] Recuperação após F5
+[x] Finalização
+[x] Resultado
+[x] Compartilhamento
 [ ] Contador diário
 ```
 
@@ -638,7 +640,6 @@ Depois disso, atualizar o checklist principal deste arquivo.
 
 -   [ ] Onze Inicial
 -   [ ] Polimento Mais ou Menos
--   [ ] Persistência completa do Onze Inicial
 -   [ ] Expansão de partidas
 -   [ ] Completar fotos
 
@@ -653,26 +654,14 @@ Depois disso, atualizar o checklist principal deste arquivo.
 
 # 17. PRÓXIMA TAREFA OFICIAL
 
-## 🎯 FINALIZAR A PERSISTÊNCIA DO ONZE INICIAL
+## 🎯 CONCLUIR A VALIDAÇÃO DO ONZE INICIAL
 
-Antes de adicionar novas mecânicas, garantir que:
+Próximos itens:
 
-1.  A partida diária seja determinada corretamente.
-2.  O palpite do placar seja salvo.
-3.  O progresso dos jogadores seja salvo.
-4.  F5 não reinicie o jogo.
-5.  Fechar e abrir o navegador preserve o progresso.
-6.  O resultado seja salvo.
-7.  O jogo reconheça quando já foi concluído.
-8.  O estado visual seja reconstruído corretamente.
-
-Após isso:
-
-**→ polir visualmente o Onze Inicial**
-
-Depois:
-
-**→ polir o Mais ou Menos**
+1.  Testar manualmente o fluxo completo em navegadores desktop e mobile reais.
+2.  Revisar visualmente as coordenadas dos jogadores nas 9 partidas atuais.
+3.  Adicionar o contador para o próximo desafio na tela de resultado.
+4.  Depois, iniciar o polimento do Mais ou Menos.
 
 ------------------------------------------------------------------------
 
@@ -758,3 +747,34 @@ Depois expandir.
 - [ ] Adicionar contador para o próximo desafio ao resultado do Onze Inicial.
 - [ ] Revisar posições dos jogadores no campo nas 9 partidas atuais.
 - [ ] Depois, voltar ao polimento do Mais ou Menos.
+
+
+## 19/08/2026 — Onze Inicial: polimento responsivo e visual
+
+Implementado:
+- estilos finais isolados em `#escalacaoView`, sem alterar os outros modos;
+- cards do confronto, escalação e resultado adaptados para desktop, mobile e telas de até 360 px;
+- nomes de jogadores protegidos em até duas linhas, sem escapar do campo;
+- fotos, nomes, posições e espaços do campo redimensionados por breakpoint;
+- busca e autocomplete ampliados, com foco mais visível, rolagem interna e itens mais confortáveis para toque;
+- tela de resultado com rótulos, números, erros e botão de compartilhamento mais legíveis;
+- scrollbar principal preservada na extremidade direita, em preto e dourado;
+- regra de 3 jogadores ocultos preservada;
+- inconsistências antigas do roadmap sobre a persistência do Onze Inicial corrigidas.
+
+Testado:
+- `node --check script.js` executado sem erros;
+- estrutura CSS verificada com blocos balanceados;
+- `jogadores.json` e `partidas.json` validados por leitura via Node.js;
+- 9 partidas confirmadas com 11 titulares;
+- constante de 3 jogadores ocultos confirmada;
+- `git diff --check` executado sem erros de whitespace;
+- `partidas.json` confirmado sem alterações.
+
+Pendências:
+- teste visual manual em navegadores desktop e mobile reais, indisponíveis neste ambiente;
+- revisão visual individual das coordenadas nas 9 partidas;
+- contador para o próximo desafio no resultado do Onze Inicial.
+
+Próximo passo:
+- testar manualmente o Onze Inicial em desktop e mobile e corrigir somente eventuais casos extremos encontrados.
