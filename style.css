@@ -3106,6 +3106,36 @@ body {
     overflow-wrap: anywhere;
 }
 
+#escalacaoView .lineup-next-challenge {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 14px 12px;
+    border-top: 1px solid rgba(185, 151, 90, 0.34);
+    border-bottom: 1px solid rgba(185, 151, 90, 0.34);
+    background: rgba(8, 8, 7, 0.34);
+}
+
+#escalacaoView .lineup-next-challenge-label {
+    color: #d2cfc5;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 1.1px;
+}
+
+#escalacaoView .lineup-next-challenge-time {
+    color: var(--gold);
+    font-family: var(--font-body);
+    font-size: clamp(28px, 8vw, 36px);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 2px;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 2px 12px rgba(185, 151, 90, 0.18);
+}
+
 #escalacaoView .lineup-share-btn {
     min-height: 48px;
 }
@@ -3169,6 +3199,14 @@ body {
     #escalacaoView .lineup-result-score > div,
     #escalacaoView .result-stat-box {
         padding: 13px 8px;
+    }
+
+    #escalacaoView .lineup-next-challenge {
+        padding: 13px 10px;
+    }
+
+    #escalacaoView .lineup-next-challenge-time {
+        letter-spacing: 1.5px;
     }
 }
 

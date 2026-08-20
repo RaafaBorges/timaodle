@@ -137,6 +137,7 @@ function atualizarTimer() {
 
     if (timerCountdownEl) timerCountdownEl.innerText = texto;
     if (timerCountdownHomeEl) timerCountdownHomeEl.innerText = texto;
+    if (escNextChallengeCountdownEl) escNextChallengeCountdownEl.innerText = texto;
 
     // No Modo Foto, depois que o desafio do dia termina (ganhou ou
     // perdeu), o rótulo de tentativas vira a contagem pro próximo dia.
@@ -1265,6 +1266,7 @@ const escResumoPalpiteStatusEl = document.getElementById("escResumoPalpiteStatus
 const escResumoAcertosEl = document.getElementById("escResumoAcertos");
 const escResumoErrosEl = document.getElementById("escResumoErros");
 const escResumoErrosDetalheEl = document.getElementById("escResumoErrosDetalhe");
+const escNextChallengeCountdownEl = document.getElementById("escNextChallengeCountdown");
 const escShareLineupBtn = document.getElementById("escShareLineupBtn");
 
 let PARTIDAS_ESCALACAO = [];
@@ -1832,4 +1834,3 @@ if (devResetBtn) {
         }
     });
 }
-

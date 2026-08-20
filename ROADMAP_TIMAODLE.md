@@ -1,6 +1,6 @@
 # TIMÃODLE --- ROADMAP E CONTEXTO DO PROJETO
 
-**Versão do documento:** 1.2\
+**Versão do documento:** 1.3\
 **Data:** 19/08/2026\
 **Projeto:** Timãodle\
 **Objetivo deste arquivo:** servir como documento de contexto para
@@ -285,7 +285,7 @@ A persistência do Onze Inicial já foi implementada: partida diária, palpite d
 -   [x] Finalizar partida corretamente
 -   [x] Tela de resultado
 -   [x] Compartilhamento
--   [ ] Contador para próximo desafio
+-   [x] Contador para próximo desafio
 -   [x] Melhorar feedback do palpite
 -   [x] Melhorar campo
 -   [x] Polimento responsivo e visual do campo, busca e resultado
@@ -455,7 +455,7 @@ Prioridade máxima.
 [x] Finalização
 [x] Resultado
 [x] Compartilhamento
-[ ] Contador diário
+[x] Contador diário
 ```
 
 ------------------------------------------------------------------------
@@ -660,8 +660,9 @@ Próximos itens:
 
 1.  Testar manualmente o fluxo completo em navegadores desktop e mobile reais.
 2.  Revisar visualmente as coordenadas dos jogadores nas 9 partidas atuais.
-3.  Adicionar o contador para o próximo desafio na tela de resultado.
-4.  Depois, iniciar o polimento do Mais ou Menos.
+3.  Remover recursos de desenvolvimento antes da publicação final.
+4.  Expandir gradualmente o banco de partidas.
+5.  Depois, iniciar o polimento do Mais ou Menos.
 
 ------------------------------------------------------------------------
 
@@ -744,7 +745,7 @@ Depois expandir.
 ### Próximo passo recomendado
 
 - [ ] Testar o Onze Inicial em desktop e mobile com atenção a tamanhos extremos.
-- [ ] Adicionar contador para o próximo desafio ao resultado do Onze Inicial.
+- [x] Adicionar contador para o próximo desafio ao resultado do Onze Inicial.
 - [ ] Revisar posições dos jogadores no campo nas 9 partidas atuais.
 - [ ] Depois, voltar ao polimento do Mais ou Menos.
 
@@ -778,3 +779,31 @@ Pendências:
 
 Próximo passo:
 - testar manualmente o Onze Inicial em desktop e mobile e corrigir somente eventuais casos extremos encontrados.
+
+
+## 19/08/2026 — Onze Inicial: contador para o próximo desafio
+
+Implementado:
+- contador `HH:MM:SS` adicionado à tela de conclusão do Onze Inicial;
+- label `PRÓXIMO DESAFIO EM` e tempo em destaque dourado, com números grandes e tabulares;
+- cálculo existente até a meia-noite local reutilizado;
+- intervalo global existente reutilizado, sem criação de timers adicionais;
+- resultado restaurado após F5 continua exibindo o contador atualizado;
+- apresentação adaptada para desktop e mobile;
+- regra de 3 jogadores ocultos e dados de partidas preservados.
+
+Testado:
+- `node --check script.js` executado sem erros;
+- referência do novo elemento conferida entre HTML e JavaScript;
+- apenas um `setInterval` confirmado em todo o `script.js`;
+- `git diff --check` executado sem erros de whitespace;
+- `partidas.json` confirmado sem alterações.
+
+Pendências para considerar o Onze Inicial maduro:
+- testar manualmente o fluxo completo, incluindo conclusão e F5, em navegadores desktop e mobile reais;
+- revisar visualmente as coordenadas dos jogadores nas 9 partidas atuais;
+- remover botão e mensagens de desenvolvimento antes da publicação final;
+- expandir o banco de partidas para reduzir repetições do desafio diário.
+
+Próximo passo:
+- executar a validação manual completa do Onze Inicial em desktop e mobile.
