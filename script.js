@@ -1502,22 +1502,29 @@ function restaurarEstadoOnzeInicial() {
 function renderizarCampo() {
     pitchFieldEl.innerHTML = "";
 
+    const quantidadePorLinha = [...dadosEscalacao.jogadores_visiveis, ...dadosEscalacao.jogadores_ocultos]
+        .reduce((contagem, jogador) => {
+            contagem.set(jogador.top, (contagem.get(jogador.top) || 0) + 1);
+            return contagem;
+        }, new Map());
+    const linhaDensa = (top) => (quantidadePorLinha.get(top) || 0) >= 4;
+
     dadosEscalacao.jogadores_visiveis.forEach(j => {
-        pitchFieldEl.appendChild(criarChipVisivel(j.nome, j.top, j.left));
+        pitchFieldEl.appendChild(criarChipVisivel(j.nome, j.top, j.left, false, linhaDensa(j.top)));
     });
 
     dadosEscalacao.jogadores_ocultos.forEach(slot => {
         const jaResolvido = nomesJaResolvidos.has(slot.nome_correto);
         const chip = jaResolvido
-            ? criarChipVisivel(slot.nome_correto, slot.top, slot.left, true)
-            : criarChipOculto(slot);
+            ? criarChipVisivel(slot.nome_correto, slot.top, slot.left, true, linhaDensa(slot.top))
+            : criarChipOculto(slot, linhaDensa(slot.top));
         pitchFieldEl.appendChild(chip);
     });
 }
 
-function criarChipVisivel(nome, top, left, revelado = false) {
+function criarChipVisivel(nome, top, left, revelado = false, linhaDensa = false) {
     const chip = document.createElement("div");
-    chip.className = "player-chip";
+    chip.className = `player-chip${linhaDensa ? " dense-line" : ""}`;
     chip.style.top = `${top}%`;
     chip.style.left = `${left}%`;
 
@@ -1530,9 +1537,9 @@ function criarChipVisivel(nome, top, left, revelado = false) {
     return chip;
 }
 
-function criarChipOculto(slot) {
+function criarChipOculto(slot, linhaDensa = false) {
     const chip = document.createElement("div");
-    chip.className = "player-chip";
+    chip.className = `player-chip${linhaDensa ? " dense-line" : ""}`;
     chip.style.top = `${slot.top}%`;
     chip.style.left = `${slot.left}%`;
     chip.dataset.slotId = slot.slot_id;

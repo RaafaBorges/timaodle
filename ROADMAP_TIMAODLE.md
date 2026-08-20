@@ -1,6 +1,6 @@
 # TIMÃODLE --- ROADMAP E CONTEXTO DO PROJETO
 
-**Versão do documento:** 1.3\
+**Versão do documento:** 1.4\
 **Data:** 19/08/2026\
 **Projeto:** Timãodle\
 **Objetivo deste arquivo:** servir como documento de contexto para
@@ -290,7 +290,10 @@ A persistência do Onze Inicial já foi implementada: partida diária, palpite d
 -   [x] Melhorar campo
 -   [x] Polimento responsivo e visual do campo, busca e resultado
 -   [x] Proteger nomes longos no campo em desktop e mobile
+-   [x] Auditar visualmente as 9 partidas existentes
+-   [x] Adaptar rótulos em linhas com 4 ou mais jogadores
 -   [ ] Melhorar posições dos jogadores
+-   [ ] Validar historicamente as distribuições declaradas como 4-2-3-1
 -   [x] Melhorar autocomplete
 -   [ ] Testar em mobile
 -   [ ] Expandir banco de partidas
@@ -379,8 +382,8 @@ Expandir progressivamente:
 -   [ ] 100 partidas
 -   [ ] 365+ partidas
 -   [ ] Revisar dados históricos
--   [ ] Garantir titulares completos
--   [ ] Garantir posições
+-   [x] Garantir titulares completos nas 9 partidas atuais
+-   [x] Garantir posições válidas nas 9 partidas atuais
 -   [ ] Garantir formação
 -   [ ] Criar validação dos dados
 
@@ -658,8 +661,8 @@ Depois disso, atualizar o checklist principal deste arquivo.
 
 Próximos itens:
 
-1.  Testar manualmente o fluxo completo em navegadores desktop e mobile reais.
-2.  Revisar visualmente as coordenadas dos jogadores nas 9 partidas atuais.
+1.  Validar historicamente as quatro partidas declaradas como `4-2-3-1` cuja distribuição atual se parece com `4-2-2-2`.
+2.  Testar manualmente o fluxo completo em navegadores desktop e mobile reais.
 3.  Remover recursos de desenvolvimento antes da publicação final.
 4.  Expandir gradualmente o banco de partidas.
 5.  Depois, iniciar o polimento do Mais ou Menos.
@@ -807,3 +810,33 @@ Pendências para considerar o Onze Inicial maduro:
 
 Próximo passo:
 - executar a validação manual completa do Onze Inicial em desktop e mobile.
+
+
+## 19/08/2026 — Onze Inicial: auditoria das partidas e linhas densas
+
+Implementado:
+- auditoria estrutural e visual concluída nas 9 partidas existentes;
+- confirmados 11 titulares e posições/coordenadas válidas em todas as partidas;
+- linhas com 4 ou mais jogadores agora são identificadas durante a renderização;
+- adaptação visual restrita aos rótulos dessas linhas, sem alterar os marcadores ou as coordenadas do JSON;
+- nomes continuam limitados a 2 linhas;
+- larguras, fonte e espaçamento de linhas densas ajustados para desktop, tablet, mobile e telas de aproximadamente 360 px;
+- São Paulo 2015 (`top 34`) e Palmeiras 2018 (`top 16`) confirmados como os únicos casos densos atuais;
+- `partidas.json`, escalações e formações declaradas preservados.
+
+Testado:
+- `node --check script.js` executado sem erros;
+- detecção de linhas densas verificada nas 9 partidas;
+- estrutura CSS verificada;
+- `git diff --check` executado sem erros de whitespace;
+- constante de 3 jogadores ocultos confirmada;
+- `partidas.json` confirmado sem alterações.
+
+Pendências:
+- validar historicamente Boca Juniors 2012, Vasco da Gama 2012, Palmeiras 2011 e Palmeiras 2017 antes de corrigir suas distribuições `4-2-3-1`;
+- testar visualmente o campo em navegadores desktop e mobile reais;
+- remover recursos de desenvolvimento antes da publicação final;
+- expandir o banco de partidas.
+
+Próximo passo:
+- realizar a validação histórica das quatro partidas `4-2-3-1`, sem alterar dados antes da confirmação.

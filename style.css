@@ -3075,6 +3075,19 @@ body {
     text-wrap: balance;
 }
 
+/* Linhas com quatro ou mais atletas recebem somente um ajuste de rótulo.
+   O marcador continua centralizado nas coordenadas top/left do JSON. */
+#escalacaoView .player-chip.dense-line {
+    width: 78px;
+}
+
+#escalacaoView .player-chip.dense-line .chip-label {
+    max-width: 78px;
+    padding-inline: 5px;
+    font-size: 9px;
+    letter-spacing: -0.1px;
+}
+
 #escalacaoView .slot-btn {
     width: 40px;
     height: 40px;
@@ -3186,6 +3199,16 @@ body {
         font-size: 9px;
     }
 
+    #escalacaoView .player-chip.dense-line {
+        width: 70px;
+    }
+
+    #escalacaoView .player-chip.dense-line .chip-label {
+        max-width: 70px;
+        padding-inline: 4px;
+        font-size: 8.5px;
+    }
+
     #escalacaoView .player-chip .chip-dot {
         width: 22px;
         height: 22px;
@@ -3245,6 +3268,16 @@ body {
         max-width: 68px;
         padding-inline: 4px;
         font-size: 8.5px;
+    }
+
+    #escalacaoView .player-chip.dense-line {
+        width: 64px;
+    }
+
+    #escalacaoView .player-chip.dense-line .chip-label {
+        max-width: 64px;
+        padding-inline: 3px;
+        font-size: 8.25px;
     }
 
     #escalacaoView .player-chip .chip-dot {
