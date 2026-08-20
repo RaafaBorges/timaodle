@@ -38,6 +38,17 @@ const gameView = document.getElementById("gameView");
 const btnPlayDiario = document.getElementById("btnPlayDiario");
 const backHomeBtn = document.getElementById("backHomeBtn");
 const welcomeGreetingEl = document.getElementById("welcomeGreeting");
+const homeDailyProgressEl = document.getElementById("homeDailyProgress");
+const homeProgressMessageEl = document.getElementById("homeProgressMessage");
+const homeProgressValueEl = document.getElementById("homeProgressValue");
+const homeProgressBarEl = document.getElementById("homeProgressBar");
+const homeProgressFillEl = document.getElementById("homeProgressFill");
+const homeStatusEls = {
+    classic: document.getElementById("homeStatusClassic"),
+    photo: document.getElementById("homeStatusPhoto"),
+    moreLess: document.getElementById("homeStatusMoreLess"),
+    lineup: document.getElementById("homeStatusLineup")
+};
 
 const searchInput = document.getElementById("searchInput");
 const autocompleteList = document.getElementById("autocompleteList");
@@ -134,7 +145,7 @@ function criarResumoDiaVazio() {
         classic: { ...criarResumoModoBase(), attempts: 0 },
         photo: { ...criarResumoModoBase(), attempts: 0 },
         moreLess: { ...criarResumoModoBase(), hits: 0, rounds: 0 },
-        lineup: { ...criarResumoModoBase(), resolved: 0, total: 3, errors: 0, exactScore: null },
+        lineup: { ...criarResumoModoBase(), phase: null, resolved: 0, total: 3, errors: 0, exactScore: null },
         complete: false
     };
 }
@@ -181,6 +192,7 @@ function normalizarResumoOnzeInicial(estado) {
         started: true,
         completed,
         outcome: completed ? "won" : null,
+        phase: completed ? "completed" : (estado.etapa === "placar" ? "score" : "lineup"),
         resolved: Math.min(3, new Set(Array.isArray(estado.nomesResolvidos) ? estado.nomesResolvidos : []).size),
         total: 3,
         errors: quantidadeSegura(estado.errosEscalacao),
@@ -256,6 +268,7 @@ function sincronizarProgressoDiario() {
     });
 
     salvarHistorico(historico);
+    renderizarProgressoHome();
     return historico;
 }
 
@@ -265,6 +278,66 @@ function obterProgressoDiario(data = getDataLocalString()) {
         ? historico.days[data]
         : criarResumoDiaVazio();
     return { data, ...calcularProgressoDoResumo(dia), modes: dia };
+}
+
+function pluralizarQuantidade(valor, singular, plural) {
+    return `${valor} ${valor === 1 ? singular : plural}`;
+}
+
+function statusVisualDoModo(modo, tipo) {
+    if (!modo?.started) return { estado: "not-started", rotulo: "NÃO INICIADO", detalhe: "Comece o desafio" };
+
+    if (modo.completed) {
+        const detalheConcluido = tipo === "moreLess"
+            ? `${modo.hits}/10 acertos`
+            : tipo === "lineup"
+                ? "3/3 jogadores"
+                : pluralizarQuantidade(modo.attempts, "tentativa", "tentativas");
+        return { estado: "completed", rotulo: "✓ CONCLUÍDO", detalhe: detalheConcluido };
+    }
+
+    if (tipo === "classic") {
+        return { estado: "in-progress", rotulo: "EM ANDAMENTO", detalhe: pluralizarQuantidade(modo.attempts, "tentativa", "tentativas") };
+    }
+    if (tipo === "photo") {
+        return { estado: "in-progress", rotulo: "EM ANDAMENTO", detalhe: `Tentativa ${Math.min(6, modo.attempts + 1)}/6` };
+    }
+    if (tipo === "moreLess") {
+        return { estado: "in-progress", rotulo: "EM ANDAMENTO", detalhe: `Rodada ${Math.min(10, modo.rounds + 1)}/10 · ${pluralizarQuantidade(modo.hits, "acerto", "acertos")}` };
+    }
+    const naFaseDePlacar = modo.phase === "score" || (!modo.phase && modo.resolved === 0);
+    return {
+        estado: "in-progress",
+        rotulo: "EM ANDAMENTO",
+        detalhe: naFaseDePlacar ? "PLACAR" : `${modo.resolved}/3 jogadores`
+    };
+}
+
+function renderizarProgressoHome() {
+    if (!homeDailyProgressEl || !homeProgressValueEl || !homeProgressFillEl) return;
+
+    const progresso = obterProgressoDiario();
+    homeProgressValueEl.textContent = progresso.progress;
+    homeProgressFillEl.style.width = `${(progresso.completed / progresso.total) * 100}%`;
+    homeProgressBarEl?.setAttribute("aria-valuenow", String(progresso.completed));
+    homeDailyProgressEl.classList.toggle("is-complete", progresso.complete);
+
+    if (homeProgressMessageEl) {
+        homeProgressMessageEl.textContent = progresso.complete
+            ? "Dia completo. Você encarou todos os desafios!"
+            : progresso.completed === 0
+                ? "Quatro desafios esperam por você."
+                : `${progresso.completed} de 4 concluídos. Continue jogando!`;
+    }
+
+    Object.entries(homeStatusEls).forEach(([tipo, elemento]) => {
+        if (!elemento) return;
+        const status = statusVisualDoModo(progresso.modes[tipo], tipo);
+        const botao = elemento.closest(".pokedle-btn");
+        botao?.classList.remove("is-not-started", "is-in-progress", "is-completed");
+        botao?.classList.add(`is-${status.estado}`);
+        elemento.innerHTML = `<strong>${status.rotulo}</strong><span>${status.detalhe}</span>`;
+    });
 }
 
 // Hash simples e determinístico (mesma string sempre gera o mesmo número)
@@ -365,6 +438,7 @@ btnPlayDiario.addEventListener("click", () => {
 backHomeBtn.addEventListener("click", () => {
     gameView.classList.add("hidden");
     homeView.classList.remove("hidden");
+    renderizarProgressoHome();
 });
 
 // ==========================================================================
@@ -1145,6 +1219,7 @@ btnPlayFoto.addEventListener("click", async () => {
 backHomeBtnFoto.addEventListener("click", () => {
     photoView.classList.add("hidden");
     homeView.classList.remove("hidden");
+    renderizarProgressoHome();
 });
 
 photoGrayscaleToggle.addEventListener("click", () => {
@@ -1703,6 +1778,7 @@ btnPlayMaisMenos.addEventListener("click", async () => {
 backHomeBtnMM.addEventListener("click", () => {
     maisMenosView.classList.add("hidden");
     homeView.classList.remove("hidden");
+    renderizarProgressoHome();
 });
 
 /* ==========================================================================
@@ -2331,6 +2407,7 @@ btnPlayEscalacao.addEventListener("click", async () => {
 backHomeBtnEsc.addEventListener("click", () => {
     escalacaoView.classList.add("hidden");
     homeView.classList.remove("hidden");
+    renderizarProgressoHome();
 });
 
 

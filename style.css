@@ -428,6 +428,153 @@ input:focus-visible {
     letter-spacing: 0.2px;
 }
 
+.home-progress-card {
+    width: 100%;
+    max-width: 360px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, var(--surface-2), var(--surface));
+    border: 1px solid var(--line);
+    border-radius: var(--radius-m);
+}
+
+.home-progress-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.home-progress-kicker {
+    display: block;
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+}
+
+.home-progress-heading p {
+    margin-top: 3px;
+    color: var(--ink-muted);
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+.home-progress-heading > strong {
+    flex-shrink: 0;
+    color: var(--gold);
+    font-family: var(--font-display);
+    font-size: 30px;
+    line-height: 1;
+}
+
+.home-progress-track {
+    height: 6px;
+    margin-top: 11px;
+    overflow: hidden;
+    background: var(--page-bg);
+    border: 1px solid var(--line-soft);
+    border-radius: 999px;
+}
+
+.home-progress-track span {
+    display: block;
+    width: 0;
+    height: 100%;
+    background: var(--gold);
+    border-radius: inherit;
+    transition: width 0.25s ease;
+}
+
+.home-progress-card.is-complete {
+    border-color: var(--gold);
+    box-shadow: inset 3px 0 0 var(--gold);
+}
+
+.mode-progress-status {
+    width: 100%;
+    padding-top: 9px;
+    border-top: 1px solid var(--line-soft);
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    font-family: var(--font-body);
+    line-height: 1.2;
+}
+
+.mode-progress-status strong {
+    color: var(--ink-muted);
+    font-size: 10px;
+    letter-spacing: 0.75px;
+}
+
+.mode-progress-status span {
+    color: var(--ink-faint);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.pokedle-btn.is-in-progress {
+    border-color: color-mix(in srgb, var(--gold) 58%, var(--line));
+}
+
+.pokedle-btn.is-in-progress .mode-progress-status strong,
+.pokedle-btn.is-completed .mode-progress-status strong {
+    color: var(--gold);
+}
+
+.pokedle-btn.is-completed {
+    background: linear-gradient(135deg, var(--surface-2), var(--surface));
+    border-color: var(--gold);
+}
+
+@media (max-width: 480px) {
+    .home-menu {
+        gap: 16px;
+    }
+
+    .home-progress-card {
+        padding: 12px 13px;
+    }
+
+    .home-progress-heading > strong {
+        font-size: 27px;
+    }
+
+    .mode-buttons-container {
+        gap: 10px;
+    }
+
+    .pokedle-btn {
+        padding: 13px 14px;
+        gap: 8px;
+    }
+
+    .mode-progress-status {
+        padding-top: 7px;
+    }
+}
+
+@media (max-width: 360px) {
+    .home-progress-heading {
+        gap: 10px;
+    }
+
+    .home-progress-kicker {
+        font-size: 13px;
+    }
+
+    .home-progress-heading p {
+        font-size: 10px;
+    }
+
+    .mode-progress-status span {
+        font-size: 10.5px;
+    }
+}
+
 /* ==========================================================================
    MODAL DE BOAS-VINDAS
    ========================================================================== */

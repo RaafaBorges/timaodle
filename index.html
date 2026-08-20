@@ -88,37 +88,54 @@
                     <span class="home-daily-yesterday">O jogador de ontem foi: <strong id="yesterdayPlayer">carregando...</strong></span>
                 </div>
 
+                <section id="homeDailyProgress" class="home-progress-card" aria-labelledby="homeProgressTitle">
+                    <div class="home-progress-heading">
+                        <div>
+                            <span id="homeProgressTitle" class="home-progress-kicker">TIMÃODLE DO DIA</span>
+                            <p id="homeProgressMessage">Quatro desafios esperam por você.</p>
+                        </div>
+                        <strong id="homeProgressValue">0/4</strong>
+                    </div>
+                    <div id="homeProgressBar" class="home-progress-track" role="progressbar" aria-label="Desafios concluídos hoje" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0">
+                        <span id="homeProgressFill"></span>
+                    </div>
+                </section>
+
                 <div class="mode-buttons-container">
-                    <button class="pokedle-btn active" id="btnPlayDiario">
+                    <button class="pokedle-btn active" id="btnPlayDiario" aria-describedby="homeStatusClassic">
                         <span class="btn-title">MODO DIÁRIO</span>
                         <div class="btn-pill">
                             <span class="pill-icon">🗓️</span>
                             <span class="pill-text">1 desafio novo a cada dia</span>
                         </div>
+                        <span id="homeStatusClassic" class="mode-progress-status"></span>
                     </button>
 
-                    <button class="pokedle-btn active" id="btnPlayFoto">
+                    <button class="pokedle-btn active" id="btnPlayFoto" aria-describedby="homeStatusPhoto">
                         <span class="btn-title">MODO FOTO</span>
                         <div class="btn-pill">
                             <span class="pill-icon">🖼️</span>
                             <span class="pill-text">Adivinhe pela imagem borrada</span>
                         </div>
+                        <span id="homeStatusPhoto" class="mode-progress-status"></span>
                     </button>
 
-                    <button class="pokedle-btn active" id="btnPlayMaisMenos">
+                    <button class="pokedle-btn active" id="btnPlayMaisMenos" aria-describedby="homeStatusMoreLess">
                         <span class="btn-title">JOGOU MAIS OU MENOS</span>
                         <div class="btn-pill">
                             <span class="pill-icon">⚖️</span>
                             <span class="pill-text">Compare estatísticas, 10 rodadas</span>
                         </div>
+                        <span id="homeStatusMoreLess" class="mode-progress-status"></span>
                     </button>
 
-                    <button class="pokedle-btn active" id="btnPlayEscalacao">
+                    <button class="pokedle-btn active" id="btnPlayEscalacao" aria-describedby="homeStatusLineup">
                         <span class="btn-title">ONZE INICIAL</span>
                         <div class="btn-pill">
                             <span class="pill-icon">🧩</span>
                             <span class="pill-text">Complete a escalação</span>
                         </div>
+                        <span id="homeStatusLineup" class="mode-progress-status"></span>
                     </button>
                 </div>
             </div>

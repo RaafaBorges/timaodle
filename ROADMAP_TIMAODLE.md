@@ -1,6 +1,6 @@
 # TIMÃODLE --- ROADMAP E CONTEXTO DO PROJETO
 
-**Versão do documento:** 1.9\
+**Versão do documento:** 2.0\
 **Data:** 20/08/2026\
 **Projeto:** Timãodle\
 **Objetivo deste arquivo:** servir como documento de contexto para
@@ -503,7 +503,7 @@ Prioridade máxima.
 
 ``` text
 [x] Camada versionada de histórico e progresso diário
-[ ] Progresso diário integrado na Home
+[x] Progresso diário integrado na Home
 [ ] Estatísticas gerais
 [ ] Sequência de vitórias
 [ ] Melhor sequência
@@ -1023,7 +1023,7 @@ Estrutura resumida por dia:
 - `classic`: `started`, `completed`, `outcome`, `attempts`;
 - `photo`: `started`, `completed`, `outcome`, `attempts`;
 - `moreLess`: `started`, `completed`, `outcome`, `hits`, `rounds`;
-- `lineup`: `started`, `completed`, `outcome`, `resolved`, `total`, `errors`, `exactScore`;
+- `lineup`: `started`, `completed`, `outcome`, `phase`, `resolved`, `total`, `errors`, `exactScore`;
 - `complete`: conclusão dos quatro modos.
 
 Testado:
@@ -1051,3 +1051,38 @@ Pendências:
 
 Próximo passo:
 - implementar o progresso diário integrado na Home usando `obterProgressoDiario()`.
+
+
+## 20/08/2026 — Progresso diário integrado na Home
+
+Implementado:
+- painel compacto “TIMÃODLE DO DIA” com progresso de `0/4` a `4/4` e barra dourada;
+- mensagem especial e destaque discreto quando os quatro desafios estão concluídos;
+- estados textuais “NÃO INICIADO”, “EM ANDAMENTO” e “✓ CONCLUÍDO” nos quatro cards;
+- detalhes de tentativas do Clássico e Foto, rodada/acertos do Mais ou Menos e fase/progresso do Onze Inicial;
+- campo compacto `phase` no resumo do Onze Inicial para diferenciar a etapa de placar da escalação;
+- atualização da Home na inicialização, após cada save relevante e ao retornar de qualquer modo;
+- cards e listeners existentes preservados, inclusive para revisar desafios já concluídos;
+- ajustes responsivos específicos para desktop, tablet, mobile e largura de 360 px;
+- indicadores acessíveis por texto e ícone, sem depender apenas de cor.
+
+Testado:
+- `node --check script.js` sem erros;
+- `git diff --check` sem erros de whitespace;
+- JSONs de dados validados e confirmados sem alterações;
+- cenários automatizados de progresso `0/4`, `1/4`, `2/4`, `3/4` e `4/4`;
+- Clássico, Foto e Mais ou Menos em andamento;
+- Onze Inicial na fase de placar e com `1/3` e `2/3` jogadores;
+- estados concluídos, incluindo placar `8/10` do Mais ou Menos;
+- leitura persistida equivalente ao F5 e troca de data retornando `0/4`;
+- referências dos novos IDs e listeners de navegação verificadas estaticamente;
+- breakpoints de 480 px e 360 px revisados no CSS.
+
+Pendências:
+- validar visualmente a Home e o retorno dos quatro modos em navegadores desktop e mobile reais;
+- implementar uma conclusão visual 4/4 mais completa em etapa própria;
+- streak, estatísticas integradas e compartilhamento unificado continuam futuros;
+- calendário permanece fora do escopo atual.
+
+Próximo passo:
+- implementar a conclusão visual 4/4 e, depois, evoluir para streak, estatísticas e compartilhamento unificado.
