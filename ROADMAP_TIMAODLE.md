@@ -1,6 +1,6 @@
 # TIMÃODLE --- ROADMAP E CONTEXTO DO PROJETO
 
-**Versão do documento:** 1.5\
+**Versão do documento:** 1.6\
 **Data:** 19/08/2026\
 **Projeto:** Timãodle\
 **Objetivo deste arquivo:** servir como documento de contexto para
@@ -235,9 +235,9 @@ Portanto:
 -   [x] Destacar rodada, acertos e meta de 7
 -   [x] Revisar resultado final
 -   [x] Adaptar layout para desktop, tablet, mobile e 360 px
--   [ ] Revisar seleção dos jogadores
+-   [x] Revisar seleção dos jogadores
 -   [ ] Completar fotos necessárias
--   [ ] Revisar balanceamento das comparações
+-   [x] Revisar balanceamento das comparações
 
 ------------------------------------------------------------------------
 
@@ -472,8 +472,8 @@ Prioridade máxima.
 [x] Visual
 [x] Feedback
 [x] Animações
-[ ] Balanceamento
-[ ] Seleção de jogadores
+[x] Balanceamento
+[x] Seleção de jogadores
 [ ] Fotos
 [x] Resultado final
 ```
@@ -660,14 +660,14 @@ Depois disso, atualizar o checklist principal deste arquivo.
 
 # 17. PRÓXIMA TAREFA OFICIAL
 
-## 🎯 VALIDAR O POLIMENTO DO MAIS OU MENOS
+## 🎯 VALIDAR O MAIS OU MENOS V2 EM NAVEGADORES REAIS
 
 Próximos itens:
 
-1.  Testar manualmente as 10 rodadas e a conclusão em navegadores desktop e mobile reais.
-2.  Revisar separadamente a seleção e o balanceamento das comparações.
-3.  Conferir a cobertura e a qualidade das fotos usadas pelo modo.
-4.  Avaliar compartilhamento para o resultado final em uma etapa futura.
+1.  Testar manualmente as 10 rodadas, F5 e conclusão em navegadores desktop e mobile reais.
+2.  Conferir a cobertura e a qualidade das fotos usadas pelo modo.
+3.  Avaliar compartilhamento para o resultado final em uma etapa futura.
+4.  Monitorar a dificuldade percebida antes de alterar a meta de 7 acertos.
 5.  Manter pendente a validação histórica das quatro partidas `4-2-3-1` do Onze Inicial.
 
 ------------------------------------------------------------------------
@@ -877,3 +877,52 @@ Pendências:
 
 Próximo passo:
 - validar manualmente o modo completo em desktop e mobile antes de revisar balanceamento e seleção.
+
+
+## 19/08/2026 — Mais ou Menos v2: seleção balanceada
+
+Implementado:
+- algoritmo versionado com semente `data + "-mm-v2"`;
+- plano diário determinístico com 3 comparações fáceis (`121+`), 4 médias (`31–120`) e 3 difíceis (`1–30`);
+- plano prévio de MAIS/MENOS com proporção entre 4/6 e 6/4, máximo de 3 respostas iguais e máximo de 4 alternâncias consecutivas;
+- seleção sem jogadores repetidos e sem empates quando há alternativa;
+- tentativas determinísticas de planos viáveis antes dos fallbacks graduais;
+- fallbacks para faixa ampliada, direção planejada, qualquer não empate e qualquer jogador disponível;
+- sequência completa e snapshot dos 11 jogadores salvos no `localStorage`;
+- mudanças no banco ou manifesto durante o dia não alteram uma sequência v2 já iniciada após F5;
+- migração pequena: estados v1 do mesmo dia recriam e persistem sua sequência v1, sem reiniciar a partida;
+- visual, 10 rodadas, meta de 7, campo `jogos` e pool de jogadores com foto preservados.
+
+Simulação v1 × v2:
+- 3.653 datas, de 2020 a 2029, totalizando 36.530 comparações por versão;
+- diferença média: v1 `173,38`, v2 `103,38` jogos;
+- mediana: v1 `136`, v2 `71` jogos;
+- v1: 42 empates, 4.767 diferenças de 1–30, 11.749 de 31–120 e 19.972 de 121+;
+- v2: 0 empates, 10.959 difíceis, 14.612 médias e 10.959 fáceis, exatamente 3/4/3 por desafio;
+- v2: 18.336 respostas MAIS e 18.194 MENOS;
+- nenhum jogador repetido e nenhuma falha de determinismo;
+- estratégia de inverter a resposta anterior: v1 `6,51/10` e `51,33%` de vitórias; v2 `5,47/10` e `15,99%` de vitórias;
+- nenhum dos 3.653 desafios deixou de cumprir 3/4/3;
+- nenhum fallback foi usado na amostra;
+- 3.524 desafios encontraram plano viável na primeira tentativa, 122 na segunda e 7 na terceira;
+- geração v2 medida em média de `1,84 ms`, com máximo observado de `43 ms` no ambiente de teste.
+
+Testado:
+- `node --check script.js` executado sem erros;
+- `git diff --check` executado sem erros de whitespace;
+- JSONs validados sem alterações;
+- mesma data gera a mesma sequência;
+- sequência possui 11 jogadores únicos e 10 rodadas;
+- planos de dificuldade e direção validados;
+- snapshot salvo restaura a mesma sequência mesmo sem o pool carregado;
+- gerador v1 mantido determinístico para migração;
+- meta de vitória permanece em 7 acertos.
+
+Pendências:
+- testar manualmente desafio novo, migração v1, F5 e conclusão em navegadores desktop e mobile reais;
+- monitorar a dificuldade percebida com jogadores reais antes de recalibrar faixas ou meta;
+- revisar cobertura e qualidade das fotos;
+- avaliar compartilhamento do resultado em etapa futura.
+
+Próximo passo:
+- validar o Mais ou Menos v2 de ponta a ponta em navegadores desktop e mobile reais.

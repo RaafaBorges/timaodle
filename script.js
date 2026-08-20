@@ -937,6 +937,8 @@ function rotuloStatMM() { return ROTULOS_STAT_MM[CAMPO_STAT_MM] || CAMPO_STAT_MM
 const RODADAS_MM = 10;
 const MIN_ACERTOS_MM = 7;
 const CHAVE_ESTADO_MM = "timaodle_mm_daily_state";
+const VERSAO_ALGORITMO_MM = 2;
+const PLANO_DIFICULDADES_MM = ["facil", "facil", "facil", "media", "media", "media", "media", "dificil", "dificil", "dificil"];
 
 // Elementos da interface
 const maisMenosView = document.getElementById("maisMenosView");
@@ -995,14 +997,192 @@ function embaralharComSemente(array, semente) {
     return resultado;
 }
 
-// Sorteia a sequência do dia: 1 jogador de referência inicial + 10
-// candidatos, todos diferentes entre si — mesma sequência pra todo
-// mundo, no mesmo dia (semente = data + "-mm").
-function gerarSequenciaMM(dataStr) {
+function embaralharComRngMM(array, rng) {
+    const resultado = [...array];
+    for (let i = resultado.length - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        [resultado[i], resultado[j]] = [resultado[j], resultado[i]];
+    }
+    return resultado;
+}
+
+function maiorSequenciaIgualMM(plano) {
+    let maior = 1;
+    let atual = 1;
+    for (let i = 1; i < plano.length; i++) {
+        atual = plano[i] === plano[i - 1] ? atual + 1 : 1;
+        maior = Math.max(maior, atual);
+    }
+    return maior;
+}
+
+function maiorSequenciaAlternadaMM(plano) {
+    let maior = 1;
+    let atual = 1;
+    for (let i = 1; i < plano.length; i++) {
+        atual = plano[i] !== plano[i - 1] ? atual + 1 : 1;
+        maior = Math.max(maior, atual);
+    }
+    return maior;
+}
+
+function gerarPlanoDirecoesMM(rng) {
+    const quantidadeMais = 4 + Math.floor(rng() * 3);
+    const base = [
+        ...Array(quantidadeMais).fill("mais"),
+        ...Array(RODADAS_MM - quantidadeMais).fill("menos")
+    ];
+
+    for (let tentativa = 0; tentativa < 80; tentativa++) {
+        const plano = embaralharComRngMM(base, rng);
+        if (maiorSequenciaIgualMM(plano) <= 3 && maiorSequenciaAlternadaMM(plano) <= 4) {
+            return plano;
+        }
+    }
+
+    return quantidadeMais === 4
+        ? ["mais", "menos", "menos", "mais", "menos", "mais", "mais", "menos", "menos", "menos"]
+        : quantidadeMais === 6
+            ? ["mais", "mais", "menos", "mais", "menos", "menos", "mais", "mais", "menos", "mais"]
+            : ["mais", "menos", "mais", "mais", "menos", "menos", "mais", "menos", "menos", "mais"];
+}
+
+function direcaoComparacaoMM(referencia, candidato) {
+    const valorReferencia = referencia[CAMPO_STAT_MM];
+    const valorCandidato = candidato[CAMPO_STAT_MM];
+    if (valorCandidato === valorReferencia) return "empate";
+    return valorCandidato > valorReferencia ? "mais" : "menos";
+}
+
+function dificuldadeComparacaoMM(referencia, candidato) {
+    const diferenca = Math.abs(candidato[CAMPO_STAT_MM] - referencia[CAMPO_STAT_MM]);
+    if (diferenca <= 30) return "dificil";
+    if (diferenca <= 120) return "media";
+    return "facil";
+}
+
+function atendeDificuldadeExpandidaMM(referencia, candidato, dificuldade) {
+    const diferenca = Math.abs(candidato[CAMPO_STAT_MM] - referencia[CAMPO_STAT_MM]);
+    if (diferenca === 0) return false;
+    if (dificuldade === "dificil") return diferenca <= 45;
+    if (dificuldade === "media") return diferenca >= 16 && diferenca <= 160;
+    return diferenca >= 91;
+}
+
+function construirSequenciaExataMM(poolPriorizado, planoDificuldades, planoDirecoes) {
+    const MAX_TENTATIVAS_EXATAS_MM = poolPriorizado.length;
+
+    for (let tentativa = 0; tentativa < MAX_TENTATIVAS_EXATAS_MM; tentativa++) {
+        const inicial = poolPriorizado[tentativa % poolPriorizado.length];
+        const sequencia = [inicial];
+        const usados = new Set([inicial.nome]);
+        let completa = true;
+
+        for (let rodada = 0; rodada < RODADAS_MM; rodada++) {
+            const referencia = sequencia[sequencia.length - 1];
+            const candidatos = poolPriorizado.filter(candidato =>
+                !usados.has(candidato.nome)
+                && direcaoComparacaoMM(referencia, candidato) === planoDirecoes[rodada]
+                && dificuldadeComparacaoMM(referencia, candidato) === planoDificuldades[rodada]
+            );
+
+            if (candidatos.length === 0) {
+                completa = false;
+                break;
+            }
+
+            const indice = (tentativa * 7 + rodada * 3) % candidatos.length;
+            const candidato = candidatos[indice];
+            usados.add(candidato.nome);
+            sequencia.push(candidato);
+        }
+
+        if (completa) return sequencia;
+    }
+    return [];
+}
+
+function construirSequenciaComFallbackMM(poolPriorizado, planoDificuldades, planoDirecoes) {
+    const sequencia = [poolPriorizado[0]];
+    const usados = new Set([poolPriorizado[0].nome]);
+    const fallbacks = [];
+
+    for (let rodada = 0; rodada < RODADAS_MM; rodada++) {
+        const referencia = sequencia[sequencia.length - 1];
+        const disponiveis = poolPriorizado.filter(j => !usados.has(j.nome));
+        const direcao = planoDirecoes[rodada];
+        const dificuldade = planoDificuldades[rodada];
+        const grupos = [
+            disponiveis.filter(j => direcaoComparacaoMM(referencia, j) === direcao && dificuldadeComparacaoMM(referencia, j) === dificuldade),
+            disponiveis.filter(j => direcaoComparacaoMM(referencia, j) === direcao && atendeDificuldadeExpandidaMM(referencia, j, dificuldade)),
+            disponiveis.filter(j => direcaoComparacaoMM(referencia, j) === direcao),
+            disponiveis.filter(j => direcaoComparacaoMM(referencia, j) !== "empate"),
+            disponiveis
+        ];
+        const indiceGrupo = grupos.findIndex(grupo => grupo.length > 0);
+        const candidato = grupos[indiceGrupo][0];
+        fallbacks.push(indiceGrupo);
+        usados.add(candidato.nome);
+        sequencia.push(candidato);
+    }
+
+    return { sequencia, fallbacks };
+}
+
+function gerarDesafioMMV2(dataStr) {
+    const pool = jogadoresComFotoObjetos();
+    if (pool.length < RODADAS_MM + 1) {
+        return { sequencia: [], planoDificuldades: [], planoDirecoes: [], fallbacks: [] };
+    }
+
+    const rng = gerarPRNG(hashString(dataStr + "-mm-v2"));
+    let ultimoPlanoDificuldades = [];
+    let ultimoPlanoDirecoes = [];
+    let ultimoPoolPriorizado = [];
+
+    // Alguns planos são inviáveis quando uma direção e uma faixa não têm
+    // candidato a partir da referência atual. Tentamos novos planos, sempre
+    // com o mesmo PRNG diário, antes de flexibilizar qualquer regra.
+    for (let tentativaPlano = 0; tentativaPlano < 12; tentativaPlano++) {
+        ultimoPlanoDificuldades = embaralharComRngMM(PLANO_DIFICULDADES_MM, rng);
+        ultimoPlanoDirecoes = gerarPlanoDirecoesMM(rng);
+        ultimoPoolPriorizado = embaralharComRngMM(pool, rng);
+        const sequenciaExata = construirSequenciaExataMM(
+            ultimoPoolPriorizado,
+            ultimoPlanoDificuldades,
+            ultimoPlanoDirecoes
+        );
+
+        if (sequenciaExata.length === RODADAS_MM + 1) {
+            return {
+                sequencia: sequenciaExata,
+                planoDificuldades: ultimoPlanoDificuldades,
+                planoDirecoes: ultimoPlanoDirecoes,
+                fallbacks: Array(RODADAS_MM).fill(0),
+                tentativasPlano: tentativaPlano + 1
+            };
+        }
+    }
+
+    const resultadoFallback = construirSequenciaComFallbackMM(
+        ultimoPoolPriorizado,
+        ultimoPlanoDificuldades,
+        ultimoPlanoDirecoes
+    );
+    return {
+        ...resultadoFallback,
+        planoDificuldades: ultimoPlanoDificuldades,
+        planoDirecoes: ultimoPlanoDirecoes,
+        tentativasPlano: 12
+    };
+}
+
+// Mantido somente para migrar com segurança partidas v1 iniciadas antes
+// da publicação do algoritmo balanceado.
+function gerarSequenciaMMV1(dataStr) {
     const pool = jogadoresComFotoObjetos();
     if (pool.length < RODADAS_MM + 1) return [];
-    const semente = hashString(dataStr + "-mm");
-    return embaralharComSemente(pool, semente).slice(0, RODADAS_MM + 1);
+    return embaralharComSemente(pool, hashString(dataStr + "-mm")).slice(0, RODADAS_MM + 1);
 }
 
 function carregarEstadoMM() {
@@ -1015,6 +1195,33 @@ function carregarEstadoMM() {
 
 function salvarEstadoMM(estado) {
     localStorage.setItem(CHAVE_ESTADO_MM, JSON.stringify(estado));
+}
+
+function snapshotSequenciaMM(sequencia) {
+    return sequencia.map(jogador => ({ ...jogador }));
+}
+
+function restaurarSequenciaSalvaMM(estado) {
+    if (Array.isArray(estado?.sequenciaJogadores) && estado.sequenciaJogadores.length === RODADAS_MM + 1) {
+        const snapshotsValidos = estado.sequenciaJogadores.every(j =>
+            j && typeof j.nome === "string" && Number.isFinite(j[CAMPO_STAT_MM])
+        );
+        if (snapshotsValidos) return snapshotSequenciaMM(estado.sequenciaJogadores);
+    }
+
+    if (Array.isArray(estado?.sequenciaNomes) && estado.sequenciaNomes.length === RODADAS_MM + 1) {
+        const restaurada = estado.sequenciaNomes.map(nome => jogadores.find(j => j.nome === nome));
+        if (restaurada.every(Boolean)) return restaurada;
+    }
+    return [];
+}
+
+function registrarSequenciaNoEstadoMM(estado, sequencia, versao, detalhes = {}) {
+    estado.versaoAlgoritmo = versao;
+    estado.sequenciaNomes = sequencia.map(j => j.nome);
+    estado.sequenciaJogadores = snapshotSequenciaMM(sequencia);
+    if (detalhes.planoDificuldades) estado.planoDificuldades = [...detalhes.planoDificuldades];
+    if (detalhes.planoDirecoes) estado.planoDirecoes = [...detalhes.planoDirecoes];
 }
 
 function renderizarDotsMM() {
@@ -1075,25 +1282,41 @@ function renderizarRodadaMM() {
 
 function iniciarDesafioMMDoDia() {
     const hoje = getDataLocalString();
-    sequenciaMM = gerarSequenciaMM(hoje);
-
     mmEndMessageEl.classList.add("hidden");
     maisMenosView.classList.remove("resultado-final");
-
-    if (sequenciaMM.length < RODADAS_MM + 1) {
-        mmEndMessageEl.classList.remove("hidden");
-        mmEndMessageEl.innerHTML = "Fotos insuficientes cadastradas ainda para este modo.";
-        return;
-    }
 
     const salvo = carregarEstadoMM();
 
     if (salvo && salvo.data === hoje) {
         estadoMMDiario = salvo;
+        sequenciaMM = restaurarSequenciaSalvaMM(estadoMMDiario);
+
+        if (sequenciaMM.length !== RODADAS_MM + 1) {
+            // Estados anteriores ao v2 não guardavam a sequência. Recriamos
+            // a v1 uma única vez e passamos a persistir seu snapshot.
+            sequenciaMM = estadoMMDiario.versaoAlgoritmo === VERSAO_ALGORITMO_MM
+                ? gerarDesafioMMV2(hoje).sequencia
+                : gerarSequenciaMMV1(hoje);
+            registrarSequenciaNoEstadoMM(
+                estadoMMDiario,
+                sequenciaMM,
+                estadoMMDiario.versaoAlgoritmo === VERSAO_ALGORITMO_MM ? VERSAO_ALGORITMO_MM : 1
+            );
+            salvarEstadoMM(estadoMMDiario);
+        }
+
+        if (sequenciaMM.length < RODADAS_MM + 1) {
+            mmEndMessageEl.classList.remove("hidden");
+            mmEndMessageEl.innerHTML = "Fotos insuficientes cadastradas ainda para este modo.";
+            return;
+        }
+
         rodadaAtualMM = estadoMMDiario.rodadaAtual;
         acertosMM = estadoMMDiario.acertos;
         historicoMM = estadoMMDiario.historico || [];
-        referenciaAtualMM = jogadores.find(j => j.nome === estadoMMDiario.referenciaAtualNome) || sequenciaMM[0];
+        referenciaAtualMM = sequenciaMM[rodadaAtualMM]
+            || sequenciaMM.find(j => j.nome === estadoMMDiario.referenciaAtualNome)
+            || sequenciaMM[0];
         mmAtivo = estadoMMDiario.status === "playing";
 
         if (!mmAtivo) {
@@ -1102,6 +1325,15 @@ function iniciarDesafioMMDoDia() {
             renderizarRodadaMM();
         }
     } else {
+        const desafioV2 = gerarDesafioMMV2(hoje);
+        sequenciaMM = desafioV2.sequencia;
+
+        if (sequenciaMM.length < RODADAS_MM + 1) {
+            mmEndMessageEl.classList.remove("hidden");
+            mmEndMessageEl.innerHTML = "Fotos insuficientes cadastradas ainda para este modo.";
+            return;
+        }
+
         estadoMMDiario = {
             data: hoje,
             rodadaAtual: 0,
@@ -1110,6 +1342,7 @@ function iniciarDesafioMMDoDia() {
             historico: [],
             status: "playing",
         };
+        registrarSequenciaNoEstadoMM(estadoMMDiario, sequenciaMM, VERSAO_ALGORITMO_MM, desafioV2);
         salvarEstadoMM(estadoMMDiario);
 
         rodadaAtualMM = 0;
