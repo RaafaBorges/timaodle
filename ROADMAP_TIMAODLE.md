@@ -673,9 +673,9 @@ Depois disso, atualizar o checklist principal deste arquivo.
 
 # 17. PRÓXIMA TAREFA OFICIAL
 
-## 🚧 v2.7 — EM ANDAMENTO: CONSOLIDAÇÃO RESPONSIVA
+## ✅ v2.7 — CONCLUÍDA: CONSOLIDAÇÃO RESPONSIVA E ACESSIBILIDADE
 
-Concluído:
+Concluído em 21/08/2026:
 
 1.  Auditoria estrutural inicial do CSS e da responsividade.
 2.  Baseline permanente das relações entre HTML, JavaScript e CSS.
@@ -687,20 +687,19 @@ Concluído:
 7.  Descontinuidade de largura da Home em 480/481 px removida.
 8.  Home consolidada em uma única área proprietária, com responsividade fluida.
 9.  Componentes compartilhados de busca, autocomplete, ações, status e feedback consolidados.
+10. Consolidação individual do Foto, Clássico, Mais ou Menos e Onze Inicial.
+11. Correção responsiva específica do modal Como Jogar.
+12. Limpeza estrutural final do CSS, com movimento reduzido e widget lateral revisados.
+13. CSS morto confirmado removido.
+14. Autocompletes acessíveis com semântica combobox/listbox e navegação por teclado.
+15. Validação manual final aprovada em navegador real.
 
-Próxima etapa:
+Pendências não bloqueantes:
 
-1.  Validar manualmente shell e Home nos viewports canônicos.
-2.  Tratar separadamente o widget lateral de links úteis.
-3.  Avançar modo a modo somente depois da validação das camadas globais.
-
-Ainda não concluído:
-
--   consolidação do CSS e dos breakpoints;
--   mudanças visuais ou responsivas no código de produção;
--   consistência visual dos quatro modos;
--   semântica ARIA completa dos autocompletes;
--   testes em dispositivos e leitores de tela reais.
+-   validação com leitor de tela real;
+-   smoke headless, indisponível no ambiente atual;
+-   validação histórica das quatro partidas em 4-2-3-1;
+-   bases históricas residuais do CSS do Onze Inicial.
 
 ------------------------------------------------------------------------
 
@@ -2176,3 +2175,61 @@ Pendências:
 
 Próximo passo:
 - executar a validação manual final da v2.7 em Live Server, incluindo teclado e leitor de tela.
+
+
+## 21/08/2026 — Fechamento oficial da v2.7
+
+**v2.7 — CONCLUÍDA**
+
+Validação final:
+- validação manual final aprovada em navegador real;
+- shell, Home, quatro modos, modais, widget lateral, movimento reduzido e autocompletes
+  acessíveis incluídos no aceite final;
+- baseline responsiva permanente e contrato de frontend preservados como proteção contra regressões.
+
+Testado no fechamento:
+- `node tests/run-tests.js`: suíte completa aprovada, com cenários A–X de storage,
+  39 cenários de regras e 23 cenários estruturais;
+- `node tests/storage.test.js`: cenários A–X aprovados;
+- `node --check script.js` e `node --check storage-normalizers.js`: aprovados;
+- `git diff --check`: aprovado;
+- `jogadores.json`, `partidas.json` e `fotos-manifest.json`: JSONs válidos e inalterados;
+- 130 IDs verificados sem duplicidade pelo contrato de frontend;
+- `style.css`: 616 aberturas e 616 fechamentos de bloco;
+- smoke de viewport não executado porque o navegador headless permanece indisponível.
+
+Escopo concluído:
+- baseline responsiva permanente;
+- consolidação do shell global e da Home;
+- correção responsiva do Como Jogar;
+- consolidação dos componentes compartilhados;
+- consolidação individual do Foto, Clássico, Mais ou Menos e Onze Inicial;
+- limpeza estrutural final do CSS;
+- `prefers-reduced-motion` consolidado;
+- widget lateral revisado;
+- CSS morto confirmado removido;
+- autocompletes acessíveis com combobox/listbox e navegação por teclado;
+- validação manual final em navegador real.
+
+Métricas finais da v2.7:
+- CSS: 4.709 → 4.262 linhas;
+- blocos aproximados: 683 → 592;
+- seletores distintos: 527 → 499;
+- seletores repetidos: 168 → 128;
+- `@media`: 20 → 14;
+- `!important`: 2 → 2.
+
+Pendências futuras, sem bloqueio para a v2.7:
+- validação com leitor de tela real;
+- smoke headless, atualmente indisponível no ambiente;
+- validação histórica das quatro partidas 4-2-3-1;
+- bases históricas residuais do CSS do Onze Inicial.
+
+## PRÓXIMA VERSÃO — v2.8
+
+Funcionalidades candidatas já registradas neste roadmap, ainda sem implementação ou prioridade definida:
+- melhor sequência e taxa de acerto;
+- interface de histórico/calendário;
+- melhorias adicionais de telas de resultado e experiência;
+- expansão de jogadores, fotos e partidas;
+- validações pendentes de acessibilidade e conteúdo histórico.
