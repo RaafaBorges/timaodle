@@ -1,7 +1,7 @@
 # TIMÃODLE --- ROADMAP E CONTEXTO DO PROJETO
 
-**Versão do documento:** 2.3\
-**Data:** 20/08/2026\
+**Versão do documento:** 2.5\
+**Data:** 21/08/2026\
 **Projeto:** Timãodle\
 **Objetivo deste arquivo:** servir como documento de contexto para
 qualquer IA ou desenvolvedor que continuar o projeto (ChatGPT, Claude,
@@ -506,7 +506,7 @@ Prioridade máxima.
 [x] Camada versionada de histórico e progresso diário
 [x] Progresso diário integrado na Home
 [x] Conclusão visual 4/4
-[ ] Estatísticas gerais
+[x] Estatísticas integradas gerais
 [x] Sequência diária de dias completos 4/4
 [ ] Melhor sequência
 [ ] Taxa de acerto
@@ -653,6 +653,7 @@ Depois disso, atualizar o checklist principal deste arquivo.
 -   [x] Campo `jogos`
 -   [x] Sistema de fotos
 -   [x] Base do Onze Inicial
+-   [x] Compartilhamento unificado do dia 4/4
 
 ### 🟡 Em desenvolvimento
 
@@ -672,15 +673,14 @@ Depois disso, atualizar o checklist principal deste arquivo.
 
 # 17. PRÓXIMA TAREFA OFICIAL
 
-## 🎯 PROGRESSO DIÁRIO INTEGRADO NA HOME
+## 🎯 CALENDÁRIO / HISTÓRICO VISUAL
 
 Próximos itens:
 
-1.  Usar `obterProgressoDiario()` para mostrar o estado dos quatro modos sem precisar abri-los.
-2.  Exibir quantidade iniciada, quantidade concluída e progresso de `0/4` a `4/4`.
-3.  Atualizar a Home ao carregar, ao voltar de um modo e após cada conclusão.
-4.  Manter streak, estatísticas, calendário e compartilhamento unificado como etapas futuras.
-5.  Preservar as chaves detalhadas atuais e usar `timaodle_history_v1` apenas como resumo histórico.
+1.  Planejar uma visualização simples dos dias registrados em `timaodle_history_v1`.
+2.  Preservar o compartilhamento unificado, streak, estatísticas e os saves detalhados atuais.
+3.  Não reconstruir dias anteriores à criação do histórico versionado.
+4.  Definir o escopo visual antes da implementação.
 
 ------------------------------------------------------------------------
 
@@ -1207,3 +1207,153 @@ Pendências:
 
 Próximo passo:
 - implementar as estatísticas integradas gerais usando o histórico versionado.
+
+
+## 20/08/2026 — Estatísticas integradas do jogador
+
+Implementado:
+- função central `obterEstatisticasIntegradas()` derivada exclusivamente de `timaodle_history_v1`;
+- nenhuma duplicação de contadores ou novo cache no `localStorage`;
+- estatísticas gerais de dias registrados, dias jogados, dias 4/4, modos concluídos, vitórias e percentual de dias completos;
+- streak atual, recorde e último dia completo reutilizados de `obterStreakGeral()`;
+- Clássico com partidas, vitórias, tentativas, média, melhor resultado e distribuição `1`, `2`, `3`, `4+`;
+- Foto com vitórias, derrotas, taxa, médias, melhor vitória e distribuição de 1 a 6 tentativas;
+- Mais ou Menos com vitórias, derrotas, taxa, média, melhor/pior, 10/10, resultados 7+ e distribuição 0–10;
+- Onze Inicial com erros totais/médios, menor resultado, zero erros, placares exatos, taxa e validação de `resolved/total`;
+- valores históricos incompletos ignorados nas médias específicas, sem gerar `NaN` ou `Infinity`;
+- painel leve aberto por “Ver estatísticas”, mantendo a Home compacta;
+- estado vazio explicativo sem importar números anteriores;
+- modal acessível por botão, fechamento dedicado, clique no fundo e tecla Escape;
+- layout em cards responsivos para desktop, tablet, mobile e 360 px.
+
+Testado:
+- A: histórico vazio;
+- B: um dia parcial;
+- C: um dia completo 4/4;
+- D: vários dias consecutivos;
+- E/F: Foto e Mais ou Menos perdidos;
+- G/H: resultados variados 0–10 e 10/10 no Mais ou Menos;
+- I/J: Onze Inicial com zero e vários erros;
+- K: placar exato verdadeiro e falso;
+- L: campos históricos incompletos e inconsistência `resolved/total`;
+- M: histórico com JSON inválido, estrutura malformada e datas inválidas;
+- N: recálculo equivalente ao F5;
+- O: troca de data ignorando registros futuros;
+- nenhuma média não finita e taxas limitadas a 0–100;
+- streak integrado coincidente com `obterStreakGeral()`;
+- `node --check script.js`, `git diff --check`, JSONs, IDs, listeners e estrutura CSS verificados.
+
+Pendências:
+- histórico anterior à criação de `timaodle_history_v1` não pode ser recuperado com segurança;
+- testar visualmente o modal completo em navegadores desktop, tablet e mobile reais;
+- compartilhamento unificado permanece como próxima etapa;
+- calendário/histórico visual continua futuro;
+- `timaodle_stats` permanece legado exclusivo do Clássico e não alimenta as novas estatísticas.
+
+Próximo passo:
+- implementar o compartilhamento unificado do dia usando os resumos do histórico v1.
+
+
+## 20/08/2026 — Polimento visual das estatísticas e Home mobile
+
+Implementado:
+- modal de estatísticas dividido entre cabeçalho fixo e conteúdo com rolagem interna;
+- altura móvel limitada ao viewport disponível, com suporte a `dvh` e áreas seguras;
+- botão de fechamento permanece acessível durante toda a rolagem;
+- `overscroll-behavior` impede que a rolagem interna seja transferida para a página ao fundo;
+- scrollbar interna discreta em preto e dourado;
+- labels gerais e dos modos ampliadas moderadamente;
+- hierarquia entre números, labels e informações secundárias reforçada;
+- distribuições de tentativas e acertos convertidas em chips de faixa/quantidade;
+- espaçamento interno dos cards revisado sem remover nenhuma estatística;
+- Home passa a aproveitar até 400 px de largura em telas móveis, preservando margens laterais seguras;
+- acento vertical dourado do card 4/4 substituído no mobile por um detalhe horizontal mais equilibrado;
+- desktop mantém modal centralizado e largura original.
+
+Testado:
+- `node --check script.js` e `git diff --check` sem erros;
+- IDs do modal e listeners de abertura, fechamento e Escape preservados;
+- estrutura CSS e pares de chaves verificados;
+- regras responsivas revisadas estaticamente para 360 px, 390 px, 430 px e desktop;
+- conteúdo interno mantém os quatro modos e todas as estatísticas acessíveis;
+- cálculos, histórico, saves e JSONs confirmados sem alterações nesta etapa.
+
+Pendências:
+- validar visualmente rolagem, foco e dimensões em navegadores desktop e dispositivos móveis reais;
+- compartilhamento unificado permanece como próxima etapa;
+- calendário/histórico visual continua futuro.
+
+Próximo passo:
+- implementar o compartilhamento unificado do dia usando os resumos do histórico v1.
+
+
+## 20/08/2026 — Correção responsiva da Home mobile
+
+Implementado:
+- largura da Home consolidada em `100%` da área útil abaixo de 480 px;
+- limites antigos de 360/400 px neutralizados apenas dentro da Home mobile;
+- margem lateral uniforme de 12 px aplicada ao conteúdo e ao cabeçalho;
+- cards de progresso, estatísticas e quatro modos alinhados na mesma largura;
+- em 412 px, largura útil calculada em 388 px, com 12 px de margem em cada lado;
+- aba de links úteis movida da lateral esquerda para um botão flutuante compacto no canto inferior direito;
+- painel de links passa a abrir para cima e para a esquerda, sem alterar a largura do conteúdo;
+- posição considera a área segura e evita sobreposição com o botão de desenvolvimento;
+- `html` e `body` protegidos contra overflow horizontal no breakpoint móvel;
+- desktop e funcionalidade do widget preservados.
+
+Larguras móveis calculadas:
+- 360 px: 336 px úteis e margens de 12 px;
+- 390 px: 366 px úteis e margens de 12 px;
+- 412 px: 388 px úteis e margens de 12 px;
+- 430 px: 406 px úteis e margens de 12 px;
+- 480 px: 456 px úteis e margens de 12 px.
+
+Testado:
+- `node --check script.js` e `git diff --check` sem erros;
+- estrutura CSS e breakpoints verificados;
+- largura, padding e posicionamento calculados para 360, 390, 412, 430 e 480 px;
+- widget e painel fechado/aberto verificados sem ultrapassar `100vw` pelas regras de layout;
+- IDs e listener do widget preservados;
+- JSONs, mecânicas, saves, histórico, streak e estatísticas confirmados sem alterações.
+
+Pendências:
+- medir `document.documentElement.scrollWidth` e `window.innerWidth` em navegador móvel real;
+- validar visualmente o alinhamento em dispositivos reais;
+- compartilhamento unificado permanece como próxima etapa.
+
+Próximo passo:
+- implementar o compartilhamento unificado do dia usando os resumos do histórico v1.
+
+
+## 21/08/2026 — Compartilhamento unificado do dia 4/4
+
+Implementado:
+- botão `COMPARTILHAR DIA` no card persistente de conclusão da Home;
+- disponibilidade derivada exclusivamente de `obterProgressoDiario().complete`, permanecendo oculta entre `0/4` e `3/4` e após troca de data;
+- função reutilizável `gerarTextoCompartilhamentoDiario()` baseada somente nos resumos seguros de `timaodle_history_v1`;
+- texto compacto com data local, tentativas do Clássico, tentativas e resultado do Foto, acertos e resultado do Mais ou Menos, `3/3` e erros do Onze Inicial, streak atual e fechamento `4/4`;
+- nenhuma resposta secreta, nome de jogador, palpite, placar ou escalação incluída no resumo;
+- URL oficial centralizada em `URL_OFICIAL_TIMAODLE`, também reutilizada pelo compartilhamento individual do Clássico sem alterar seu formato;
+- Web Share API como primeira opção, clipboard como fallback e feedback temporário de cópia no próprio botão;
+- cancelamento do compartilhamento nativo tratado sem erro e indisponibilidade das duas APIs tratada sem quebrar a interface;
+- botão acessível por teclado, com foco visível e dimensões adequadas para toque;
+- compartilhamentos individuais do Clássico e Onze Inicial preservados.
+
+Testado:
+- geração com vitórias e derrotas, tentativas variadas, acertos variados e erros zero ou maiores;
+- streak de um dia e formatação local `DD/MM/AAAA`;
+- indisponibilidade entre `0/4` e `3/4` e disponibilidade em `4/4`;
+- leitura persistida equivalente ao F5 e troca de data por meio da fonte central de progresso;
+- histórico inexistente, JSON inválido e resumos concluídos com métricas incompletas;
+- Web Share disponível, clipboard como fallback, cancelamento nativo e ausência de ambas as APIs;
+- inspeção automatizada do texto confirmou ausência de nomes, respostas, palpites, placares e jogadores ocultos;
+- `node --check script.js` e `git diff --check` sem erros;
+- referências dos IDs, listener e regras CSS verificadas estaticamente.
+
+Pendências:
+- validar visualmente o botão e o card concluído em navegadores desktop e mobile reais; a captura via Chrome headless falhou neste ambiente por indisponibilidade do processo gráfico;
+- compartilhamento unificado não inclui imagem ou compartilhamento de dias passados;
+- calendário/histórico visual continua futuro.
+
+Próximo passo:
+- definir o escopo do calendário/histórico visual baseado em `timaodle_history_v1` antes de implementar.

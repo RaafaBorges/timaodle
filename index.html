@@ -113,9 +113,14 @@
                         <div><span>MAIS OU MENOS</span><strong id="homeCompletionMoreLess">—</strong></div>
                         <div><span>ONZE INICIAL</span><strong id="homeCompletionLineup">—</strong></div>
                     </div>
-                    <!-- Espaço reservado para o compartilhamento unificado em uma etapa futura. -->
-                    <div id="homeCompletionActions" class="home-completion-actions hidden"></div>
+                    <div id="homeCompletionActions" class="home-completion-actions hidden">
+                        <button id="shareDailyResultBtn" class="home-share-day-btn" type="button" aria-live="polite">
+                            COMPARTILHAR DIA
+                        </button>
+                    </div>
                 </section>
+
+                <button id="btnOpenIntegratedStats" class="home-stats-btn" type="button">Ver estatísticas</button>
 
                 <div class="mode-buttons-container">
                     <button class="pokedle-btn active" id="btnPlayDiario" aria-describedby="homeStatusClassic">
@@ -473,6 +478,16 @@
                 Prefere ver com cor desde já? É só tocar no botão <strong>🎨</strong> no canto da foto, a qualquer
                 momento.</p>
             <button id="photoTutorialCloseBtn" class="form-submit-btn">Entendi, vamos lá!</button>
+        </div>
+    </div>
+
+    <div id="integratedStatsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="integratedStatsTitle">
+        <div class="modal-content integrated-stats-modal-content">
+            <div class="integrated-stats-header">
+                <h2 id="integratedStatsTitle">SUAS ESTATÍSTICAS</h2>
+                <button id="btnCloseIntegratedStats" class="stats-close-btn" type="button" aria-label="Fechar estatísticas">×</button>
+            </div>
+            <div id="integratedStatsContent" class="integrated-stats-scroll"></div>
         </div>
     </div>
 

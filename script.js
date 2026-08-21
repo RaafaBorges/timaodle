@@ -10,6 +10,7 @@ const CHAVE_USERNAME = "timaodle_username";
 const CHAVE_ESTADO_ESCALACAO = "timaodle_escalacao_daily_state";
 const CHAVE_HISTORICO = "timaodle_history_v1";
 const VERSAO_HISTORICO = 1;
+const URL_OFICIAL_TIMAODLE = "timaodle.net";
 
 let jogadores = [];
 let jogadorSecreto = null;
@@ -48,6 +49,8 @@ const homeProgressFillEl = document.getElementById("homeProgressFill");
 const homeStreakCurrentEl = document.getElementById("homeStreakCurrent");
 const homeStreakBestEl = document.getElementById("homeStreakBest");
 const homeCompletionSummaryEl = document.getElementById("homeCompletionSummary");
+const homeCompletionActionsEl = document.getElementById("homeCompletionActions");
+const shareDailyResultBtn = document.getElementById("shareDailyResultBtn");
 const homeCompletionMetricEls = {
     classic: document.getElementById("homeCompletionClassic"),
     photo: document.getElementById("homeCompletionPhoto"),
@@ -60,6 +63,10 @@ const homeStatusEls = {
     moreLess: document.getElementById("homeStatusMoreLess"),
     lineup: document.getElementById("homeStatusLineup")
 };
+const btnOpenIntegratedStats = document.getElementById("btnOpenIntegratedStats");
+const integratedStatsModal = document.getElementById("integratedStatsModal");
+const btnCloseIntegratedStats = document.getElementById("btnCloseIntegratedStats");
+const integratedStatsContent = document.getElementById("integratedStatsContent");
 
 const searchInput = document.getElementById("searchInput");
 const autocompleteList = document.getElementById("autocompleteList");
@@ -332,6 +339,149 @@ function obterStreakGeral(dataReferencia = getDataLocalString()) {
     };
 }
 
+function mediaHistorica(total, quantidade) {
+    return quantidade > 0 ? Number((total / quantidade).toFixed(1)) : 0;
+}
+
+function percentualHistorico(parte, total) {
+    if (total <= 0) return 0;
+    return Number(Math.min(100, Math.max(0, (parte / total) * 100)).toFixed(1));
+}
+
+function numeroHistoricoValido(valor, minimo = 0, maximo = Number.MAX_SAFE_INTEGER) {
+    return Number.isFinite(valor) && valor >= minimo && valor <= maximo;
+}
+
+function obterEstatisticasIntegradas(dataReferencia = getDataLocalString()) {
+    const streak = obterStreakGeral(dataReferencia);
+    const indiceReferencia = indiceDiaCivil(dataReferencia);
+    const distribuicaoClassic = { 1: 0, 2: 0, 3: 0, "4+": 0 };
+    const distribuicaoFoto = Object.fromEntries(Array.from({ length: 6 }, (_, i) => [i + 1, 0]));
+    const distribuicaoMaisMenos = Object.fromEntries(Array.from({ length: 11 }, (_, i) => [i, 0]));
+    const resultado = {
+        geral: {
+            registeredDays: 0, playedDays: 0, completeDays: 0, completedModes: 0,
+            wins: 0, completeDayRate: 0, currentStreak: streak.current,
+            bestStreak: streak.best, lastCompleteDate: streak.lastCompleteDate
+        },
+        classic: {
+            started: 0, completed: 0, wins: 0, completedAttempts: 0,
+            averageAttemptsWins: 0, bestAttempts: 0, distribution: distribuicaoClassic
+        },
+        photo: {
+            started: 0, completed: 0, wins: 0, losses: 0, winRate: 0,
+            averageAttemptsCompleted: 0, averageAttemptsWins: 0, bestWin: 0,
+            distribution: distribuicaoFoto
+        },
+        moreLess: {
+            started: 0, completed: 0, wins: 0, losses: 0, winRate: 0,
+            averageHits: 0, bestResult: 0, worstResult: 0, perfectResults: 0,
+            sevenPlusResults: 0, distribution: distribuicaoMaisMenos
+        },
+        lineup: {
+            started: 0, completed: 0, totalErrors: 0, averageErrors: 0,
+            bestErrors: 0, zeroErrorCompletions: 0, exactScores: 0,
+            exactScoreRate: 0, exactScoreEvaluated: 0, inconsistentCompletions: 0
+        }
+    };
+    if (indiceReferencia === null) return resultado;
+
+    const historico = carregarHistorico();
+    const dias = Object.entries(historico.days || {}).filter(([data, dia]) =>
+        dataHistoricoValida(data) && indiceDiaCivil(data) <= indiceReferencia
+        && dia && typeof dia === "object" && !Array.isArray(dia)
+    );
+    resultado.geral.registeredDays = dias.length;
+
+    const tentativasClassicVitorias = [];
+    const tentativasFotoConcluidas = [];
+    const tentativasFotoVitorias = [];
+    const resultadosMaisMenos = [];
+    const errosLineup = [];
+
+    dias.forEach(([, dia]) => {
+        const modos = ["classic", "photo", "moreLess", "lineup"];
+        if (modos.some(modo => dia[modo]?.started === true)) resultado.geral.playedDays++;
+        if (dia.complete === true) resultado.geral.completeDays++;
+
+        modos.forEach(modo => {
+            const resumo = dia[modo];
+            if (!resumo || typeof resumo !== "object" || Array.isArray(resumo)) return;
+            if (resumo.started === true) resultado[modo].started++;
+            if (resumo.completed !== true) return;
+            resultado[modo].completed++;
+            resultado.geral.completedModes++;
+            const venceu = resumo.outcome === "won" || modo === "classic" || modo === "lineup";
+            if (venceu) resultado.geral.wins++;
+
+            if (modo === "classic") {
+                resultado.classic.wins++;
+                if (numeroHistoricoValido(resumo.attempts, 1)) {
+                    resultado.classic.completedAttempts += resumo.attempts;
+                    tentativasClassicVitorias.push(resumo.attempts);
+                    const faixa = resumo.attempts >= 4 ? "4+" : String(resumo.attempts);
+                    resultado.classic.distribution[faixa]++;
+                }
+            } else if (modo === "photo") {
+                if (resumo.outcome === "won") resultado.photo.wins++;
+                if (resumo.outcome === "lost") resultado.photo.losses++;
+                if (numeroHistoricoValido(resumo.attempts, 1, 6)) {
+                    tentativasFotoConcluidas.push(resumo.attempts);
+                    resultado.photo.distribution[resumo.attempts]++;
+                    if (resumo.outcome === "won") tentativasFotoVitorias.push(resumo.attempts);
+                }
+            } else if (modo === "moreLess") {
+                if (resumo.outcome === "won") resultado.moreLess.wins++;
+                if (resumo.outcome === "lost") resultado.moreLess.losses++;
+                if (numeroHistoricoValido(resumo.hits, 0, 10)) {
+                    resultadosMaisMenos.push(resumo.hits);
+                    resultado.moreLess.distribution[resumo.hits]++;
+                    if (resumo.hits === 10) resultado.moreLess.perfectResults++;
+                    if (resumo.hits >= 7) resultado.moreLess.sevenPlusResults++;
+                }
+            } else if (modo === "lineup") {
+                if (numeroHistoricoValido(resumo.errors, 0)) {
+                    errosLineup.push(resumo.errors);
+                    resultado.lineup.totalErrors += resumo.errors;
+                    if (resumo.errors === 0) resultado.lineup.zeroErrorCompletions++;
+                }
+                if (typeof resumo.exactScore === "boolean") {
+                    resultado.lineup.exactScoreEvaluated++;
+                    if (resumo.exactScore) resultado.lineup.exactScores++;
+                }
+                if (numeroHistoricoValido(resumo.resolved, 0) && numeroHistoricoValido(resumo.total, 1)
+                    && resumo.resolved !== resumo.total) resultado.lineup.inconsistentCompletions++;
+            }
+        });
+    });
+
+    resultado.geral.completeDayRate = percentualHistorico(resultado.geral.completeDays, resultado.geral.playedDays);
+    resultado.classic.averageAttemptsWins = mediaHistorica(
+        tentativasClassicVitorias.reduce((soma, valor) => soma + valor, 0), tentativasClassicVitorias.length
+    );
+    resultado.classic.bestAttempts = tentativasClassicVitorias.length ? Math.min(...tentativasClassicVitorias) : 0;
+    resultado.photo.winRate = percentualHistorico(resultado.photo.wins, resultado.photo.completed);
+    resultado.photo.averageAttemptsCompleted = mediaHistorica(
+        tentativasFotoConcluidas.reduce((soma, valor) => soma + valor, 0), tentativasFotoConcluidas.length
+    );
+    resultado.photo.averageAttemptsWins = mediaHistorica(
+        tentativasFotoVitorias.reduce((soma, valor) => soma + valor, 0), tentativasFotoVitorias.length
+    );
+    resultado.photo.bestWin = tentativasFotoVitorias.length ? Math.min(...tentativasFotoVitorias) : 0;
+    resultado.moreLess.winRate = percentualHistorico(resultado.moreLess.wins, resultado.moreLess.completed);
+    resultado.moreLess.averageHits = mediaHistorica(
+        resultadosMaisMenos.reduce((soma, valor) => soma + valor, 0), resultadosMaisMenos.length
+    );
+    resultado.moreLess.bestResult = resultadosMaisMenos.length ? Math.max(...resultadosMaisMenos) : 0;
+    resultado.moreLess.worstResult = resultadosMaisMenos.length ? Math.min(...resultadosMaisMenos) : 0;
+    resultado.lineup.averageErrors = mediaHistorica(resultado.lineup.totalErrors, errosLineup.length);
+    resultado.lineup.bestErrors = errosLineup.length ? Math.min(...errosLineup) : 0;
+    resultado.lineup.exactScoreRate = percentualHistorico(
+        resultado.lineup.exactScores, resultado.lineup.exactScoreEvaluated
+    );
+    return resultado;
+}
+
 function marcarConclusaoCelebrada(data) {
     const historico = carregarHistorico();
     const dia = historico.days[data];
@@ -343,6 +493,95 @@ function marcarConclusaoCelebrada(data) {
 
 function pluralizarQuantidade(valor, singular, plural) {
     return `${valor} ${valor === 1 ? singular : plural}`;
+}
+
+function formatarDataCompartilhamento(data) {
+    if (!dataHistoricoValida(data)) return "";
+    const [ano, mes, dia] = data.split("-");
+    return `${dia}/${mes}/${ano}`;
+}
+
+function complementoResultadoCompartilhamento(modo) {
+    if (modo?.outcome === "won") return " · vitória";
+    if (modo?.outcome === "lost") return " · derrota";
+    return "";
+}
+
+function gerarTextoCompartilhamentoDiario(data = getDataLocalString()) {
+    const progresso = obterProgressoDiario(data);
+    if (!progresso.complete) return null;
+
+    const { classic, photo, moreLess, lineup } = progresso.modes;
+    const streak = obterStreakGeral(data);
+    const dataFormatada = formatarDataCompartilhamento(data);
+    const linhaClassic = numeroHistoricoValido(classic?.attempts, 1)
+        ? `✅ Clássico — ${pluralizarQuantidade(classic.attempts, "tentativa", "tentativas")}`
+        : "✅ Clássico — concluído";
+    const linhaFoto = numeroHistoricoValido(photo?.attempts, 1, 6)
+        ? `✅ Foto — ${photo.attempts}/6${complementoResultadoCompartilhamento(photo)}`
+        : `✅ Foto — concluído${complementoResultadoCompartilhamento(photo)}`;
+    const linhaMaisMenos = numeroHistoricoValido(moreLess?.hits, 0, 10)
+        ? `✅ Mais ou Menos — ${moreLess.hits}/10${complementoResultadoCompartilhamento(moreLess)}`
+        : `✅ Mais ou Menos — concluído${complementoResultadoCompartilhamento(moreLess)}`;
+    const linhaOnzeInicial = numeroHistoricoValido(lineup?.errors, 0)
+        ? `✅ Onze Inicial — 3/3 · ${pluralizarQuantidade(lineup.errors, "erro", "erros")}`
+        : "✅ Onze Inicial — 3/3";
+    const linhaStreak = streak.current > 0
+        ? `🔥 Sequência: ${pluralizarQuantidade(streak.current, "dia", "dias")}`
+        : null;
+
+    return [
+        `TIMÃODLE — ${dataFormatada} 🖤🤍`,
+        "",
+        linhaClassic,
+        linhaFoto,
+        linhaMaisMenos,
+        linhaOnzeInicial,
+        "",
+        linhaStreak,
+        "🏁 4/4 desafios concluídos",
+        "",
+        URL_OFICIAL_TIMAODLE
+    ].filter(linha => linha !== null).join("\n");
+}
+
+let timerFeedbackCompartilhamentoDiario = null;
+
+function mostrarFeedbackCompartilhamentoDiario(texto, duracao = 2000) {
+    if (!shareDailyResultBtn) return;
+    clearTimeout(timerFeedbackCompartilhamentoDiario);
+    shareDailyResultBtn.textContent = texto;
+    timerFeedbackCompartilhamentoDiario = setTimeout(() => {
+        shareDailyResultBtn.textContent = "COMPARTILHAR DIA";
+    }, duracao);
+}
+
+async function compartilharResultadoDiario() {
+    const texto = gerarTextoCompartilhamentoDiario();
+    if (!texto) return false;
+
+    if (typeof navigator.share === "function") {
+        try {
+            await navigator.share({ text: texto });
+            return true;
+        } catch (error) {
+            if (error?.name === "AbortError") return false;
+            console.warn("Falha ao compartilhar o resumo diário:", error);
+        }
+    }
+
+    if (typeof navigator.clipboard?.writeText === "function") {
+        try {
+            await navigator.clipboard.writeText(texto);
+            mostrarFeedbackCompartilhamentoDiario("COPIADO! ✓");
+            return true;
+        } catch (error) {
+            console.warn("Falha ao copiar o resumo diário:", error);
+        }
+    }
+
+    mostrarFeedbackCompartilhamentoDiario("NÃO FOI POSSÍVEL COPIAR", 2600);
+    return false;
 }
 
 function statusVisualDoModo(modo, tipo) {
@@ -413,6 +652,11 @@ function renderizarProgressoHome() {
         }
     }
 
+    if (homeCompletionActionsEl) {
+        homeCompletionActionsEl.classList.toggle("hidden", !progresso.complete);
+    }
+    if (shareDailyResultBtn) shareDailyResultBtn.disabled = !progresso.complete;
+
     Object.entries(homeStatusEls).forEach(([tipo, elemento]) => {
         if (!elemento) return;
         const status = statusVisualDoModo(progresso.modes[tipo], tipo);
@@ -427,15 +671,146 @@ function renderizarProgressoHome() {
         && marcarConclusaoCelebrada(progresso.data)) {
         const reduzirMovimento = typeof window !== "undefined"
             && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-        if (reduzirMovimento) return;
-        homeDailyProgressEl.classList.remove("celebrate-once");
-        void homeDailyProgressEl.offsetWidth;
-        homeDailyProgressEl.classList.add("celebrate-once");
-        homeDailyProgressEl.addEventListener("animationend", () => {
+        if (!reduzirMovimento) {
             homeDailyProgressEl.classList.remove("celebrate-once");
-        }, { once: true });
+            void homeDailyProgressEl.offsetWidth;
+            homeDailyProgressEl.classList.add("celebrate-once");
+            homeDailyProgressEl.addEventListener("animationend", () => {
+                homeDailyProgressEl.classList.remove("celebrate-once");
+            }, { once: true });
+        }
+    }
+
+    if (integratedStatsModal && !integratedStatsModal.classList.contains("hidden")) {
+        renderizarEstatisticasIntegradas();
     }
 }
+
+function itemEstatistica(valor, rotulo) {
+    return `<div><strong>${valor}</strong><span>${rotulo}</span></div>`;
+}
+
+function formatarDistribuicao(distribuicao) {
+    return Object.entries(distribuicao)
+        .map(([faixa, total]) => `
+            <span class="distribution-chip">
+                <span>${faixa}</span>
+                <strong>${total}</strong>
+            </span>`)
+        .join("");
+}
+
+function renderizarEstatisticasIntegradas() {
+    if (!integratedStatsContent) return;
+    const estatisticas = obterEstatisticasIntegradas();
+    const { geral, classic, photo, moreLess, lineup } = estatisticas;
+
+    if (geral.playedDays === 0) {
+        integratedStatsContent.innerHTML = `
+            <p class="stats-empty-state">Suas estatísticas começarão a aparecer conforme você joga os desafios diários.</p>`;
+        return;
+    }
+
+    integratedStatsContent.innerHTML = `
+        <section class="integrated-stats-general" aria-label="Estatísticas gerais">
+            <div class="integrated-stat-box"><strong>${geral.currentStreak}</strong><span>Sequência</span></div>
+            <div class="integrated-stat-box"><strong>${geral.bestStreak}</strong><span>Recorde</span></div>
+            <div class="integrated-stat-box"><strong>${geral.completeDays}</strong><span>Dias 4/4</span></div>
+            <div class="integrated-stat-box"><strong>${geral.playedDays}</strong><span>Dias jogados</span></div>
+            <div class="integrated-stat-box"><strong>${geral.registeredDays}</strong><span>Dias registrados</span></div>
+            <div class="integrated-stat-box"><strong>${geral.completedModes}</strong><span>Modos concluídos</span></div>
+            <div class="integrated-stat-box"><strong>${geral.wins}</strong><span>Vitórias</span></div>
+            <div class="integrated-stat-box"><strong>${geral.completeDayRate}%</strong><span>Dias completos</span></div>
+        </section>
+        <div class="integrated-mode-grid">
+            <section class="integrated-mode-card">
+                <h3>CLÁSSICO</h3>
+                <div class="integrated-mode-stats">
+                    ${itemEstatistica(classic.started, "Iniciadas")}
+                    ${itemEstatistica(classic.completed, "Concluídas")}
+                    ${itemEstatistica(classic.wins, "Vitórias")}
+                    ${itemEstatistica(classic.completedAttempts, "Tentativas")}
+                    ${itemEstatistica(classic.averageAttemptsWins, "Média/vitória")}
+                    ${itemEstatistica(classic.bestAttempts, "Melhor")}
+                </div>
+                <div class="integrated-distribution">
+                    <span class="distribution-title">Tentativas</span>
+                    <div class="distribution-grid">${formatarDistribuicao(classic.distribution)}</div>
+                </div>
+            </section>
+            <section class="integrated-mode-card">
+                <h3>FOTO</h3>
+                <div class="integrated-mode-stats">
+                    ${itemEstatistica(photo.started, "Iniciadas")}
+                    ${itemEstatistica(photo.completed, "Concluídas")}
+                    ${itemEstatistica(photo.wins, "Vitórias")}
+                    ${itemEstatistica(photo.losses, "Derrotas")}
+                    ${itemEstatistica(`${photo.winRate}%`, "Taxa de vitória")}
+                    ${itemEstatistica(photo.averageAttemptsCompleted, "Média geral")}
+                    ${itemEstatistica(photo.averageAttemptsWins, "Média/vitória")}
+                    ${itemEstatistica(photo.bestWin, "Melhor vitória")}
+                </div>
+                <div class="integrated-distribution">
+                    <span class="distribution-title">Tentativas</span>
+                    <div class="distribution-grid">${formatarDistribuicao(photo.distribution)}</div>
+                </div>
+            </section>
+            <section class="integrated-mode-card">
+                <h3>MAIS OU MENOS</h3>
+                <div class="integrated-mode-stats">
+                    ${itemEstatistica(moreLess.started, "Iniciadas")}
+                    ${itemEstatistica(moreLess.completed, "Concluídas")}
+                    ${itemEstatistica(moreLess.wins, "Vitórias")}
+                    ${itemEstatistica(moreLess.losses, "Derrotas")}
+                    ${itemEstatistica(`${moreLess.winRate}%`, "Taxa de vitória")}
+                    ${itemEstatistica(moreLess.averageHits, "Média de acertos")}
+                    ${itemEstatistica(moreLess.bestResult, "Melhor")}
+                    ${itemEstatistica(moreLess.worstResult, "Pior")}
+                    ${itemEstatistica(moreLess.perfectResults, "Resultados 10/10")}
+                    ${itemEstatistica(moreLess.sevenPlusResults, "Resultados 7+")}
+                </div>
+                <div class="integrated-distribution">
+                    <span class="distribution-title">Acertos</span>
+                    <div class="distribution-grid distribution-grid-wide">${formatarDistribuicao(moreLess.distribution)}</div>
+                </div>
+            </section>
+            <section class="integrated-mode-card">
+                <h3>ONZE INICIAL</h3>
+                <div class="integrated-mode-stats">
+                    ${itemEstatistica(lineup.started, "Iniciadas")}
+                    ${itemEstatistica(lineup.completed, "Concluídas")}
+                    ${itemEstatistica(lineup.totalErrors, "Erros")}
+                    ${itemEstatistica(lineup.averageErrors, "Média de erros")}
+                    ${itemEstatistica(lineup.bestErrors, "Menor número")}
+                    ${itemEstatistica(lineup.zeroErrorCompletions, "Zero erros")}
+                    ${itemEstatistica(lineup.exactScores, "Placares exatos")}
+                    ${itemEstatistica(`${lineup.exactScoreRate}%`, "Taxa de placar")}
+                </div>
+            </section>
+        </div>`;
+}
+
+function abrirEstatisticasIntegradas() {
+    renderizarEstatisticasIntegradas();
+    integratedStatsModal?.classList.remove("hidden");
+    btnCloseIntegratedStats?.focus();
+}
+
+function fecharEstatisticasIntegradas() {
+    integratedStatsModal?.classList.add("hidden");
+    btnOpenIntegratedStats?.focus();
+}
+
+btnOpenIntegratedStats?.addEventListener("click", abrirEstatisticasIntegradas);
+btnCloseIntegratedStats?.addEventListener("click", fecharEstatisticasIntegradas);
+integratedStatsModal?.addEventListener("click", event => {
+    if (event.target === integratedStatsModal) fecharEstatisticasIntegradas();
+});
+document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && integratedStatsModal && !integratedStatsModal.classList.contains("hidden")) {
+        fecharEstatisticasIntegradas();
+    }
+});
 
 // Hash simples e determinístico (mesma string sempre gera o mesmo número)
 function hashString(str) {
@@ -816,7 +1191,7 @@ function gerarTextoCompartilhamento() {
     const tentativas = estadoDiario.tentativas.length;
     const grid = gerarGridEmojis();
 
-    return `Timãodle #${numero} — ${tentativas}/∞ 🖤\n\n${grid}\n\ntimaodle.net`;
+    return `Timãodle #${numero} — ${tentativas}/∞ 🖤\n\n${grid}\n\n${URL_OFICIAL_TIMAODLE}`;
 }
 
 async function compartilharResultado() {
@@ -842,6 +1217,7 @@ async function compartilharResultado() {
 }
 
 shareResultBtn.addEventListener("click", compartilharResultado);
+shareDailyResultBtn?.addEventListener("click", compartilharResultadoDiario);
 
 
 

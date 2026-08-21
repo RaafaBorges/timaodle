@@ -547,6 +547,325 @@ input:focus-visible {
     border-color: color-mix(in srgb, var(--gold) 45%, var(--line));
 }
 
+.home-share-day-btn {
+    width: 100%;
+    min-height: 44px;
+    padding: 11px 16px;
+    background: var(--gold);
+    border: 1px solid var(--gold);
+    border-radius: var(--radius-s);
+    color: #090908;
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0.7px;
+    cursor: pointer;
+    transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+}
+
+.home-share-day-btn:hover {
+    background: #c9a760;
+    border-color: #c9a760;
+}
+
+.home-share-day-btn:active {
+    transform: translateY(1px);
+}
+
+.home-share-day-btn:focus-visible {
+    outline: 3px solid var(--ink);
+    outline-offset: 2px;
+}
+
+.home-share-day-btn:disabled {
+    cursor: default;
+    opacity: 0.55;
+}
+
+.home-stats-btn {
+    width: 100%;
+    max-width: 360px;
+    padding: 9px 14px;
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-s);
+    color: var(--gold);
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.home-stats-btn:hover {
+    background: var(--surface-2);
+    border-color: var(--gold);
+}
+
+.integrated-stats-modal-content {
+    max-width: 680px;
+    max-height: min(84vh, 760px);
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    text-align: left;
+}
+
+.integrated-stats-header {
+    flex-shrink: 0;
+    padding: 22px 24px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line-soft);
+}
+
+.integrated-stats-header h2 {
+    margin: 0;
+    color: var(--gold);
+}
+
+.stats-close-btn {
+    position: static;
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    color: var(--ink-muted);
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.stats-close-btn:hover {
+    color: var(--ink);
+    border-color: var(--gold);
+}
+
+.integrated-stats-scroll {
+    min-height: 0;
+    padding: 18px 24px 24px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--gold) var(--surface);
+}
+
+.integrated-stats-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+
+.integrated-stats-scroll::-webkit-scrollbar-track {
+    background: var(--surface);
+}
+
+.integrated-stats-scroll::-webkit-scrollbar-thumb {
+    background: var(--gold);
+    border: 2px solid var(--surface);
+    border-radius: 999px;
+}
+
+.stats-empty-state {
+    padding: 22px 8px;
+    color: var(--ink-muted);
+    font-size: 13px;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.integrated-stats-general,
+.integrated-mode-stats {
+    display: grid;
+    gap: 8px;
+}
+
+.integrated-stats-general {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-bottom: 14px;
+}
+
+.integrated-stat-box {
+    min-width: 0;
+    padding: 10px 7px;
+    background: rgba(0, 0, 0, 0.18);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-s);
+    text-align: center;
+}
+
+.integrated-stat-box strong,
+.integrated-stat-box span {
+    display: block;
+}
+
+.integrated-stat-box strong {
+    color: var(--gold);
+    font-family: var(--font-display);
+    font-size: 24px;
+    line-height: 1;
+}
+
+.integrated-stat-box span {
+    margin-top: 4px;
+    color: var(--ink-muted);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.45px;
+    text-transform: uppercase;
+}
+
+.integrated-mode-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.integrated-mode-card {
+    min-width: 0;
+    padding: 15px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-m);
+}
+
+.integrated-mode-card h3 {
+    margin-bottom: 9px;
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 16px;
+    letter-spacing: 1px;
+}
+
+.integrated-mode-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.integrated-mode-stats div {
+    min-width: 0;
+}
+
+.integrated-mode-stats strong,
+.integrated-mode-stats span {
+    display: block;
+}
+
+.integrated-mode-stats strong {
+    color: var(--gold);
+    font-size: 15px;
+}
+
+.integrated-mode-stats span {
+    color: var(--ink-muted);
+    font-size: 9px;
+    font-weight: 600;
+    line-height: 1.3;
+    text-transform: uppercase;
+}
+
+.integrated-distribution {
+    margin-top: 10px;
+    padding-top: 9px;
+    border-top: 1px solid var(--line-soft);
+}
+
+.distribution-title {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--ink-muted);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.55px;
+    text-transform: uppercase;
+}
+
+.distribution-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px;
+}
+
+.distribution-grid-wide {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.distribution-chip {
+    min-width: 0;
+    padding: 5px 3px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--line-soft);
+    border-radius: 5px;
+    text-align: center;
+}
+
+.distribution-chip span,
+.distribution-chip strong {
+    display: block;
+}
+
+.distribution-chip span {
+    color: var(--ink-muted);
+    font-size: 8px;
+    font-weight: 700;
+}
+
+.distribution-chip strong {
+    margin-top: 2px;
+    color: var(--ink);
+    font-size: 12px;
+}
+
+@media (max-width: 600px) {
+    #integratedStatsModal {
+        padding: max(8px, env(safe-area-inset-top)) 10px max(8px, env(safe-area-inset-bottom));
+        overscroll-behavior: contain;
+    }
+
+    .integrated-stats-modal-content {
+        max-height: calc(100dvh - 20px);
+        border-radius: 12px;
+    }
+
+    .integrated-stats-header {
+        padding: 14px 14px 12px;
+    }
+
+    .integrated-stats-scroll {
+        padding: 14px;
+    }
+
+    .integrated-stats-general {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .integrated-mode-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 360px) {
+    .integrated-mode-card {
+        padding: 12px 10px;
+    }
+
+    .integrated-mode-stats {
+        gap: 7px 5px;
+    }
+
+    .integrated-mode-stats strong {
+        font-size: 14px;
+    }
+
+    .distribution-grid-wide {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
 .home-completion-summary {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -647,8 +966,19 @@ input:focus-visible {
         gap: 16px;
     }
 
+    .home-daily-info,
+    .home-progress-card,
+    .home-stats-btn,
+    .mode-buttons-container {
+        max-width: 400px;
+    }
+
     .home-progress-card {
         padding: 12px 13px;
+    }
+
+    .home-progress-card.is-complete {
+        box-shadow: inset 0 2px 0 var(--gold);
     }
 
     .home-progress-score strong {
@@ -4192,5 +4522,79 @@ body {
     #maisMenosView .mm-player-stat.revealed,
     #maisMenosView .mm-round-feedback {
         animation: none;
+    }
+}
+
+/* ==========================================================================
+   HOME MOBILE — ALINHAMENTO DE VIEWPORT
+   Mantém 12 px de margem real e neutraliza limites antigos de 360/400 px.
+   ========================================================================== */
+@media (max-width: 480px) {
+    html,
+    body {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: clip;
+    }
+
+    .header-inner,
+    .app-shell .page-content {
+        width: 100%;
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    #homeView.home-menu {
+        width: 100%;
+        max-width: none;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    #homeView .home-daily-info,
+    #homeView .home-progress-card,
+    #homeView .home-stats-btn,
+    #homeView .mode-buttons-container {
+        width: 100%;
+        max-width: none;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .useful-links-widget {
+        left: auto;
+        right: 12px;
+        top: auto;
+        bottom: max(64px, calc(env(safe-area-inset-bottom) + 64px));
+        transform: none;
+    }
+
+    .useful-links-btn,
+    .useful-links-btn:hover {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5);
+    }
+
+    #usefulLinksArrow {
+        display: inline-block;
+        transform: rotate(-90deg);
+    }
+
+    .useful-links-panel {
+        left: auto;
+        right: 0;
+        top: auto;
+        bottom: calc(100% + 8px);
+        width: min(260px, calc(100vw - 24px));
+        max-width: none;
+        margin: 0;
+        transform: translateY(6px);
+    }
+
+    .useful-links-widget.open .useful-links-panel,
+    .useful-links-widget:hover .useful-links-panel {
+        transform: translateY(0);
     }
 }
