@@ -2078,3 +2078,66 @@ Pendências:
 
 Próximo passo:
 - executar validação visual real dos quatro modos consolidados antes da auditoria final da v2.7.
+
+
+## 21/08/2026 — v2.7: auditoria e limpeza estrutural final
+
+Implementado:
+- auditoria pós-refatoração comparada ao commit final da v2.6 (`e830feb`);
+- cinco blocos de `prefers-reduced-motion` consolidados em um único bloco, preservando
+  celebração 4/4, Clássico, Onze Inicial, widget, overlay e barra temporal do MM;
+- CSS morto confirmado removido: `.stats-grid`, `.stat-box`, `.stat-number`, `.stat-label`,
+  `.pitch-box-top`, `.pitch-box-bottom` e o alias `.escalacao-end-message`;
+- override antigo de 230 px do painel do widget removido por ser totalmente superado pela
+  regra final `min(260px, calc(100vw - 24px))` no mesmo breakpoint;
+- widget preservado fixo na lateral do desktop e no canto inferior direito do mobile,
+  sem participar do eixo do shell nem criar largura estrutural;
+- contrato estrutural ampliado apenas para movimento reduzido, contenção do widget e
+  ausência dos seletores mortos confirmados;
+- nenhuma mecânica, HTML, JavaScript, save, seed, texto ou JSON foi alterado.
+
+Métricas objetivas (`style.css`):
+- final da v2.6 → agora: 4.709 → 4.262 linhas;
+- blocos aproximados: 683 → 592;
+- seletores distintos: 527 → 499;
+- seletores repetidos: 168 → 128;
+- media queries: 20 → 14;
+- `!important`: 2 → 2, ambos ainda necessários (`.hidden` e fallback contra filtro inline).
+
+Mapa final de media queries:
+- 480 px: Home (conclusão), Clássico, header, tipografia global, duas camadas residuais
+  do Onze Inicial, MM e widget;
+- 600 px: modal de estatísticas;
+- 360 px: modais/estatísticas, Onze Inicial e MM;
+- 680 px: MM;
+- movimento reduzido: um bloco global consolidado;
+- não existem media queries em 768 px; esse tamanho usa as regras fluidas de base.
+
+Auditoria de CSS morto:
+- confirmadamente morto e removido: grupos listados acima;
+- provavelmente morto: nenhum após cruzamento com todos os HTMLs, JS e contrato;
+- incerto e preservado: bases históricas do Onze Inicial que ainda fornecem propriedades
+  residuais e seletores das páginas legais/contato;
+- ainda necessário: classes dinâmicas documentadas no contrato.
+
+Consistência visual:
+- diferenças de largura dos modos, altura do input do Onze Inicial, cards e resultados
+  foram classificadas como intencionais;
+- status bar, voltar, foco, autocomplete e ações comuns permanecem na base compartilhada;
+- nenhuma inconsistência acidental adicional de baixo risco foi confirmada nesta auditoria.
+
+Autocompletes:
+- teclado atual preserva setas, Enter, Escape e estado visual `.autocomplete-active`;
+- pendem `role="combobox"`, `aria-expanded`, `aria-controls`, `aria-activedescendant`,
+  `role="listbox"`, `role="option"` e sincronização da seleção ARIA;
+- essa alteração permanece separada por envolver HTML e comportamento dinâmico.
+
+Pendências:
+- smoke test continua dependente de navegador headless funcional;
+- validação visual manual completa nos viewports prioritários ainda obrigatória;
+- ARIA completa dos três autocompletes continua pendente;
+- quatro formações 4-2-3-1 ainda aguardam validação histórica;
+- a v2.7 não está marcada como concluída.
+
+Próximo passo:
+- executar o checklist visual final e, depois, implementar a semântica ARIA dos autocompletes.

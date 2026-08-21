@@ -176,6 +176,23 @@ test("Onze Inicial preserva campo, dense-line, placar e resultado", () => {
     }
 });
 
+test("hardening responsivo final preserva movimento reduzido e widget", () => {
+    assert.equal((css.match(/@media\s*\(prefers-reduced-motion:\s*reduce\)/g) || []).length, 1);
+    for (const selector of [
+        ".home-progress-card.celebrate-once", ".slot-btn.correct",
+        "#gameView .cell.reveal", "#gameView .shake", ".useful-links-btn",
+        "#maisMenosView .mm-round-feedback", "#maisMenosView .mm-round-feedback::after"
+    ]) {
+        assert.ok(css.includes(selector), selector);
+    }
+    assert.match(cssRule(".useful-links-widget"), /position:\s*fixed/);
+    assert.match(cssRule(".useful-links-panel"), /max-width:\s*calc\(100vw - 70px\)/);
+    assert.ok(css.includes("width: min(260px, calc(100vw - 24px))"));
+    for (const deadSelector of [".stats-grid", ".stat-box", ".stat-number", ".pitch-box-top", ".pitch-box-bottom", ".escalacao-end-message"]) {
+        assert.ok(!css.includes(deadSelector), deadSelector);
+    }
+});
+
 test("viewports canônicos da v2.7 permanecem formalizados", () => {
     assert.deepEqual(contract.viewports.map(viewport => viewport.width), [360, 390, 412, 430, 480, 768, 1440, 412]);
     assert.ok(contract.viewports.some(viewport => viewport.height <= 600), "viewport baixo ausente");

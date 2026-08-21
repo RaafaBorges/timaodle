@@ -99,3 +99,13 @@ node tests/viewport-smoke.js
 - Placar, busca com avatar, feedback `aria-live`, resultado, countdown e compartilhar mantêm
   variantes proprietárias.
 - Os breakpoints 480 e 360 px preservam os degraus de campo, jogadores, labels e placar.
+
+## Hardening responsivo final
+
+- Existe um único bloco `prefers-reduced-motion`, cobrindo celebração 4/4, Clássico,
+  Onze Inicial, widget e todas as animações temporais do Mais ou Menos.
+- O widget permanece fixo na lateral no desktop e migra para o canto inferior direito até
+  480 px; seu painel usa limites vinculados ao viewport e não participa da largura do shell.
+- Seletores confirmadamente mortos do modal estatístico antigo e das caixas inexistentes
+  do campo não fazem mais parte do CSS.
+- A validação ARIA completa dos três autocompletes permanece uma etapa funcional separada.
