@@ -89,6 +89,18 @@ test("Como Jogar preserva largura e grid responsivos próprios", () => {
     assert.ok(css.includes("word-break: normal"));
 });
 
+test("componentes compartilhados preservam base e variantes", () => {
+    assert.match(cssRule(".search-box input"), /min-height:\s*50px/);
+    assert.match(cssRule(".search-box input:focus"), /box-shadow:[^;]*var\(--gold-soft\)/);
+    assert.match(cssRule(".autocomplete-items"), /max-height:\s*190px/);
+    assert.match(cssRule(".autocomplete-items div"), /min-height:\s*46px/);
+    assert.match(cssRule(".back-btn"), /width:\s*40px/);
+    assert.match(cssRule(".daily-status-bar"), /display:\s*flex/);
+    assert.match(cssRule(".daily-end-message"), /font-size:\s*14px/);
+    assert.ok(css.includes(".share-btn,\n.form-submit-btn"));
+    assert.ok(css.includes("#escalacaoView .search-box input"), "variante de busca do Onze Inicial ausente");
+});
+
 test("viewports canônicos da v2.7 permanecem formalizados", () => {
     assert.deepEqual(contract.viewports.map(viewport => viewport.width), [360, 390, 412, 430, 480, 768, 1440, 412]);
     assert.ok(contract.viewports.some(viewport => viewport.height <= 600), "viewport baixo ausente");

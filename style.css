@@ -1080,6 +1080,90 @@ body.modal-open .page-content {
     display: none !important;
 }
 
+/* ==========================================================================
+   COMPONENTES COMPARTILHADOS — BUSCA, AÇÕES, STATUS E FEEDBACK
+   Largura e posicionamento permanecem sob responsabilidade de cada modo.
+   ========================================================================== */
+.search-box {
+    position: relative;
+    width: 100%;
+}
+
+.search-box input {
+    width: 100%;
+    min-height: 50px;
+    padding: 13px 17px;
+    border: 2px solid var(--line);
+    border-radius: var(--radius-m);
+    background: #10100f;
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    text-align: center;
+    transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.search-box input::placeholder {
+    color: var(--ink-faint);
+    font-weight: 600;
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: var(--gold);
+    background-color: var(--surface-2);
+    box-shadow: 0 0 0 3px var(--gold-soft);
+}
+
+.search-box input:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.autocomplete-items {
+    position: absolute;
+    z-index: 99;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 190px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border: 1px solid var(--gold);
+    border-top: none;
+    border-radius: 0 0 var(--radius-m) var(--radius-m);
+    background-color: var(--surface-2);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.45);
+    font-family: var(--font-body);
+    scrollbar-width: thin;
+    scrollbar-color: var(--gold) var(--surface-2);
+}
+
+.autocomplete-items div {
+    min-height: 46px;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--line-soft);
+    color: var(--ink);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 800;
+    text-align: left;
+    transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.autocomplete-items div:last-child {
+    border-bottom: none;
+}
+
+.autocomplete-items div:hover,
+.autocomplete-items div.autocomplete-active,
+.autocomplete-items .autocomplete-active {
+    background: var(--gold-soft);
+    color: var(--ink);
+}
+
 .game-view {
     width: 100%;
     display: flex;
@@ -1133,8 +1217,8 @@ body.modal-open .page-content {
 }
 
 .back-btn {
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background-color: var(--surface-2);
     border: 1px solid var(--line);
@@ -1154,62 +1238,85 @@ body.modal-open .page-content {
 }
 
 .daily-label {
-    font-size: 12.5px;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 700;
     color: var(--ink);
     letter-spacing: 0.2px;
 }
 
 .daily-timer {
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 600;
     color: var(--ink-muted);
 }
 
 .daily-timer strong {
     color: var(--gold);
     font-family: var(--font-body);
-    font-weight: 700;
+    font-weight: 800;
     letter-spacing: 0.3px;
 }
 
-.daily-end-message {
+.daily-end-message,
+.escalacao-feedback {
     width: 100%;
     text-align: center;
-    font-size: 13px;
-    color: var(--ink-muted);
     background-color: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--radius-s);
+}
+
+.daily-end-message {
+    color: var(--ink-muted);
+    font-size: 14px;
+    font-weight: 500;
     padding: 12px 16px;
-    line-height: 1.5;
+    line-height: 1.6;
 }
 
 .daily-end-message strong {
     color: var(--gold);
+    font-weight: 800;
+}
+
+.share-btn,
+.form-submit-btn {
+    min-height: 44px;
+    padding-inline: 22px;
+    background: var(--gold);
+    border: none;
+    border-radius: var(--radius-s);
+    color: #17150f;
+    cursor: pointer;
+    font-family: var(--font-body);
+    letter-spacing: 0.2px;
+    transition: filter 0.15s ease, transform 0.1s ease;
 }
 
 .share-btn {
     align-self: center;
-    background: var(--gold);
-    color: #17150f;
-    border: none;
-    border-radius: var(--radius-s);
-    padding: 12px 22px;
-    font-family: var(--font-body);
-    font-weight: 700;
-    font-size: 13.5px;
-    letter-spacing: 0.2px;
-    cursor: pointer;
-    transition: filter 0.15s ease, transform 0.1s ease;
+    padding-block: 12px;
+    font-size: 15px;
+    font-weight: 800;
 }
 
-.share-btn:hover {
+.share-btn:hover,
+.form-submit-btn:hover {
     filter: brightness(1.1);
     transform: translateY(-1px);
 }
 
-.share-btn:active {
+.share-btn:active,
+.form-submit-btn:active {
     transform: translateY(0);
+}
+
+.share-btn:disabled,
+.form-submit-btn:disabled {
+    cursor: not-allowed;
+    filter: none;
+    opacity: 0.55;
+    transform: none;
 }
 
 /* ==========================================================================
@@ -1811,14 +1918,12 @@ body.modal-open .page-content {
 }
 
 .escalacao-feedback {
-    width: 100%;
-    text-align: center;
-    font-size: 12px;
-    color: var(--ink-muted);
-    background-color: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-s);
     padding: 8px 12px;
+    border-color: rgba(185, 151, 90, 0.35);
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 900;
+    line-height: 1.5;
 }
 
 .escalacao-fora {
@@ -1992,71 +2097,6 @@ body.modal-open .page-content {
 
 .nav-btn:active {
     transform: translateY(1px);
-}
-
-.search-box {
-    position: relative;
-    width: 100%;
-}
-
-.search-box input {
-    width: 100%;
-    padding: 13px 16px;
-    border-radius: var(--radius-s);
-    border: 1px solid var(--line);
-    background-color: var(--surface);
-    color: var(--ink);
-    font-size: 14px;
-    font-family: var(--font-body);
-    text-align: center;
-    letter-spacing: 0.2px;
-    transition: border-color 0.15s ease, background-color 0.15s ease;
-}
-
-.search-box input::placeholder {
-    color: var(--ink-faint);
-}
-
-.search-box input:focus {
-    outline: none;
-    border-color: var(--gold);
-    background-color: var(--surface-2);
-}
-
-.autocomplete-items {
-    position: absolute;
-    border: 1px solid var(--line);
-    border-top: none;
-    z-index: 99;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background-color: var(--surface-2);
-    border-radius: 0 0 var(--radius-s) var(--radius-s);
-    max-height: 190px;
-    overflow-y: auto;
-    font-family: var(--font-body);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.45);
-}
-
-.autocomplete-items div {
-    padding: 10px 14px;
-    cursor: pointer;
-    border-bottom: 1px solid var(--line-soft);
-    font-size: 13px;
-    text-align: left;
-    color: var(--ink-muted);
-    transition: background-color 0.12s ease, color 0.12s ease;
-}
-
-.autocomplete-items div:last-child {
-    border-bottom: none;
-}
-
-.autocomplete-items div:hover,
-.autocomplete-items div.autocomplete-active {
-    background-color: var(--surface);
-    color: var(--ink);
 }
 
 /* TABULEIRO DE PALPITES */
@@ -2496,26 +2536,12 @@ body.modal-open .page-content {
 }
 
 .form-submit-btn {
-    background: var(--gold);
-    color: #17150f;
-    border: none;
-    border-radius: var(--radius-s);
-    padding: 13px 18px;
-    font-family: var(--font-body);
-    font-weight: 700;
-    font-size: 13.5px;
-    letter-spacing: 0.2px;
-    cursor: pointer;
-    transition: filter 0.15s ease, transform 0.1s ease;
-}
-
-.form-submit-btn:hover {
-    filter: brightness(1.1);
-    transform: translateY(-1px);
-}
-
-.form-submit-btn:active {
-    transform: translateY(0);
+    min-height: 46px;
+    padding-block: 11px;
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
 }
 
 .form-note {
@@ -2651,28 +2677,6 @@ body {
     font-size: 14px;
     font-weight: 600;
     line-height: 1.45;
-}
-
-.daily-label {
-    font-size: 14px;
-    font-weight: 700;
-}
-
-.daily-timer {
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.daily-end-message {
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 1.6;
-}
-
-.share-btn,
-.form-submit-btn {
-    font-size: 15px;
-    font-weight: 800;
 }
 
 /* ------------------------------------------------------------------------
@@ -2828,12 +2832,6 @@ body {
     line-height: 1.5;
 }
 
-.escalacao-feedback {
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 1.5;
-}
-
 .escalacao-fora {
     font-size: 13px;
     font-weight: 600;
@@ -2869,22 +2867,6 @@ body {
     font-weight: 700;
 }
 
-.search-box input {
-    padding: 15px 17px;
-    font-size: 15px;
-    font-weight: 600;
-}
-
-.search-box input::placeholder {
-    font-weight: 500;
-}
-
-.autocomplete-items div {
-    padding: 12px 15px;
-    font-size: 14px;
-    font-weight: 600;
-}
-
 /* ------------------------------------------------------------------------
    CABEÇALHO / HOME
    ------------------------------------------------------------------------ */
@@ -2903,11 +2885,6 @@ body {
 
 /* Ouro é reservado para informação importante — sem transformar a tela
    inteira em dourado. */
-.daily-timer strong,
-.daily-end-message strong {
-    font-weight: 800;
-}
-
 /* ------------------------------------------------------------------------
    MOBILE: manter a legibilidade sem deixar o campo apertado.
    ------------------------------------------------------------------------ */
@@ -2920,7 +2897,6 @@ body {
     .lineup-title { font-size: 13px; }
     .player-chip { width: 74px; }
     .player-chip .chip-label { max-width: 74px; font-size: 9px; }
-    .search-box input { font-size: 15px; }
 }
 
 
@@ -3059,15 +3035,6 @@ body {
     border-color: var(--gold);
 }
 
-.form-submit-btn {
-    min-height: 46px;
-    padding: 11px 22px;
-    font-size: 14px;
-    font-weight: 900;
-    letter-spacing: .3px;
-    text-transform: uppercase;
-}
-
 .match-final-score {
     font-family: var(--font-display);
     font-size: 42px;
@@ -3135,39 +3102,6 @@ body {
     font-size: 11px;
     font-weight: 900;
     padding: 4px 10px;
-}
-
-.search-box input {
-    min-height: 50px;
-    padding: 13px 17px;
-    border-width: 2px;
-    border-radius: var(--radius-m);
-    font-size: 15px;
-    font-weight: 700;
-    background: #10100f;
-}
-
-.search-box input::placeholder {
-    font-weight: 600;
-}
-
-.autocomplete-items {
-    border-color: var(--gold);
-    border-radius: 0 0 var(--radius-m) var(--radius-m);
-}
-
-.autocomplete-items div {
-    min-height: 46px;
-    padding: 9px 12px;
-    font-size: 14px;
-    font-weight: 800;
-    color: var(--ink);
-}
-
-.autocomplete-items div:hover,
-.autocomplete-items .autocomplete-active {
-    background: var(--gold-soft);
-    color: var(--ink);
 }
 
 .pitch-container {
@@ -3247,13 +3181,6 @@ body {
     font-size: 9px;
     font-weight: 900;
     color: #fff;
-}
-
-.escalacao-feedback {
-    border-color: rgba(185,151,90,.35);
-    font-size: 14px;
-    font-weight: 900;
-    color: var(--ink);
 }
 
 .escalacao-fora {
@@ -3355,11 +3282,6 @@ body {
 .app-shell .page-content::-webkit-scrollbar-thumb:hover,
 .autocomplete-items::-webkit-scrollbar-thumb:hover {
     background: #d5b66f;
-}
-
-.autocomplete-items {
-    scrollbar-width: thin;
-    scrollbar-color: var(--gold) var(--surface-2);
 }
 
 .lineup-result-card {
@@ -3494,6 +3416,7 @@ body {
 
 .lineup-share-btn {
     width: 100%;
+    min-height: 48px;
     margin-top: 2px;
     border-color: var(--gold);
     background: var(--gold);
@@ -3557,10 +3480,6 @@ body {
     text-wrap: balance;
 }
 
-#escalacaoView .search-box {
-    width: 100%;
-}
-
 #escalacaoView .search-box input {
     width: 100%;
     min-height: 52px;
@@ -3570,15 +3489,8 @@ body {
     caret-color: var(--gold);
 }
 
-#escalacaoView .search-box input:focus {
-    border-color: var(--gold);
-    box-shadow: 0 0 0 3px var(--gold-soft);
-}
-
 #escalacaoView .autocomplete-items {
     max-height: min(280px, 42vh);
-    overflow-y: auto;
-    overscroll-behavior: contain;
     background: #11110f;
     box-shadow: 0 14px 30px rgba(0, 0, 0, 0.48);
 }
@@ -3708,10 +3620,6 @@ body {
     letter-spacing: 2px;
     font-variant-numeric: tabular-nums;
     text-shadow: 0 2px 12px rgba(185, 151, 90, 0.18);
-}
-
-#escalacaoView .lineup-share-btn {
-    min-height: 48px;
 }
 
 @media (max-width: 480px) {

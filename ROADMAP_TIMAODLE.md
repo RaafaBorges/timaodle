@@ -686,6 +686,7 @@ Concluído:
 6.  Shell global consolidado com eixo central, gutters compartilhados e scroll previsível.
 7.  Descontinuidade de largura da Home em 480/481 px removida.
 8.  Home consolidada em uma única área proprietária, com responsividade fluida.
+9.  Componentes compartilhados de busca, autocomplete, ações, status e feedback consolidados.
 
 Próxima etapa:
 
@@ -1852,3 +1853,51 @@ Pendências:
 
 Próximo passo:
 - confirmar o modal em navegador real e retomar a próxima etapa incremental da v2.7.
+
+
+## 21/08/2026 — v2.7: consolidação dos componentes compartilhados
+
+Implementado:
+- seção proprietária para busca, autocomplete, ações, status e feedback compartilhados;
+- inputs de busca consolidados com altura de 50 px, padding, tipografia, placeholder,
+  foco dourado perceptível e estado disabled;
+- autocomplete consolidado com container, itens de 46 px, estado ativo/hover, scroll,
+  overscroll, sombra, borda, z-index e scrollbar da paleta;
+- botões dourados `.share-btn` e `.form-submit-btn` compartilham base, hover, active e
+  disabled; compartilhar, formulário e Onze Inicial mantêm variantes próprias;
+- botão voltar ampliado de 30 para 40 px como compromisso entre alvo de toque e altura
+  compacta das barras de status;
+- `daily-status-bar`, label e timer incorporaram os valores vencedores da cascata;
+- estrutura visual comum de `daily-end-message` e `escalacao-feedback` consolidada,
+  preservando tipografia e borda específicas do Onze Inicial;
+- valores globais duplicados de legibilidade incorporados à base e removidos das camadas tardias;
+- nenhuma classe, JavaScript, mecânica, save, JSON ou layout interno dos modos foi alterado.
+
+Variantes preservadas:
+- Onze Inicial: input de 52 px, borda/caret, autocomplete mais alto, avatar e nomes longos;
+- Mais ou Menos: botões MAIS/MENOS, overlay e resultado final totalmente isolados;
+- cards finais de MM e Onze Inicial permanecem separados por não serem estruturalmente equivalentes;
+- Home e modal Como Jogar preservados.
+
+Medição estática:
+- blocos relacionados aos componentes compartilhados: 54 antes e 37 depois;
+- seletores distintos: 41 antes e 37 depois;
+- media queries com overrides desses componentes: uma antes e zero depois.
+
+Testado:
+- baseline anterior aprovada antes das alterações;
+- `node tests/run-tests.js`: storage A–X, 39 cenários de regras e 17 cenários estruturais;
+- `node tests/storage.test.js`;
+- `node --check script.js`, `storage-normalizers.js` e testes envolvidos;
+- CSS balanceado, `git diff --check` aprovado e três JSONs válidos/inalterados;
+- `node tests/viewport-smoke.js`: permanece `SKIP` por indisponibilidade do processo GPU.
+
+Pendências:
+- validação visual e de teclado dos componentes em desktop, mobile e 412 × 600;
+- semântica ARIA completa de combobox/listbox/option continua pendente para etapa própria;
+- consolidação individual de Clássico, Foto, Mais ou Menos e Onze Inicial ainda pendente;
+- widget lateral continua fora desta etapa.
+
+Próximo passo:
+- validar os componentes compartilhados em navegador real e iniciar a consolidação individual
+  pelo modo de menor risco, mantendo o Onze Inicial para uma etapa posterior.

@@ -50,3 +50,11 @@ node tests/viewport-smoke.js
 - Espaçamentos, padding e tipografia responsiva usam `clamp()` onde substituem os antigos overrides de 360/480 px.
 - Permanece apenas a exceção visual de 480 px para mudar a borda de conclusão 4/4 de lateral para superior.
 - `is-complete`, `is-in-progress`, `is-completed` e `celebrate-once` continuam protegidas como estados do JavaScript.
+
+## Componentes compartilhados
+
+- `.search-box` e `.autocomplete-items` controlam aparência, foco, scroll e alvos de toque; cada modo mantém somente largura e posicionamento próprios.
+- Onze Inicial preserva a variante de busca com 52 px, avatar e lista mais alta; o autocomplete ARIA completo continua pendente.
+- `.daily-status-bar`, `.back-btn`, `.daily-end-message` e `.escalacao-feedback` compartilham estrutura sem apagar suas diferenças semânticas.
+- `.share-btn` e `.form-submit-btn` compartilham a ação dourada; Home, Onze Inicial e formulários mantêm variantes locais.
+- Botões e resultados específicos do Mais ou Menos permanecem fora dessa base.
