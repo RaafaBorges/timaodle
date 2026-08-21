@@ -673,14 +673,25 @@ Depois disso, atualizar o checklist principal deste arquivo.
 
 # 17. PRÓXIMA TAREFA OFICIAL
 
-## 🎯 v2.6 — HARDENING E NORMALIZAÇÃO DE SAVES
+## ✅ v2.6 — CONCLUÍDA: ESTABILIDADE E HARDENING
 
-Próximos itens:
+Concluído:
 
-1.  Normalizar defensivamente os saves individuais dos quatro modos.
-2.  Recalcular de forma segura o indicador diário `complete` ao consumir o histórico.
-3.  Preservar todas as chaves, migrações, mecânicas e o progresso já salvo.
-4.  Adicionar testes permanentes antes de qualquer modularização ampla.
+1.  Hardening básico e remoção de controles/spoilers de desenvolvimento.
+2.  Normalização defensiva dos saves individuais e do histórico integrado.
+3.  Recálculo seguro do indicador diário `complete`, preservando saves e migrações.
+4.  Como Jogar e acessibilidade básica dos modais.
+5.  Polimento visual, feedback sobreposto e avanço automático do Mais ou Menos.
+6.  Suíte permanente de regressão para storage, streak, progresso, estatísticas,
+    Mais ou Menos v2 e compartilhamento diário sem spoilers.
+
+Próxima fase planejada — **v2.7 (ainda não iniciada):**
+
+1.  Revisão estrutural mobile.
+2.  Consolidação do CSS e dos breakpoints.
+3.  Consistência visual dos quatro modos.
+4.  Semântica ARIA completa dos autocompletes.
+5.  Testes em dispositivos e leitores de tela reais.
 
 ------------------------------------------------------------------------
 
@@ -1558,6 +1569,45 @@ Próximo passo:
 - concluir a v2.6 com testes permanentes de histórico/streak/estatísticas e revisão final de hardening.
 
 
+## 21/08/2026 — v2.6 concluída: suíte permanente de regressão
+
+Implementado:
+- harness Node controlado que extrai e executa as funções reais de `script.js` sem carregar o DOM e sem alterar código de produção;
+- suíte permanente com `node:assert/strict`, zero dependências externas e execução individual possível;
+- runner único `node tests/run-tests.js` para storage e regras do jogo;
+- 13 cenários de streak, incluindo histórico vazio, hoje/ontem, quebras, recorde, reinício, viradas de mês/ano, ano bissexto, normalização e ordem das datas;
+- progresso diário coberto de 0/4 a 4/4, incluindo modo iniciado, vitória, derrota e histórico ausente;
+- MM v2 validado em 180 datas contra o pool real: determinismo, 11 jogadores únicos, 10 rodadas, zero empates, jogos finitos, plano 3/4/3, direções, limites de sequências e variedade;
+- resultado do MM coberto em 0/10, 6/10, 7/10 e 10/10, incluindo limites normalizados e conclusão somente na décima rodada;
+- estatísticas integradas cobertas para vazio, parcial, 4/4, múltiplos dias, vitórias, derrotas, distribuições, placar exato, erros e dados normalizados;
+- compartilhamento coberto para vitórias, derrotas, singular/plural e streak zero/positivo;
+- teste anti-spoiler permanente com marcadores para segredos dos quatro modos, sequência, jogos, direções, confronto, placar e palpite;
+- nenhum arquivo de produção, interface, CSS, mecânica, seed, dificuldade, save ou JSON foi alterado nesta etapa.
+
+Testado:
+- `node tests/run-tests.js`: storage A–X e 39 novos cenários aprovados em menos de 1 segundo;
+- MM v2 simulado em 180 datas, sem fallback nas datas da amostra e com todas as invariantes aprovadas;
+- teste anti-spoiler aprovado sem vazamento de nenhum marcador;
+- `node tests/storage.test.js` preservado e aprovado;
+- `node --check` em todos os arquivos JavaScript de produção e teste;
+- `git diff --check`;
+- `jogadores.json`, `partidas.json` e `fotos-manifest.json` validados como JSON, sem alteração feita por esta implementação.
+
+Conclusão da v2.6:
+- hardening, normalização defensiva, Como Jogar, acessibilidade básica, polimento automático do Mais ou Menos e regressão permanente concluídos;
+- a v2.6 está encerrada; a v2.7 permanece apenas planejada.
+
+Pendências transferidas para v2.7:
+- revisão estrutural mobile;
+- consolidação do CSS e dos breakpoints;
+- consistência visual dos quatro modos;
+- ARIA completa dos autocompletes;
+- testes em dispositivos e leitores de tela reais.
+
+Próximo passo:
+- planejar a revisão estrutural mobile da v2.7, sem iniciar alterações antes de definir o escopo.
+
+
 ## 21/08/2026 — v2.6: polimento visual e textual do feedback do Mais ou Menos
 
 Implementado:
@@ -1618,3 +1668,22 @@ Pendências:
 
 Próximo passo:
 - concluir a v2.6 com testes permanentes de histórico/streak/estatísticas e revisão final de hardening.
+
+
+## 21/08/2026 — encerramento da v2.6
+
+Estado final:
+- v2.6 concluída após aprovação da suíte permanente de storage e regras do jogo;
+- 39 novos cenários de regras e 180 datas do MM v2 aprovados;
+- teste anti-spoiler aprovado;
+- nenhuma mecânica ou interface foi alterada para viabilizar os testes.
+
+Pendências transferidas para v2.7:
+- revisão estrutural mobile;
+- consolidação do CSS/breakpoints;
+- consistência visual entre os quatro modos;
+- ARIA completa dos autocompletes;
+- validação em dispositivos e leitores de tela reais.
+
+Próximo passo:
+- planejar o escopo da v2.7; a fase ainda não foi iniciada.
