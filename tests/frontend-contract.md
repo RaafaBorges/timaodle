@@ -58,3 +58,11 @@ node tests/viewport-smoke.js
 - `.daily-status-bar`, `.back-btn`, `.daily-end-message` e `.escalacao-feedback` compartilham estrutura sem apagar suas diferenças semânticas.
 - `.share-btn` e `.form-submit-btn` compartilham a ação dourada; Home, Onze Inicial e formulários mantêm variantes locais.
 - Botões e resultados específicos do Mais ou Menos permanecem fora dessa base.
+
+## Modo Foto
+
+- `#photoView` possui limite próprio de 400 px e continua fluido abaixo desse valor.
+- Imagem quadrada e lista de tentativas compartilham o limite fluido de 320 px.
+- Enquadramento, fallback e estados de revelação permanecem proprietários do modo.
+- Busca, autocomplete, barra de status e mensagem final consomem a base compartilhada sem overrides responsivos.
+- O tutorial continua sob a infraestrutura comum e acessível de modais, sem CSS duplicado no Foto.

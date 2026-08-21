@@ -1322,7 +1322,23 @@ body.modal-open .page-content {
 /* ==========================================================================
    MODO FOTO
    ========================================================================== */
-.photo-toggle-overlay-btn {
+#photoView {
+    max-width: 400px;
+    min-width: 0;
+}
+
+#photoView .game-sticky-top,
+#photoView .daily-end-message {
+    min-width: 0;
+}
+
+#photoView .photo-card,
+#photoView .photo-attempts-list {
+    width: min(320px, 100%);
+}
+
+/* Imagem e controles de revelação */
+#photoView .photo-toggle-overlay-btn {
     position: absolute;
     top: 10px;
     right: 10px;
@@ -1341,18 +1357,16 @@ body.modal-open .page-content {
     transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.1s ease;
 }
 
-.photo-toggle-overlay-btn.active {
+#photoView .photo-toggle-overlay-btn.active {
     border-color: var(--gold);
     background-color: rgba(185, 151, 90, 0.25);
 }
 
-.photo-toggle-overlay-btn:hover {
+#photoView .photo-toggle-overlay-btn:hover {
     transform: scale(1.06);
 }
 
-.photo-card {
-    width: 100%;
-    max-width: 320px;
+#photoView .photo-card {
     aspect-ratio: 1 / 1;
     border-radius: var(--radius-m);
     overflow: hidden;
@@ -1362,7 +1376,7 @@ body.modal-open .page-content {
     margin: 4px auto 0;
 }
 
-.photo-img {
+#photoView .photo-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -1372,19 +1386,20 @@ body.modal-open .page-content {
     transition: filter 0.6s ease;
 }
 
-.photo-img.image-fallback {
+#photoView .photo-img.image-fallback {
     filter: none !important;
     transform: none;
     object-position: center;
 }
 
-.photo-dots {
+/* Progresso e tentativas */
+#photoView .photo-dots {
     display: flex;
     justify-content: center;
     gap: 8px;
 }
 
-.photo-dots .dot-attempt {
+#photoView .photo-dots .dot-attempt {
     width: 10px;
     height: 10px;
     border-radius: 50%;
@@ -1393,25 +1408,23 @@ body.modal-open .page-content {
     transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
-.photo-dots .dot-attempt.used {
+#photoView .photo-dots .dot-attempt.used {
     background-color: var(--gold);
     border-color: var(--gold);
 }
 
-.photo-dots .dot-attempt.wrong-used {
+#photoView .photo-dots .dot-attempt.wrong-used {
     background-color: var(--bad);
     border-color: var(--bad-line);
 }
 
-.photo-attempts-list {
+#photoView .photo-attempts-list {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    width: 100%;
-    max-width: 320px;
 }
 
-.photo-attempt-item {
+#photoView .photo-attempt-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1422,13 +1435,13 @@ body.modal-open .page-content {
     border: 1px solid var(--line);
 }
 
-.photo-attempt-item.wrong {
+#photoView .photo-attempt-item.wrong {
     background-color: var(--bad);
     border-color: var(--bad-line);
     color: #f3e9e9;
 }
 
-.photo-attempt-item.correct {
+#photoView .photo-attempt-item.correct {
     background-color: var(--ok);
     border-color: var(--ok-line);
     color: #e9efe9;

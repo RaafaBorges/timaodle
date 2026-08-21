@@ -1901,3 +1901,36 @@ Pendências:
 Próximo passo:
 - validar os componentes compartilhados em navegador real e iniciar a consolidação individual
   pelo modo de menor risco, mantendo o Onze Inicial para uma etapa posterior.
+
+
+## 21/08/2026 — v2.7: consolidação individual do Modo Foto
+
+Implementado:
+- estilos do Foto isolados sob `#photoView`, com propriedade clara de layout, imagem,
+  revelação, progresso e tentativas;
+- limite do modo formalizado em 400 px, com proteção fluida para viewports menores;
+- imagem quadrada e lista de tentativas consolidadas em `width: min(320px, 100%)`;
+- enquadramento, fallback, blur controlado pelo JavaScript, transição e seis tentativas preservados;
+- busca, autocomplete, status, resultado e tutorial continuam usando as bases compartilhadas;
+- seletores globais do Foto removidos em favor de seletores proprietários, sem novos breakpoints.
+
+Medição estática:
+- 13 blocos proprietários antes e 15 depois, incluindo os dois blocos estruturais que
+  explicitam largura e proteção de conteúdo;
+- 13 seletores globais do Foto substituídos por equivalentes sob `#photoView`;
+- media queries específicas do Foto: zero antes e zero depois.
+
+Testado:
+- baseline completa aprovada antes da alteração;
+- contrato estrutural ampliado para largura, proporção, enquadramento, fallback e estados;
+- testes automatizados e validações estáticas registrados no relatório desta etapa.
+
+Pendências:
+- validar visualmente o Foto nos estados inicial, 1 e 5 tentativas, vitória, derrota,
+  tutorial e fallback em navegador real;
+- confirmar ausência de overflow em 360, 390, 412, 430, 480, 768 px, desktop e 412 × 600;
+- Clássico, Mais ou Menos e Onze Inicial ainda aguardam consolidação individual;
+- a v2.7 permanece em andamento.
+
+Próximo passo:
+- validar visualmente o Modo Foto e consolidar o próximo modo em uma etapa isolada.

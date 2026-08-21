@@ -101,6 +101,23 @@ test("componentes compartilhados preservam base e variantes", () => {
     assert.ok(css.includes("#escalacaoView .search-box input"), "variante de busca do Onze Inicial ausente");
 });
 
+test("Modo Foto preserva layout fluido e estados visuais próprios", () => {
+    assert.match(cssRule("#photoView"), /max-width:\s*400px/);
+    assert.match(cssRule("#photoView .photo-card,\n#photoView .photo-attempts-list"), /width:\s*min\(320px,\s*100%\)/);
+    assert.match(cssRule("#photoView .photo-card"), /aspect-ratio:\s*1\s*\/\s*1/);
+    assert.match(cssRule("#photoView .photo-img"), /object-fit:\s*cover/);
+    assert.match(cssRule("#photoView .photo-img"), /object-position:\s*center top/);
+    assert.match(cssRule("#photoView .photo-img.image-fallback"), /filter:\s*none\s*!important/);
+    for (const selector of [
+        "#photoView .photo-dots .dot-attempt.used",
+        "#photoView .photo-dots .dot-attempt.wrong-used",
+        "#photoView .photo-attempt-item.correct",
+        "#photoView .photo-attempt-item.wrong"
+    ]) {
+        assert.ok(css.includes(selector), selector);
+    }
+});
+
 test("viewports canônicos da v2.7 permanecem formalizados", () => {
     assert.deepEqual(contract.viewports.map(viewport => viewport.width), [360, 390, 412, 430, 480, 768, 1440, 412]);
     assert.ok(contract.viewports.some(viewport => viewport.height <= 600), "viewport baixo ausente");
