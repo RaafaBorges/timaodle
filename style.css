@@ -30,6 +30,14 @@
 
     --font-display: 'Bebas Neue', Impact, 'Arial Narrow', sans-serif;
     --font-body: 'Inter', Arial, sans-serif;
+
+    /* Shell global: um único eixo para header, conteúdo e footer. */
+    --shell-max-width: 760px;
+    --shell-gutter: clamp(12px, 2vw, 16px);
+    --shell-inline-space: max(
+        var(--shell-gutter),
+        calc((100vw - var(--shell-max-width)) / 2 + var(--shell-gutter))
+    );
 }
 
 * {
@@ -40,6 +48,7 @@
 
 html {
     -webkit-tap-highlight-color: transparent;
+    width: 100%;
 }
 
 body {
@@ -52,16 +61,21 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 100%;
     min-height: 100vh;
+    /* Defesa final para widgets fixos e animações; os containers do shell
+       continuam dimensionados para não depender deste recorte. */
     overflow-x: hidden;
+    overflow-x: clip;
 }
 
 /* Só a página principal do jogo (index.html) trava a altura da tela —
    páginas de texto (Contato, Privacidade, Cookies, Termos) continuam
    rolando normalmente, do jeito que já funcionava. */
 body.app-shell {
+    min-height: 0;
     height: 100vh;
-    height: 100dvh; /* altura visível real em navegadores mobile modernos */
+    height: 100dvh;
     overflow: hidden;
 }
 
@@ -78,20 +92,24 @@ input:focus-visible {
 
 .main-wrapper {
     width: 100%;
-    max-width: 760px;
+    max-width: var(--shell-max-width);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 0 16px;
+    padding: 0 var(--shell-gutter);
 }
 
 /* Dentro do app-shell (index.html), o wrapper preenche o espaço restante
    abaixo do header fixo, sem forçar altura mínima própria — assim o footer
    fica sempre visível na base, e só a área de conteúdo rola quando precisa. */
 .app-shell .main-wrapper {
+    width: 100%;
+    max-width: none;
     min-height: 0;
     flex: 1;
+    padding-left: 0;
+    padding-right: 0;
     overflow: hidden;
 }
 
@@ -106,6 +124,14 @@ input:focus-visible {
     align-items: center;
     padding: 20px 0;
     overflow-y: auto;
+}
+
+.app-shell .page-content {
+    width: 100%;
+    padding-left: var(--shell-inline-space);
+    padding-right: var(--shell-inline-space);
+    scrollbar-width: thin;
+    scrollbar-color: var(--gold) #11110f;
 }
 
 /* ==========================================================================
@@ -125,9 +151,9 @@ input:focus-visible {
 
 .header-inner {
     width: 100%;
-    max-width: 760px;
+    max-width: var(--shell-max-width);
     margin: 0 auto;
-    padding: 18px 16px 14px;
+    padding: 18px var(--shell-gutter) 14px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -258,7 +284,7 @@ input:focus-visible {
     border-radius: var(--radius-s);
     padding: 12px 18px;
     width: 100%;
-    max-width: 360px;
+    max-width: 400px;
     text-align: center;
 }
 
@@ -279,7 +305,7 @@ input:focus-visible {
     flex-direction: column;
     gap: 14px;
     width: 100%;
-    max-width: 360px;
+    max-width: 400px;
 }
 
 .pokedle-btn {
@@ -350,7 +376,7 @@ input:focus-visible {
 
 .home-progress-card {
     width: 100%;
-    max-width: 360px;
+    max-width: 400px;
     padding: 14px 16px;
     background: linear-gradient(135deg, var(--surface-2), var(--surface));
     border: 1px solid var(--line);
@@ -504,7 +530,7 @@ input:focus-visible {
 
 .home-stats-btn {
     width: 100%;
-    max-width: 360px;
+    max-width: 400px;
     padding: 9px 14px;
     background: transparent;
     border: 1px solid var(--line);
@@ -951,13 +977,6 @@ body.modal-open .page-content {
         gap: 16px;
     }
 
-    .home-daily-info,
-    .home-progress-card,
-    .home-stats-btn,
-    .mode-buttons-container {
-        max-width: 400px;
-    }
-
     .home-progress-card {
         padding: 12px 13px;
     }
@@ -1043,7 +1062,7 @@ body.modal-open .page-content {
     gap: 12px;
     width: 100%;
     flex-shrink: 0;
-    padding: 18px 0 22px;
+    padding: 18px var(--shell-inline-space) 22px;
     border-top: 1px solid var(--line-soft);
 }
 
@@ -3391,23 +3410,6 @@ body {
    ONZE INICIAL — RESULTADO FINAL + SCROLLBAR DO APP
    ========================================================================== */
 
-/* A área rolável agora ocupa a largura da viewport. Isso mantém o conteúdo
-   centralizado, mas leva a scrollbar para a borda direita da janela. */
-.app-shell .main-wrapper {
-    width: 100%;
-    max-width: none;
-    padding-left: 0;
-    padding-right: 0;
-}
-
-.app-shell .page-content {
-    width: 100%;
-    padding-left: max(16px, calc((100vw - 760px) / 2 + 16px));
-    padding-right: max(16px, calc((100vw - 760px) / 2 + 16px));
-    scrollbar-width: thin;
-    scrollbar-color: var(--gold) #11110f;
-}
-
 /* Chrome / Edge / Safari */
 .app-shell .page-content::-webkit-scrollbar,
 .autocomplete-items::-webkit-scrollbar {
@@ -3583,11 +3585,6 @@ body {
 }
 
 @media (max-width: 480px) {
-    .app-shell .page-content {
-        padding-left: 12px;
-        padding-right: 12px;
-    }
-
     .lineup-result-card {
         padding: 19px 14px;
     }
@@ -3875,11 +3872,6 @@ body {
 }
 
 @media (max-width: 360px) {
-    .app-shell .page-content {
-        padding-left: 9px;
-        padding-right: 9px;
-    }
-
     #escalacaoView .match-card,
     #escalacaoView .lineup-card,
     #escalacaoView .lineup-result-card {
@@ -4634,41 +4626,10 @@ body {
 }
 
 /* ==========================================================================
-   HOME MOBILE — ALINHAMENTO DE VIEWPORT
-   Mantém 12 px de margem real e neutraliza limites antigos de 360/400 px.
+   HOME MOBILE — WIDGET DE LINKS ÚTEIS
+   O alinhamento de viewport e os gutters agora pertencem ao shell global.
    ========================================================================== */
 @media (max-width: 480px) {
-    html,
-    body {
-        width: 100%;
-        max-width: 100%;
-        overflow-x: clip;
-    }
-
-    .header-inner,
-    .app-shell .page-content {
-        width: 100%;
-        padding-left: 12px;
-        padding-right: 12px;
-    }
-
-    #homeView.home-menu {
-        width: 100%;
-        max-width: none;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    #homeView .home-daily-info,
-    #homeView .home-progress-card,
-    #homeView .home-stats-btn,
-    #homeView .mode-buttons-container {
-        width: 100%;
-        max-width: none;
-        margin-left: 0;
-        margin-right: 0;
-    }
-
     .useful-links-widget {
         left: auto;
         right: 12px;

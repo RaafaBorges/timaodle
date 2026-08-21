@@ -36,3 +36,10 @@ O runner Node não depende de navegador. O smoke test real de overflow é separa
 ```text
 node tests/viewport-smoke.js
 ```
+
+## Shell global
+
+- `body.app-shell` mantém a viewport travada; `.page-content` é o único scroll vertical principal.
+- `--shell-max-width`, `--shell-gutter` e `--shell-inline-space` alinham header, conteúdo e footer.
+- O gutter varia fluidamente entre 12 e 16 px, sem salto estrutural em 480/481 px.
+- Os quatro grupos principais da Home usam o mesmo limite de 400 px nos dois lados de 480 px.

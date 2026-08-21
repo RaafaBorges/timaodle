@@ -683,12 +683,14 @@ Concluído:
 4.  Viewports canônicos definidos para 360, 390, 412, 430, 480, 768 px,
     desktop amplo e mobile com pouca altura.
 5.  Checklist visual reutilizável e smoke headless opcional, sem dependência no runner.
+6.  Shell global consolidado com eixo central, gutters compartilhados e scroll previsível.
+7.  Descontinuidade de largura da Home em 480/481 px removida.
 
 Próxima etapa:
 
-1.  Consolidar primeiro a estrutura global (shell, header, conteúdo e footer).
+1.  Validar manualmente o shell global nos viewports canônicos.
 2.  Consolidar breakpoints e regras responsivas da Home em alterações pequenas.
-3.  Avançar modo a modo somente depois de validar a estrutura global.
+3.  Avançar modo a modo somente depois da validação do shell e da Home.
 
 Ainda não concluído:
 
@@ -1729,3 +1731,47 @@ Pendências:
 Próximo passo:
 - iniciar a consolidação responsiva pelo shell global (viewport, body, header, conteúdo e
   footer), preservando o visual e usando a baseline para detectar regressões estruturais.
+
+
+## 21/08/2026 — v2.7: consolidação incremental do shell global
+
+Implementado:
+- tokens `--shell-max-width`, `--shell-gutter` e `--shell-inline-space` como fonte única
+  para o eixo estrutural de header, conteúdo e footer;
+- gutter fluido entre 12 e 16 px, sem salto estrutural em 480/481 px;
+- `body.app-shell` mantém fallback em `100vh` seguido de `100dvh`, sem a antiga
+  `min-height` concorrente;
+- `.page-content` permanece como único dono do scroll vertical principal, enquanto body e
+  wrapper apenas delimitam a viewport do aplicativo;
+- scrollbar principal preservada na extremidade da janela e na paleta preto/dourado;
+- regras tardias de largura e padding do wrapper/page-content incorporadas à definição
+  principal do shell;
+- header e footer passaram a consumir os mesmos tokens de eixo e gutter do conteúdo;
+- Home preservada em sua estrutura, com os quatro grupos principais usando limite comum
+  de 400 px em ambos os lados do breakpoint de 480 px, removendo o salto para 360 px em 481;
+- removidos overrides globais redundantes dos blocos mobile de 480 e 360 px;
+- contrato estrutural ampliado para proteger tokens, scroll, alinhamento e continuidade
+  da largura da Home;
+- nenhuma mecânica, save, JSON ou layout interno dos quatro modos foi alterado.
+
+Testado:
+- baseline anterior executada antes da alteração e aprovada;
+- `node tests/run-tests.js`: storage A–X, 39 cenários de regras e 15 cenários estruturais;
+- `node tests/storage.test.js`;
+- `node --check script.js`, `storage-normalizers.js` e testes JavaScript envolvidos;
+- três JSONs validados, sem alteração;
+- CSS com chaves balanceadas;
+- `git diff --check` aprovado, com apenas avisos locais de LF/CRLF;
+- `node tests/viewport-smoke.js`: `SKIP`, pois Chrome/Edge headless continua encerrando
+  o processo GPU antes da renderização.
+
+Pendências:
+- validar manualmente eixo central, header, Home, footer, scroll e overflow horizontal em
+  360, 412, 480, 481/482, 768, desktop e 412 × 600;
+- a revisão responsiva completa, a consolidação da Home e os modos individuais continuam
+  pendentes;
+- não iniciar a consolidação do Onze Inicial antes das etapas globais e da Home.
+
+Próximo passo:
+- executar a validação visual manual do shell e, se aprovada, consolidar incrementalmente
+  somente a Home e seus breakpoints.

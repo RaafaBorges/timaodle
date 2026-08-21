@@ -24,6 +24,11 @@ function test(name, callback) {
 const htmlIds = [...html.matchAll(/\bid\s*=\s*["']([^"']+)["']/g)].map(match => match[1]);
 const htmlIdSet = new Set(htmlIds);
 
+function cssRule(selector) {
+    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return css.match(new RegExp(`${escaped}\\s*\\{([^}]+)\\}`))?.[1] || "";
+}
+
 test("IDs do HTML são únicos", () => {
     const duplicates = htmlIds.filter((id, index) => htmlIds.indexOf(id) !== index);
     assert.deepEqual([...new Set(duplicates)], []);
@@ -77,6 +82,20 @@ test("modais preservam semântica e bloqueio de scroll", () => {
 test("viewports canônicos da v2.7 permanecem formalizados", () => {
     assert.deepEqual(contract.viewports.map(viewport => viewport.width), [360, 390, 412, 430, 480, 768, 1440, 412]);
     assert.ok(contract.viewports.some(viewport => viewport.height <= 600), "viewport baixo ausente");
+});
+
+test("shell global preserva eixo, gutters e um único scroll vertical", () => {
+    for (const token of ["--shell-max-width", "--shell-gutter", "--shell-inline-space"]) {
+        assert.ok(css.includes(token), token);
+    }
+    assert.match(cssRule("body.app-shell"), /overflow:\s*hidden/);
+    assert.match(cssRule(".page-content"), /overflow-y:\s*auto/);
+    assert.match(cssRule(".header-inner"), /var\(--shell-gutter\)/);
+    assert.match(cssRule(".app-shell .page-content"), /var\(--shell-inline-space\)/);
+    assert.match(cssRule(".pokedle-footer"), /var\(--shell-inline-space\)/);
+    for (const selector of [".home-daily-info", ".mode-buttons-container", ".home-progress-card", ".home-stats-btn"]) {
+        assert.match(cssRule(selector), /max-width:\s*400px/, selector);
+    }
 });
 
 console.log(`frontend-structure.test.js: ${scenarios} cenários estruturais aprovados; ${htmlIds.length} IDs verificados`);
