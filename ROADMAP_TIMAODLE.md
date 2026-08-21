@@ -1480,3 +1480,43 @@ Pendências:
 
 Próximo passo:
 - adicionar testes permanentes de histórico/streak/estatísticas ou implementar a ajuda básica, antes de consolidar responsividade e CSS.
+
+
+## 21/08/2026 — v2.6: Como Jogar e acessibilidade básica
+
+Implementado:
+- botão `?` do header convertido em ação real, com `aria-label="Como jogar"`;
+- modal “Como Jogar” com resumo do Timãodle, dos quatro modos, progresso 4/4, streak, estatísticas e compartilhamento diário;
+- conteúdo curto organizado em cards, com rolagem interna e layout de duas colunas no desktop e uma coluna no mobile;
+- semântica `role="dialog"`, `aria-modal` e `aria-labelledby` aplicada ao novo modal e ao tutorial do Foto;
+- controle compartilhado de abertura/fechamento, Escape, foco inicial, retorno de foco e bloqueio da rolagem de fundo;
+- focus trap simples para Como Jogar, tutorial do Foto e estatísticas, incluindo Tab e Shift+Tab;
+- botão de fechamento com nome acessível no novo modal;
+- tutorial do Foto preserva a chave de “tutorial visto” e devolve foco ao campo de busca;
+- modal de estatísticas preserva fechamento por fundo/Escape e agora prende foco corretamente;
+- feedback principal do Onze Inicial recebeu `aria-live="polite"`;
+- fotos dos jogadores no campo do Onze Inicial receberam alt com o nome; avatares decorativos do autocomplete foram ocultados da árvore acessível;
+- nenhum novo movimento obrigatório foi introduzido; a ajuda reutiliza os padrões estáticos atuais e respeita as regras existentes de reduced motion.
+
+Testado:
+- harness DOM mínimo para abertura, foco inicial, Tab, Shift+Tab, bloqueio de scroll, fechamento e retorno de foco;
+- semântica dos três diálogos e associação dos títulos;
+- nome acessível do botão de ajuda;
+- IDs HTML únicos;
+- alt e `aria-live` do Onze Inicial;
+- regras responsivas verificadas estaticamente para 360 px, mobile e desktop;
+- CSS balanceado;
+- `node tests/storage.test.js` com A–X aprovados;
+- `node --check storage-normalizers.js`;
+- `node --check script.js`;
+- `git diff --check`;
+- JSONs confirmados sem alterações.
+
+Pendências:
+- validar os três modais em navegador e leitor de tela reais;
+- implementar semântica completa de combobox/listbox/option e `aria-activedescendant` nos autocompletes na v2.7;
+- modal de boas-vindas ainda deve ser incorporado à mesma infraestrutura acessível em etapa futura;
+- ampliar testes permanentes para streak, estatísticas e interações DOM em ambiente de navegador.
+
+Próximo passo:
+- concluir a v2.6 com testes permanentes de histórico/streak/estatísticas e revisão final de hardening antes da consolidação responsiva da v2.7.

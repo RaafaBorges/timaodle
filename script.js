@@ -85,6 +85,9 @@ const btnOpenIntegratedStats = document.getElementById("btnOpenIntegratedStats")
 const integratedStatsModal = document.getElementById("integratedStatsModal");
 const btnCloseIntegratedStats = document.getElementById("btnCloseIntegratedStats");
 const integratedStatsContent = document.getElementById("integratedStatsContent");
+const btnOpenHowToPlay = document.getElementById("btnOpenHowToPlay");
+const howToPlayModal = document.getElementById("howToPlayModal");
+const btnCloseHowToPlay = document.getElementById("btnCloseHowToPlay");
 
 const searchInput = document.getElementById("searchInput");
 const autocompleteList = document.getElementById("autocompleteList");
@@ -792,26 +795,91 @@ function renderizarEstatisticasIntegradas() {
         </div>`;
 }
 
+const focoAnteriorPorModal = new WeakMap();
+
+function elementosFocaveisDoModal(modal) {
+    if (!modal) return [];
+    return Array.from(modal.querySelectorAll(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )).filter(elemento => elemento.getClientRects().length > 0);
+}
+
+function abrirModalAcessivel(modal, origem, focoInicial) {
+    if (!modal) return;
+    focoAnteriorPorModal.set(modal, origem || document.activeElement);
+    modal.classList.remove("hidden");
+    document.body.classList.add("modal-open");
+    (focoInicial || elementosFocaveisDoModal(modal)[0] || modal).focus();
+}
+
+function fecharModalAcessivel(modal, focoAlternativo) {
+    if (!modal) return;
+    modal.classList.add("hidden");
+    if (!document.querySelector(".modal:not(.hidden)")) document.body.classList.remove("modal-open");
+    const origem = focoAnteriorPorModal.get(modal) || focoAlternativo;
+    focoAnteriorPorModal.delete(modal);
+    if (origem && !origem.closest?.(".hidden")) origem.focus();
+    else focoAlternativo?.focus();
+}
+
+function prenderFocoNoModal(event, modal) {
+    if (event.key !== "Tab" || !modal || modal.classList.contains("hidden")) return;
+    const focaveis = elementosFocaveisDoModal(modal);
+    if (focaveis.length === 0) {
+        event.preventDefault();
+        modal.focus();
+        return;
+    }
+    const primeiro = focaveis[0];
+    const ultimo = focaveis[focaveis.length - 1];
+    if (event.shiftKey && document.activeElement === primeiro) {
+        event.preventDefault();
+        ultimo.focus();
+    } else if (!event.shiftKey && document.activeElement === ultimo) {
+        event.preventDefault();
+        primeiro.focus();
+    }
+}
+
 function abrirEstatisticasIntegradas() {
     renderizarEstatisticasIntegradas();
-    integratedStatsModal?.classList.remove("hidden");
-    btnCloseIntegratedStats?.focus();
+    abrirModalAcessivel(integratedStatsModal, btnOpenIntegratedStats, btnCloseIntegratedStats);
 }
 
 function fecharEstatisticasIntegradas() {
-    integratedStatsModal?.classList.add("hidden");
-    btnOpenIntegratedStats?.focus();
+    fecharModalAcessivel(integratedStatsModal, btnOpenIntegratedStats);
+}
+
+function abrirComoJogar() {
+    abrirModalAcessivel(howToPlayModal, btnOpenHowToPlay, btnCloseHowToPlay);
+}
+
+function fecharComoJogar() {
+    fecharModalAcessivel(howToPlayModal, btnOpenHowToPlay);
 }
 
 btnOpenIntegratedStats?.addEventListener("click", abrirEstatisticasIntegradas);
 btnCloseIntegratedStats?.addEventListener("click", fecharEstatisticasIntegradas);
+btnOpenHowToPlay?.addEventListener("click", abrirComoJogar);
+btnCloseHowToPlay?.addEventListener("click", fecharComoJogar);
 integratedStatsModal?.addEventListener("click", event => {
     if (event.target === integratedStatsModal) fecharEstatisticasIntegradas();
 });
+howToPlayModal?.addEventListener("click", event => {
+    if (event.target === howToPlayModal) fecharComoJogar();
+});
 document.addEventListener("keydown", event => {
-    if (event.key === "Escape" && integratedStatsModal && !integratedStatsModal.classList.contains("hidden")) {
-        fecharEstatisticasIntegradas();
+    const modalTutorialFoto = document.getElementById("photoTutorialModal");
+    const modalAtivo = [howToPlayModal, integratedStatsModal, modalTutorialFoto]
+        .find(modal => modal && !modal.classList.contains("hidden"));
+    if (!modalAtivo) return;
+    if (event.key === "Escape") {
+        if (modalAtivo === howToPlayModal) fecharComoJogar();
+        else if (modalAtivo === integratedStatsModal) fecharEstatisticasIntegradas();
+        else fecharTutorialFoto();
+        return;
     }
+    prenderFocoNoModal(event, modalAtivo);
 });
 
 // Hash simples e determinístico (mesma string sempre gera o mesmo número)
@@ -1608,7 +1676,7 @@ function iniciarDesafioFotoDoDia() {
     // Tutorial do botão de preto-e-branco — só na primeira vez que
     // a pessoa abre o Modo Foto.
     if (!localStorage.getItem(CHAVE_TUTORIAL_FOTO)) {
-        photoTutorialModal.classList.remove("hidden");
+        abrirModalAcessivel(photoTutorialModal, photoSearchInput, photoTutorialCloseBtn);
     }
 }
 
@@ -1738,10 +1806,12 @@ photoGrayscaleToggle.addEventListener("click", () => {
     atualizarImagemFoto();
 });
 
-photoTutorialCloseBtn.addEventListener("click", () => {
-    photoTutorialModal.classList.add("hidden");
+function fecharTutorialFoto() {
     localStorage.setItem(CHAVE_TUTORIAL_FOTO, "1");
-});
+    fecharModalAcessivel(photoTutorialModal, photoSearchInput);
+}
+
+photoTutorialCloseBtn.addEventListener("click", fecharTutorialFoto);
 
 /* ==========================================================================
    TIMÃODLE — JOGOU MAIS OU MENOS
@@ -2644,8 +2714,8 @@ function criarChipVisivel(nome, top, left, revelado = false, linhaDensa = false)
 
     const foto = fotoOuGenerico(nome);
     const dotHtml = foto
-        ? `<img src="${foto}" class="chip-dot" style="object-fit:cover;object-position:center top;">`
-        : `<span class="chip-dot"></span>`;
+        ? `<img src="${foto}" class="chip-dot" alt="Foto de ${nome}" style="object-fit:cover;object-position:center top;">`
+        : `<span class="chip-dot" aria-hidden="true"></span>`;
 
     chip.innerHTML = `${dotHtml}<span class="chip-label${revelado ? " correct" : ""}">${nome}</span>`;
     return chip;
@@ -2720,8 +2790,8 @@ escalacaoSearchInput.addEventListener("input", function () {
         const item = document.createElement("div");
         const foto = fotoOuGenerico(j.nome);
         const avatarHtml = foto
-            ? `<img src="${foto}" class="autocomplete-avatar-img">`
-            : `<span class="autocomplete-avatar-img"></span>`;
+            ? `<img src="${foto}" class="autocomplete-avatar-img" alt="" aria-hidden="true">`
+            : `<span class="autocomplete-avatar-img" aria-hidden="true"></span>`;
         item.innerHTML = `${avatarHtml}<span>${j.nome}</span>`;
         item.dataset.nome = j.nome;
         item.addEventListener("click", () => processarPalpiteEscalacao(j.nome));

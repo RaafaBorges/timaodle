@@ -48,26 +48,10 @@
                     <h1>TIMÃODLE</h1>
                 </div>
 
-                <!-- Botão de Ajuda (Hover/Tooltip) -->
+                <!-- Ajuda geral -->
                 <div class="help-container">
-                    <button class="icon-btn help-btn" title="Como Jogar">?</button>
-                    <div class="help-tooltip">
-                        <h3>COMO JOGAR</h3>
-                        <p>Adivinhe o jogador do Corinthians em cada tentativa.</p>
-                        <div class="help-rules-grid">
-                            <span class="rule-label"><span class="dot green"></span>Verde</span>
-                            <span class="rule-desc">Atributo correto!</span>
-
-                            <span class="rule-label"><span class="dot yellow"></span>Amarelo</span>
-                            <span class="rule-desc">Correspondência parcial (ex: mesmo título em comum).</span>
-
-                            <span class="rule-label"><span class="dot red"></span>Vermelho</span>
-                            <span class="rule-desc">Incorreto.</span>
-
-                            <span class="rule-label">Setas (↑ / ↓)</span>
-                            <span class="rule-desc">Indicam se o número correto é maior ou menor.</span>
-                        </div>
-                    </div>
+                    <button id="btnOpenHowToPlay" class="icon-btn help-btn" type="button"
+                        title="Como jogar" aria-label="Como jogar">?</button>
                 </div>
             </div>
             <p class="subtitle">Adivinhe o jogador secreto do Corinthians!</p>
@@ -371,7 +355,7 @@
                         <div class="pitch" id="pitchField"></div>
                     </div>
 
-                    <p id="escalacaoFeedback" class="escalacao-feedback hidden"></p>
+                    <p id="escalacaoFeedback" class="escalacao-feedback hidden" aria-live="polite"></p>
                     <p id="escalacaoForaList" class="escalacao-fora hidden"></p>
                 </div>
 
@@ -468,9 +452,10 @@
     </div>
 
     <!-- MODAL DE TUTORIAL DO MODO FOTO (aparece só na primeira vez que abre esse modo) -->
-    <div id="photoTutorialModal" class="modal hidden">
+    <div id="photoTutorialModal" class="modal hidden" role="dialog" aria-modal="true"
+        aria-labelledby="photoTutorialTitle">
         <div class="modal-content">
-            <h2>🖼️ Modo Foto</h2>
+            <h2 id="photoTutorialTitle">🖼️ Modo Foto</h2>
             <p class="welcome-text">A foto começa borrada e em preto-e-branco — cada palpite "foca" um pouco mais.
                 Prefere ver com cor desde já? É só tocar no botão <strong>🎨</strong> no canto da foto, a qualquer
                 momento.</p>
@@ -485,6 +470,44 @@
                 <button id="btnCloseIntegratedStats" class="stats-close-btn" type="button" aria-label="Fechar estatísticas">×</button>
             </div>
             <div id="integratedStatsContent" class="integrated-stats-scroll"></div>
+        </div>
+    </div>
+
+    <div id="howToPlayModal" class="modal hidden" role="dialog" aria-modal="true"
+        aria-labelledby="howToPlayTitle">
+        <div class="modal-content integrated-stats-modal-content help-modal-content">
+            <div class="integrated-stats-header">
+                <h2 id="howToPlayTitle">COMO JOGAR</h2>
+                <button id="btnCloseHowToPlay" class="stats-close-btn" type="button"
+                    aria-label="Fechar Como Jogar">×</button>
+            </div>
+            <div class="integrated-stats-scroll help-modal-scroll">
+                <p class="help-intro">O Timãodle reúne quatro desafios diários sobre o Corinthians. Conclua todos para fechar o dia em 4/4.</p>
+
+                <div class="help-mode-grid">
+                    <section class="help-mode-card">
+                        <h3>CLÁSSICO</h3>
+                        <p>Adivinhe o jogador comparando oito atributos. Verde indica acerto, amarelo uma correspondência parcial e vermelho um valor diferente. As setas mostram se o número correto é maior ou menor.</p>
+                    </section>
+                    <section class="help-mode-card">
+                        <h3>FOTO</h3>
+                        <p>Descubra o jogador pela imagem em até 6 tentativas. A foto fica progressivamente mais clara a cada palpite.</p>
+                    </section>
+                    <section class="help-mode-card">
+                        <h3>MAIS OU MENOS</h3>
+                        <p>Escolha se o próximo jogador fez mais ou menos jogos pelo Corinthians. São 10 rodadas e 7 acertos garantem a vitória.</p>
+                    </section>
+                    <section class="help-mode-card">
+                        <h3>ONZE INICIAL</h3>
+                        <p>Palpite o placar da partida histórica e depois descubra os 3 jogadores ocultos da escalação.</p>
+                    </section>
+                </div>
+
+                <section class="help-progress-card">
+                    <h3>SEU DIA NO TIMÃODLE</h3>
+                    <p>A Home acompanha o progresso de 0/4 a 4/4. Dias completos alimentam sua sequência, o painel de estatísticas resume o desempenho e, ao concluir tudo, você pode compartilhar o dia sem revelar respostas.</p>
+                </section>
+            </div>
         </div>
     </div>
 
