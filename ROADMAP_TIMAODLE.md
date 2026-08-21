@@ -1,6 +1,6 @@
 # TIMÃODLE --- ROADMAP E CONTEXTO DO PROJETO
 
-**Versão do documento:** 2.6\
+**Versão do documento:** 2.7\
 **Data:** 21/08/2026\
 **Projeto:** Timãodle\
 **Objetivo deste arquivo:** servir como documento de contexto para
@@ -673,25 +673,30 @@ Depois disso, atualizar o checklist principal deste arquivo.
 
 # 17. PRÓXIMA TAREFA OFICIAL
 
-## ✅ v2.6 — CONCLUÍDA: ESTABILIDADE E HARDENING
+## 🚧 v2.7 — EM ANDAMENTO: CONSOLIDAÇÃO RESPONSIVA
 
 Concluído:
 
-1.  Hardening básico e remoção de controles/spoilers de desenvolvimento.
-2.  Normalização defensiva dos saves individuais e do histórico integrado.
-3.  Recálculo seguro do indicador diário `complete`, preservando saves e migrações.
-4.  Como Jogar e acessibilidade básica dos modais.
-5.  Polimento visual, feedback sobreposto e avanço automático do Mais ou Menos.
-6.  Suíte permanente de regressão para storage, streak, progresso, estatísticas,
-    Mais ou Menos v2 e compartilhamento diário sem spoilers.
+1.  Auditoria estrutural inicial do CSS e da responsividade.
+2.  Baseline permanente das relações entre HTML, JavaScript e CSS.
+3.  Contrato documentado de IDs, classes dinâmicas, estados e elementos essenciais.
+4.  Viewports canônicos definidos para 360, 390, 412, 430, 480, 768 px,
+    desktop amplo e mobile com pouca altura.
+5.  Checklist visual reutilizável e smoke headless opcional, sem dependência no runner.
 
-Próxima fase planejada — **v2.7 (ainda não iniciada):**
+Próxima etapa:
 
-1.  Revisão estrutural mobile.
-2.  Consolidação do CSS e dos breakpoints.
-3.  Consistência visual dos quatro modos.
-4.  Semântica ARIA completa dos autocompletes.
-5.  Testes em dispositivos e leitores de tela reais.
+1.  Consolidar primeiro a estrutura global (shell, header, conteúdo e footer).
+2.  Consolidar breakpoints e regras responsivas da Home em alterações pequenas.
+3.  Avançar modo a modo somente depois de validar a estrutura global.
+
+Ainda não concluído:
+
+-   consolidação do CSS e dos breakpoints;
+-   mudanças visuais ou responsivas no código de produção;
+-   consistência visual dos quatro modos;
+-   semântica ARIA completa dos autocompletes;
+-   testes em dispositivos e leitores de tela reais.
 
 ------------------------------------------------------------------------
 
@@ -1687,3 +1692,40 @@ Pendências transferidas para v2.7:
 
 Próximo passo:
 - planejar o escopo da v2.7; a fase ainda não foi iniciada.
+
+
+## 21/08/2026 — v2.7 iniciada: baseline responsiva e proteção estrutural
+
+Implementado:
+- contrato central da interface com IDs essenciais por área, seletores CSS críticos,
+  classes aplicadas dinamicamente e estados visuais dos quatro modos;
+- teste estático permanente entre `index.html`, `script.js` e `style.css`, cobrindo
+  130 IDs, IDs duplicados, referências literais de `getElementById`, modais e scroll lock;
+- matriz canônica com 360, 390, 412, 430, 480, 768 e 1440 px, além de 412 × 600
+  para viewport mobile de pouca altura;
+- documentação das classes dinâmicas separada por Home, Clássico, Foto, Mais ou Menos,
+  Onze Inicial, modais e painel de links;
+- checklist visual curto e reutilizável para shell, modos, modais, nomes longos,
+  overflow horizontal, foco e viewport baixo;
+- smoke test opcional com navegador headless para medir `scrollWidth` e elementos visíveis
+  fora da viewport, sem integrar essa dependência ao runner obrigatório;
+- teste estrutural incluído em `node tests/run-tests.js`;
+- nenhum arquivo de produção, CSS, HTML, mecânica, save, histórico ou JSON foi alterado.
+
+Testado:
+- `node tests/run-tests.js`: storage A–X, 39 cenários de regras e 14 cenários
+  estruturais aprovados; 130 IDs conferidos;
+- `node --check tests/viewport-smoke.js`;
+- tentativa real do smoke em Chrome e Edge headless: ambos indisponíveis neste ambiente
+  porque o processo GPU encerra antes da renderização; o utilitário registra `SKIP` seguro;
+- screenshots e validação visual real não foram executados pela mesma limitação ambiental.
+
+Pendências:
+- executar `node tests/viewport-smoke.js` em ambiente onde Chrome/Edge headless renderize;
+- percorrer `tests/visual-checklist.md` em navegador real nos viewports canônicos;
+- criar cobertura automatizada futura para estados internos complexos dos modos e modais;
+- consolidar CSS e breakpoints; esta etapa criou somente a proteção anterior à refatoração.
+
+Próximo passo:
+- iniciar a consolidação responsiva pelo shell global (viewport, body, header, conteúdo e
+  footer), preservando o visual e usando a baseline para detectar regressões estruturais.
