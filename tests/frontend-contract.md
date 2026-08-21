@@ -108,4 +108,14 @@ node tests/viewport-smoke.js
   480 px; seu painel usa limites vinculados ao viewport e não participa da largura do shell.
 - Seletores confirmadamente mortos do modal estatístico antigo e das caixas inexistentes
   do campo não fazem mais parte do CSS.
-- A validação ARIA completa dos três autocompletes permanece uma etapa funcional separada.
+
+## Autocompletes acessíveis
+
+- Clássico, Foto e Onze Inicial usam inputs `role="combobox"`, com nome acessível,
+  `aria-controls`, `aria-expanded` e `aria-activedescendant` sincronizados.
+- As listas possuem `role="listbox"`; sugestões recebem `role="option"`, ID previsível
+  por modo e `aria-selected` coerente com `.autocomplete-active`.
+- O foco permanece no input. Setas circulam pelas opções, Enter exige item ativo,
+  Escape fecha sem retirar o foco e Tab conserva o fluxo natural.
+- Fechamento, clique externo, lista vazia e nova busca removem qualquer descendant antigo.
+- Imagens decorativas do autocomplete do Onze Inicial continuam `aria-hidden`.

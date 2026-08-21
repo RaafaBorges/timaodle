@@ -2141,3 +2141,38 @@ Pendências:
 
 Próximo passo:
 - executar o checklist visual final e, depois, implementar a semântica ARIA dos autocompletes.
+
+
+## 21/08/2026 — v2.7: acessibilidade completa dos autocompletes
+
+Implementado:
+- inputs do Clássico, Foto e Onze Inicial convertidos semanticamente em `combobox`
+  com `aria-autocomplete="list"`,
+  com nomes acessíveis e `aria-controls` apontando para listboxes reais e exclusivas;
+- listas marcadas como `role="listbox"`;
+- sugestões recebem `role="option"`, IDs previsíveis por modo e `aria-selected`;
+- `aria-expanded` acompanha lista aberta/fechada e `aria-activedescendant` acompanha
+  exatamente a option destacada;
+- dois helpers pequenos centralizam somente preparação de options e sincronização ARIA;
+- ArrowDown/ArrowUp preservam navegação circular e classe visual ativa;
+- Enter agora exige uma option ativa, evitando selecionar silenciosamente o primeiro item;
+- Escape fecha os três autocompletes, incluindo o Onze Inicial, e mantém foco no input;
+- clique/toque, hover, Tab, clique externo, lista vazia e reconstrução preservados;
+- filtros, pools, tentativas, três ocultos, avatares, feedbacks e mecânicas permaneceram intactos;
+- nenhum CSS, algoritmo, save, seed ou JSON foi alterado.
+
+Testado:
+- baseline completa aprovada antes da alteração;
+- contrato permanente ampliado para os três pares combobox/listbox e para criação e
+  sincronização das options;
+- testes automatizados e validações estáticas registrados no relatório desta etapa.
+
+Pendências:
+- validar manualmente com teclado e leitor de tela abertura, setas, Enter, Escape, Tab,
+  clique, lista vazia, nova busca e clique externo nos três modos;
+- validação visual/manual real da v2.7 continua sendo a última etapa;
+- quatro formações 4-2-3-1 seguem pendentes de validação histórica;
+- a v2.7 ainda não foi marcada como concluída.
+
+Próximo passo:
+- executar a validação manual final da v2.7 em Live Server, incluindo teclado e leitor de tela.

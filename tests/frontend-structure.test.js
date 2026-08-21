@@ -193,6 +193,36 @@ test("hardening responsivo final preserva movimento reduzido e widget", () => {
     }
 });
 
+test("autocompletes preservam contrato combobox, listbox e options ARIA", () => {
+    const pairs = [
+        ["searchInput", "autocompleteList"],
+        ["photoSearchInput", "photoAutocompleteList"],
+        ["escalacaoSearchInput", "escalacaoAutocompleteList"]
+    ];
+    for (const [inputId, listId] of pairs) {
+        const input = html.match(new RegExp(`<input[^>]+id=["']${inputId}["'][^>]*>`, "i"))?.[0] || "";
+        const list = html.match(new RegExp(`<div[^>]+id=["']${listId}["'][^>]*>`, "i"))?.[0] || "";
+        assert.match(input, /role=["']combobox["']/i, inputId);
+        assert.match(input, /aria-autocomplete=["']list["']/i, inputId);
+        assert.match(input, /aria-expanded=["']false["']/i, inputId);
+        assert.ok(input.includes(`aria-controls="${listId}"`), inputId);
+        assert.match(input, /aria-label=/i, inputId);
+        assert.match(list, /role=["']listbox["']/i, listId);
+    }
+    for (const token of [
+        'setAttribute("role", "option")', 'setAttribute("aria-selected", "false")',
+        'setAttribute("aria-selected", ativo ? "true" : "false")',
+        'setAttribute("aria-expanded"', 'setAttribute("aria-activedescendant"',
+        'removeAttribute("aria-activedescendant")', '"classic"', '"photo"', '"lineup"'
+    ]) {
+        assert.ok(script.includes(token), token);
+    }
+    assert.ok(script.includes('e.key === "Escape"'));
+    assert.ok(script.includes("if (selectedIndex < 0) return"));
+    assert.ok(script.includes("if (selectedIndexFoto < 0) return"));
+    assert.ok(script.includes("if (selectedIndexEsc < 0) return"));
+});
+
 test("viewports canônicos da v2.7 permanecem formalizados", () => {
     assert.deepEqual(contract.viewports.map(viewport => viewport.width), [360, 390, 412, 430, 480, 768, 1440, 412]);
     assert.ok(contract.viewports.some(viewport => viewport.height <= 600), "viewport baixo ausente");

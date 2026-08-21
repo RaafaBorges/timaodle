@@ -1041,20 +1041,37 @@ function iniciarDesafioDiario() {
 // AUTOCOMPLETE
 // ==========================================================================
 
+function prepararOpcaoAutocomplete(item, prefixo, indice) {
+    item.id = `${prefixo}-option-${indice}`;
+    item.setAttribute("role", "option");
+    item.setAttribute("aria-selected", "false");
+}
+
+function sincronizarAriaAutocomplete(input, items, indiceAtivo) {
+    const opcoes = Array.from(items);
+    input.setAttribute("aria-expanded", opcoes.length > 0 ? "true" : "false");
+
+    let idAtivo = "";
+    opcoes.forEach((item, indice) => {
+        const ativo = indice === indiceAtivo;
+        item.classList.toggle("autocomplete-active", ativo);
+        item.setAttribute("aria-selected", ativo ? "true" : "false");
+        if (ativo) idAtivo = item.id;
+    });
+
+    if (idAtivo) input.setAttribute("aria-activedescendant", idAtivo);
+    else input.removeAttribute("aria-activedescendant");
+}
+
 function fecharAutocomplete() {
     autocompleteList.innerHTML = "";
     selectedIndex = -1;
+    sincronizarAriaAutocomplete(searchInput, [], selectedIndex);
 }
 
 function atualizarDestaqueAutocomplete(items) {
-    Array.from(items).forEach((item, index) => {
-        if (index === selectedIndex) {
-            item.classList.add("autocomplete-active");
-            item.scrollIntoView({ block: "nearest" });
-        } else {
-            item.classList.remove("autocomplete-active");
-        }
-    });
+    sincronizarAriaAutocomplete(searchInput, items, selectedIndex);
+    if (selectedIndex >= 0) items[selectedIndex].scrollIntoView({ block: "nearest" });
 }
 
 // Evento de Digitação (Filtro do Autocomplete)
@@ -1070,8 +1087,9 @@ searchInput.addEventListener("input", function () {
         !(estadoDiario?.tentativas || []).includes(j.nome)
     );
 
-    filtrados.forEach(j => {
+    filtrados.forEach((j, indice) => {
         const item = document.createElement("div");
+        prepararOpcaoAutocomplete(item, "classic", indice);
         item.innerText = j.nome;
         item.dataset.nome = j.nome;
 
@@ -1083,6 +1101,7 @@ searchInput.addEventListener("input", function () {
 
         autocompleteList.appendChild(item);
     });
+    sincronizarAriaAutocomplete(searchInput, autocompleteList.children, selectedIndex);
 });
 
 // Navegação via Teclado (Setas Cima/Baixo e Enter)
@@ -1106,8 +1125,8 @@ searchInput.addEventListener("keydown", function (e) {
         e.preventDefault();
 
         // Se navegou com as setas, escolhe o item selecionado; senão, escolhe a 1ª opção
-        const indexParaEscolher = selectedIndex >= 0 ? selectedIndex : 0;
-        const nomeSelecionado = items[indexParaEscolher].dataset.nome;
+        if (selectedIndex < 0) return;
+        const nomeSelecionado = items[selectedIndex].dataset.nome;
         const jogadorObjeto = jogadores.find(j => j.nome === nomeSelecionado);
 
         if (jogadorObjeto) {
@@ -1683,6 +1702,7 @@ function iniciarDesafioFotoDoDia() {
 function fecharAutocompleteFoto() {
     photoAutocompleteList.innerHTML = "";
     selectedIndexFoto = -1;
+    sincronizarAriaAutocomplete(photoSearchInput, [], selectedIndexFoto);
 }
 
 function fazerPalpiteFoto(palpiteJogador) {
@@ -1735,8 +1755,9 @@ photoSearchInput.addEventListener("input", function () {
         normalizarBusca(j.nome).includes(value) && !jaTentados.includes(j.nome)
     );
 
-    filtrados.forEach(j => {
+    filtrados.forEach((j, indice) => {
         const item = document.createElement("div");
+        prepararOpcaoAutocomplete(item, "photo", indice);
         item.innerText = j.nome;
         item.dataset.nome = j.nome;
         item.addEventListener("click", function () {
@@ -1746,6 +1767,7 @@ photoSearchInput.addEventListener("input", function () {
         });
         photoAutocompleteList.appendChild(item);
     });
+    sincronizarAriaAutocomplete(photoSearchInput, photoAutocompleteList.children, selectedIndexFoto);
 });
 
 photoSearchInput.addEventListener("keydown", function (e) {
@@ -1756,15 +1778,15 @@ photoSearchInput.addEventListener("keydown", function (e) {
     if (e.key === "ArrowDown") {
         e.preventDefault();
         selectedIndexFoto = (selectedIndexFoto + 1) % items.length;
-        Array.from(items).forEach((el, i) => el.classList.toggle("autocomplete-active", i === selectedIndexFoto));
+        sincronizarAriaAutocomplete(photoSearchInput, items, selectedIndexFoto);
     } else if (e.key === "ArrowUp") {
         e.preventDefault();
         selectedIndexFoto = (selectedIndexFoto - 1 + items.length) % items.length;
-        Array.from(items).forEach((el, i) => el.classList.toggle("autocomplete-active", i === selectedIndexFoto));
+        sincronizarAriaAutocomplete(photoSearchInput, items, selectedIndexFoto);
     } else if (e.key === "Enter") {
         e.preventDefault();
-        const idx = selectedIndexFoto >= 0 ? selectedIndexFoto : 0;
-        const nome = items[idx].dataset.nome;
+        if (selectedIndexFoto < 0) return;
+        const nome = items[selectedIndexFoto].dataset.nome;
         const jogadorObjeto = jogadores.find(j => j.nome === nome);
         if (jogadorObjeto) {
             fazerPalpiteFoto(jogadorObjeto);
@@ -2826,6 +2848,7 @@ function renderizarForaList() {
 function fecharAutocompleteEsc() {
     escalacaoAutocompleteList.innerHTML = "";
     selectedIndexEsc = -1;
+    sincronizarAriaAutocomplete(escalacaoSearchInput, [], selectedIndexEsc);
 }
 
 function mostrarFeedbackEsc(texto) {
@@ -2843,8 +2866,9 @@ escalacaoSearchInput.addEventListener("input", function () {
 
     const filtrados = jogadores.filter(j => normalizarBusca(j.nome).includes(valor)).slice(0, 8);
 
-    filtrados.forEach(j => {
+    filtrados.forEach((j, indice) => {
         const item = document.createElement("div");
+        prepararOpcaoAutocomplete(item, "lineup", indice);
         const foto = fotoOuGenerico(j.nome);
         const avatarHtml = foto
             ? `<img src="${foto}" class="autocomplete-avatar-img" alt="" aria-hidden="true">`
@@ -2854,6 +2878,7 @@ escalacaoSearchInput.addEventListener("input", function () {
         item.addEventListener("click", () => processarPalpiteEscalacao(j.nome));
         escalacaoAutocompleteList.appendChild(item);
     });
+    sincronizarAriaAutocomplete(escalacaoSearchInput, escalacaoAutocompleteList.children, selectedIndexEsc);
 });
 
 escalacaoSearchInput.addEventListener("keydown", function (e) {
@@ -2863,15 +2888,17 @@ escalacaoSearchInput.addEventListener("keydown", function (e) {
     if (e.key === "ArrowDown") {
         e.preventDefault();
         selectedIndexEsc = (selectedIndexEsc + 1) % items.length;
-        Array.from(items).forEach((el, i) => el.classList.toggle("autocomplete-active", i === selectedIndexEsc));
+        sincronizarAriaAutocomplete(escalacaoSearchInput, items, selectedIndexEsc);
     } else if (e.key === "ArrowUp") {
         e.preventDefault();
         selectedIndexEsc = (selectedIndexEsc - 1 + items.length) % items.length;
-        Array.from(items).forEach((el, i) => el.classList.toggle("autocomplete-active", i === selectedIndexEsc));
+        sincronizarAriaAutocomplete(escalacaoSearchInput, items, selectedIndexEsc);
     } else if (e.key === "Enter") {
         e.preventDefault();
-        const idx = selectedIndexEsc >= 0 ? selectedIndexEsc : 0;
-        processarPalpiteEscalacao(items[idx].dataset.nome);
+        if (selectedIndexEsc < 0) return;
+        processarPalpiteEscalacao(items[selectedIndexEsc].dataset.nome);
+    } else if (e.key === "Escape") {
+        fecharAutocompleteEsc();
     }
 });
 

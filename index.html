@@ -157,8 +157,10 @@
                     </div>
 
                     <div class="search-box">
-                        <input type="text" id="searchInput" placeholder="Digite o nome de um jogador..." autocomplete="off">
-                        <div id="autocompleteList" class="autocomplete-items"></div>
+                        <input type="text" id="searchInput" placeholder="Digite o nome de um jogador..." autocomplete="off"
+                            role="combobox" aria-autocomplete="list" aria-label="Buscar jogador" aria-expanded="false"
+                            aria-controls="autocompleteList">
+                        <div id="autocompleteList" class="autocomplete-items" role="listbox"></div>
                     </div>
 
                     <div class="board-header">
@@ -192,8 +194,10 @@
                     </div>
 
                     <div class="search-box">
-                        <input type="text" id="photoSearchInput" placeholder="Digite o nome de um jogador..." autocomplete="off">
-                        <div id="photoAutocompleteList" class="autocomplete-items"></div>
+                        <input type="text" id="photoSearchInput" placeholder="Digite o nome de um jogador..." autocomplete="off"
+                            role="combobox" aria-autocomplete="list" aria-label="Buscar jogador pela foto" aria-expanded="false"
+                            aria-controls="photoAutocompleteList">
+                        <div id="photoAutocompleteList" class="autocomplete-items" role="listbox"></div>
                     </div>
                 </div>
 
@@ -346,8 +350,10 @@
                     </div>
 
                     <div class="search-box">
-                        <input type="text" id="escalacaoSearchInput" placeholder="Escreve o nome de um jogador..." autocomplete="off">
-                        <div id="escalacaoAutocompleteList" class="autocomplete-items autocomplete-avatar"></div>
+                        <input type="text" id="escalacaoSearchInput" placeholder="Escreve o nome de um jogador..." autocomplete="off"
+                            role="combobox" aria-autocomplete="list" aria-label="Buscar jogador do onze inicial" aria-expanded="false"
+                            aria-controls="escalacaoAutocompleteList">
+                        <div id="escalacaoAutocompleteList" class="autocomplete-items autocomplete-avatar" role="listbox"></div>
                     </div>
 
                     <div class="pitch-container">
