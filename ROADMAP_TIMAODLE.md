@@ -1980,3 +1980,51 @@ Pendências:
 
 Próximo passo:
 - validar visualmente o Clássico e consolidar o Mais ou Menos em uma etapa isolada.
+
+
+## 21/08/2026 — v2.7: consolidação individual do Mais ou Menos
+
+Implementado:
+- estilos do Mais ou Menos reunidos integralmente sob `#maisMenosView`;
+- largura do painel formalizada em `min(520px, 100%)`, dentro da view de até 540 px;
+- propriedades residuais da base antiga incorporadas aos cards, fotos, nomes, estatísticas,
+  divisor, botões e legenda sem alterar o resultado visual vigente;
+- nomes continuam limitados a duas linhas e passaram de `overflow-wrap: anywhere` para
+  `break-word`, mantendo contenção com quebra mais natural;
+- fotos e fallback preservam `object-fit`, enquadramento e escala 88 → 80 → 72 → 64 px;
+- botões preservam hover, active, disabled, acerto, erro e bloqueio durante a resposta;
+- overlay contido no card, textos ACERTOU/QUASE, animação de 180 ms, barra de 1,5 s,
+  `aria-live` e movimento reduzido preservados;
+- resultado final, vitória/derrota, placar em 10, meta de 7 e countdown preservados;
+- algoritmo v2, plano 3/4/3, seed, snapshots, fluxo, persistência, HTML, JavaScript e JSONs intactos.
+
+Limpeza:
+- removida a base global antiga de seletores `.mm-*` após incorporar todas as propriedades residuais;
+- removidos oito overrides tardios de hierarquia que já eram superados pelo polimento escopado;
+- removidos dois overrides mobile globais de nome e estatística, também superados pela seção final;
+- somente `.mm-dots` permanece fora do escopo por ser uma base comprovadamente compartilhada
+  com o progresso do Onze Inicial; nenhum seletor exclusivo do MM ficou global.
+
+Medição estática:
+- blocos associados ao MM: aproximadamente 131 antes e 100 depois;
+- seletores associados distintos: aproximadamente 98 antes e 75 depois;
+- breakpoints proprietários: três antes e três depois (680, 480 e 360 px), mantidos
+  porque controlam degraus reais de foto, card e tipografia;
+- uma media query adicional de `prefers-reduced-motion` permanece necessária.
+
+Testado:
+- baseline completa aprovada antes da alteração;
+- contrato estrutural ampliado para limites fluidos, nomes em duas linhas, overlay,
+  temporização, breakpoints, escala de fotos e movimento reduzido;
+- testes automatizados e validações estáticas registrados no relatório desta etapa.
+
+Pendências:
+- validar visualmente rodada inicial, quatro combinações de resposta, nomes longos,
+  overlay, rodada 9 → 10, vitória, derrota e F5 em navegador real;
+- confirmar cards, barra temporal, resultado, scroll e ausência de overflow nos viewports
+  360, 390, 412, 430, 480, 680, 768, desktop e 412 × 600;
+- Onze Inicial ainda aguarda consolidação individual;
+- a v2.7 permanece em andamento.
+
+Próximo passo:
+- validar visualmente o Mais ou Menos e consolidar o Onze Inicial em etapa isolada e de maior risco.

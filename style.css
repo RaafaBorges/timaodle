@@ -1447,189 +1447,12 @@ body.modal-open .page-content {
     color: #e9efe9;
 }
 
-/* ==========================================================================
-   JOGOU MAIS OU MENOS
-   ========================================================================== */
-.mm-card {
-    width: 100%;
-    max-width: 400px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 18px;
-    background: linear-gradient(160deg, var(--surface-2), var(--surface));
-    border: 1px solid var(--line);
-    border-radius: var(--radius-l);
-    padding: 20px 18px 22px;
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
-}
-
+/* Progresso compacto reutilizado por Mais ou Menos e Onze Inicial. */
 .mm-dots {
     display: flex;
     justify-content: center;
     gap: 6px;
     flex-wrap: wrap;
-}
-
-.mm-player-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-}
-
-.mm-avatar {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    object-fit: cover;
-    object-position: center top;
-    border: 2px solid var(--line);
-    background-color: var(--surface);
-    flex-shrink: 0;
-}
-
-.mm-avatar.image-fallback {
-    object-position: center;
-}
-
-.mm-player-info {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    flex: 1;
-    min-width: 0;
-}
-
-.mm-player-name {
-    font-family: var(--font-display);
-    font-size: 18px;
-    font-weight: 400;
-    letter-spacing: 0.3px;
-    color: var(--ink);
-    line-height: 1.15;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.mm-player-meta {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 11.5px;
-    color: var(--ink-muted);
-}
-
-.mm-player-stat-block {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    flex-shrink: 0;
-}
-
-.mm-player-stat {
-    font-family: var(--font-display);
-    font-size: 28px;
-    color: var(--gold);
-    letter-spacing: 0.5px;
-    font-weight: 400;
-    line-height: 1;
-}
-
-.mm-stat-label {
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.6px;
-    color: var(--ink-faint);
-    text-transform: uppercase;
-}
-
-.mm-divider {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-}
-
-.mm-divider::before,
-.mm-divider::after {
-    content: "";
-    flex: 1;
-    height: 1px;
-    background-color: var(--line-soft);
-}
-
-.mm-divider span {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    color: var(--gold);
-    background-color: var(--gold-soft);
-    border: 1px solid var(--gold);
-    border-radius: 20px;
-    padding: 5px 12px;
-    white-space: nowrap;
-}
-
-.mm-guess-buttons {
-    display: flex;
-    gap: 10px;
-    width: 100%;
-}
-
-.mm-guess-btn {
-    flex: 1;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 24px;
-    padding: 13px 10px;
-    font-family: var(--font-body);
-    font-weight: 700;
-    font-size: 13px;
-    color: var(--ink);
-    cursor: pointer;
-    transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.1s ease;
-}
-
-.mm-btn-mais {
-    color: var(--ok-line);
-}
-
-.mm-btn-menos {
-    color: var(--bad-line);
-}
-
-.mm-guess-btn:hover:not(:disabled) {
-    border-color: currentColor;
-    background-color: var(--surface-2);
-    transform: translateY(-1px);
-}
-
-.mm-guess-btn:disabled {
-    cursor: not-allowed;
-    opacity: 0.55;
-}
-
-.mm-guess-btn.correct {
-    background-color: var(--ok);
-    border-color: var(--ok-line);
-    color: #e9efe9;
-    opacity: 1;
-}
-
-.mm-guess-btn.wrong {
-    background-color: var(--bad);
-    border-color: var(--bad-line);
-    color: #f3e9e9;
-    opacity: 1;
-}
-
-.mm-caption {
-    font-size: 10.5px;
-    color: var(--ink-faint);
-    text-align: center;
-    line-height: 1.4;
 }
 
 /* ==========================================================================
@@ -2705,51 +2528,6 @@ body {
 }
 
 /* ------------------------------------------------------------------------
-   MAIS OU MENOS
-   ------------------------------------------------------------------------ */
-.mm-card {
-    gap: 20px;
-    padding: 22px 20px 24px;
-}
-
-.mm-player-name {
-    font-size: 21px;
-    font-weight: 700;
-    letter-spacing: 0.2px;
-}
-
-.mm-player-meta {
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.mm-player-stat {
-    font-size: 32px;
-    font-weight: 700;
-}
-
-.mm-stat-label {
-    font-size: 10px;
-    font-weight: 800;
-}
-
-.mm-divider span {
-    font-size: 12px;
-    font-weight: 800;
-}
-
-.mm-guess-btn {
-    padding: 14px 12px;
-    font-size: 15px;
-    font-weight: 800;
-}
-
-.mm-caption {
-    font-size: 12px;
-    line-height: 1.5;
-}
-
-/* ------------------------------------------------------------------------
    ONZE INICIAL
    ------------------------------------------------------------------------ */
 .match-card,
@@ -2915,8 +2693,6 @@ body {
    ------------------------------------------------------------------------ */
 @media (max-width: 480px) {
     .subtitle { font-size: 13px; }
-    .mm-player-name { font-size: 19px; }
-    .mm-player-stat { font-size: 29px; }
     .match-confronto { font-size: 27px; }
     .match-score-question { font-size: 14px; }
     .lineup-title { font-size: 13px; }
@@ -3801,8 +3577,7 @@ body {
 #maisMenosView .game-sticky-top,
 #maisMenosView .mm-card,
 #maisMenosView .mm-result-card {
-    width: 100%;
-    max-width: 520px;
+    width: min(520px, 100%);
 }
 
 #maisMenosView .daily-status-bar {
@@ -3816,10 +3591,14 @@ body {
 
 #maisMenosView .mm-card {
     position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     gap: 14px;
     padding: 18px;
     overflow: hidden;
-    border-color: rgba(185, 151, 90, 0.42);
+    border: 1px solid rgba(185, 151, 90, 0.42);
+    border-radius: var(--radius-l);
     background:
         radial-gradient(circle at 50% 0%, rgba(185, 151, 90, 0.12), transparent 34%),
         linear-gradient(160deg, #1b1b18, #11110f);
@@ -3897,6 +3676,7 @@ body {
     display: grid;
     grid-template-columns: 88px minmax(0, 1fr) auto;
     align-items: center;
+    width: 100%;
     gap: 14px;
     min-height: 112px;
     padding: 12px 14px;
@@ -3932,13 +3712,24 @@ body {
 #maisMenosView .mm-avatar {
     width: 88px;
     height: 88px;
+    flex-shrink: 0;
     border: 2px solid rgba(185, 151, 90, 0.58);
     border-radius: 13px;
     background: #0d0d0c;
+    object-fit: cover;
+    object-position: center top;
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.34);
 }
 
+#maisMenosView .mm-avatar.image-fallback {
+    object-position: center;
+}
+
 #maisMenosView .mm-player-info {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
     gap: 4px;
 }
 
@@ -3956,16 +3747,21 @@ body {
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     white-space: normal;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
     color: #fff;
+    font-family: var(--font-display);
     font-size: clamp(21px, 5vw, 25px);
     font-weight: 700;
+    letter-spacing: 0.2px;
     line-height: 1.02;
     text-overflow: clip;
     text-wrap: balance;
 }
 
 #maisMenosView .mm-player-meta {
+    display: flex;
+    align-items: center;
+    gap: 5px;
     color: #b3b0a7;
     font-size: 12px;
     font-weight: 700;
@@ -3973,6 +3769,9 @@ body {
 }
 
 #maisMenosView .mm-player-stat-block {
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: column;
     min-width: 70px;
     align-items: center;
     padding-left: 12px;
@@ -4002,12 +3801,18 @@ body {
 }
 
 #maisMenosView .mm-divider {
+    display: flex;
+    align-items: center;
+    width: 100%;
     gap: 8px;
     margin-block: -1px;
 }
 
 #maisMenosView .mm-divider::before,
 #maisMenosView .mm-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
     background: linear-gradient(90deg, transparent, rgba(185, 151, 90, 0.5));
 }
 
@@ -4022,17 +3827,25 @@ body {
     font-size: 11px;
     font-weight: 900;
     letter-spacing: 0.55px;
+    white-space: nowrap;
 }
 
 #maisMenosView .mm-guess-buttons {
+    display: flex;
+    width: 100%;
     gap: 10px;
 }
 
 #maisMenosView .mm-guess-btn {
+    flex: 1;
     min-height: 60px;
     padding: 12px 10px;
     border-width: 2px;
     border-radius: 12px;
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+    font-family: var(--font-body);
     font-size: 15px;
     font-weight: 900;
     letter-spacing: 0.35px;
@@ -4065,6 +3878,7 @@ body {
 }
 
 #maisMenosView .mm-guess-btn:disabled {
+    cursor: not-allowed;
     opacity: 0.45;
 }
 
@@ -4092,6 +3906,8 @@ body {
     color: #aaa79e;
     font-size: 11px;
     font-weight: 650;
+    line-height: 1.5;
+    text-align: center;
 }
 
 #maisMenosView .mm-round-feedback {

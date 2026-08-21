@@ -77,3 +77,13 @@ node tests/viewport-smoke.js
 - As labels mobile permanecem ligadas à ordem das oito células por `nth-child`.
 - Células usam quebra normal de palavras, com `overflow-wrap: break-word` apenas como proteção.
 - Busca, autocomplete, status, mensagem final e compartilhamento continuam na base compartilhada.
+
+## Mais ou Menos
+
+- `#maisMenosView` delimita todos os cards, jogadores, ações, feedback e resultado do modo.
+- View e painel usam limites fluidos de 540 e 520 px, respectivamente.
+- Os nomes permanecem limitados a duas linhas e usam quebra natural por palavras.
+- O overlay é absoluto e contido pelo `.mm-card`, com entrada de 180 ms e barra temporal de 1,5 s.
+- O atraso funcional de 1,5 s continua definido no JavaScript por `ATRASO_AVANCO_MM`.
+- Os breakpoints 680, 480 e 360 px preservam a escala de fotos 88, 80, 72 e 64 px.
+- O bloco de movimento reduzido desativa revelação, overlay, barra temporal e entrada da rodada.

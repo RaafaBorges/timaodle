@@ -138,6 +138,27 @@ test("Modo Clássico preserva oito colunas no desktop e duas no mobile", () => {
     }
 });
 
+test("Mais ou Menos preserva layout, overlay e escala responsiva", () => {
+    assert.match(cssRule("#maisMenosView"), /max-width:\s*540px/);
+    assert.match(cssRule("#maisMenosView .game-sticky-top,\n#maisMenosView .mm-card,\n#maisMenosView .mm-result-card"), /width:\s*min\(520px,\s*100%\)/);
+    assert.match(cssRule("#maisMenosView .mm-player-name"), /-webkit-line-clamp:\s*2/);
+    assert.match(cssRule("#maisMenosView .mm-player-name"), /overflow-wrap:\s*break-word/);
+    assert.match(cssRule("#maisMenosView .mm-round-feedback"), /position:\s*absolute/);
+    assert.match(cssRule("#maisMenosView .mm-round-feedback"), /inset:\s*0/);
+    assert.match(cssRule("#maisMenosView .mm-round-feedback::after"), /animation:\s*mm-feedback-timer 1\.5s/);
+    assert.ok(script.includes("const ATRASO_AVANCO_MM = 1500"));
+    for (const breakpoint of [680, 480, 360]) {
+        assert.ok(css.includes(`@media (max-width: ${breakpoint}px)`), `${breakpoint}px`);
+    }
+    for (const size of [88, 80, 72, 64]) {
+        assert.ok(css.includes(`width: ${size}px`), `${size}px`);
+    }
+    const reducedMotionStart = css.lastIndexOf("@media (prefers-reduced-motion: reduce)", css.indexOf("HOME MOBILE"));
+    const reducedMotionCss = css.slice(reducedMotionStart, css.indexOf("HOME MOBILE"));
+    assert.ok(reducedMotionCss.includes("#maisMenosView .mm-round-feedback::after"));
+    assert.match(reducedMotionCss, /animation:\s*none/);
+});
+
 test("viewports canônicos da v2.7 permanecem formalizados", () => {
     assert.deepEqual(contract.viewports.map(viewport => viewport.width), [360, 390, 412, 430, 480, 768, 1440, 412]);
     assert.ok(contract.viewports.some(viewport => viewport.height <= 600), "viewport baixo ausente");
