@@ -15,7 +15,7 @@ const essentialIds = {
     home: [
         "homeView", "homeDailyProgress", "homeProgressBar", "homeProgressValue",
         "homeStreakCurrent", "homeStreakBest", "homeCompletionSummary",
-        "homeCompletionActions", "shareDailyResultBtn", "btnOpenIntegratedStats"
+        "homeCompletionActions", "shareDailyResultBtn", "btnOpenIntegratedStats", "btnOpenHistory"
     ],
     classic: [
         "gameView", "searchInput", "autocompleteList", "attemptsContainer",
@@ -35,8 +35,10 @@ const essentialIds = {
         "escalacaoFeedback", "escCompletionCard", "backHomeBtnEsc"
     ],
     modals: [
-        "welcomeModal", "photoTutorialModal", "integratedStatsModal", "howToPlayModal",
-        "btnOpenHowToPlay", "btnCloseIntegratedStats", "btnCloseHowToPlay"
+        "welcomeModal", "photoTutorialModal", "integratedStatsModal", "historyModal", "howToPlayModal",
+        "btnOpenHowToPlay", "btnCloseIntegratedStats", "btnCloseHistory", "btnCloseHowToPlay",
+        "historyPreviousMonth", "historyNextMonth", "historyMonthTitle",
+        "historyCalendarGrid", "historyDayPlaceholder"
     ],
     navigation: [
         "btnPlayDiario", "btnPlayFoto", "btnPlayMaisMenos", "btnPlayEscalacao",
@@ -53,7 +55,11 @@ const dynamicClasses = {
         "tie", "resultado-final", "mm-round-enter", "won", "lost"
     ],
     lineup: ["dense-line", "correct", "acertou", "errou", "hidden"],
-    modals: ["hidden", "modal-open", "autocomplete-active"],
+    modals: [
+        "hidden", "modal-open", "autocomplete-active", "is-future", "is-before-tracking",
+        "is-no-record", "is-recorded", "is-started", "is-partial", "is-complete",
+        "is-today", "is-selected"
+    ],
     links: ["open"]
 };
 
@@ -65,7 +71,9 @@ const essentialCssSelectors = [
     "#maisMenosView .mm-player-candidate.answered", "#maisMenosView .mm-round-feedback",
     "#maisMenosView.resultado-final .mm-card", "#maisMenosView .mm-result-card",
     "#escalacaoView .player-chip.dense-line", ".slot-btn.correct", ".result-status.acertou",
-    ".result-status.errou", "body.modal-open .page-content", ".modal", ".autocomplete-active"
+    ".result-status.errou", "body.modal-open .page-content", ".modal", ".autocomplete-active",
+    ".history-modal-content", ".history-calendar-grid", ".history-day-cell.is-complete",
+    ".history-day-cell.is-today", ".history-day-cell.is-selected"
 ];
 
 const decorativeClasses = [

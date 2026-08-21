@@ -85,6 +85,14 @@ const btnOpenIntegratedStats = document.getElementById("btnOpenIntegratedStats")
 const integratedStatsModal = document.getElementById("integratedStatsModal");
 const btnCloseIntegratedStats = document.getElementById("btnCloseIntegratedStats");
 const integratedStatsContent = document.getElementById("integratedStatsContent");
+const btnOpenHistory = document.getElementById("btnOpenHistory");
+const historyModal = document.getElementById("historyModal");
+const btnCloseHistory = document.getElementById("btnCloseHistory");
+const historyPreviousMonth = document.getElementById("historyPreviousMonth");
+const historyNextMonth = document.getElementById("historyNextMonth");
+const historyMonthTitle = document.getElementById("historyMonthTitle");
+const historyCalendarGrid = document.getElementById("historyCalendarGrid");
+const historyDayPlaceholder = document.getElementById("historyDayPlaceholder");
 const btnOpenHowToPlay = document.getElementById("btnOpenHowToPlay");
 const howToPlayModal = document.getElementById("howToPlayModal");
 const btnCloseHowToPlay = document.getElementById("btnCloseHowToPlay");
@@ -935,6 +943,185 @@ function renderizarEstatisticasIntegradas() {
         </div>`;
 }
 
+const MESES_HISTORICO = [
+    "JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO",
+    "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"
+];
+const CLASSES_ESTADO_HISTORICO = [
+    "is-future", "is-before-tracking", "is-no-record", "is-recorded",
+    "is-started", "is-partial", "is-complete"
+];
+const estadoHistoricoUI = {
+    year: null,
+    month: null,
+    selectedDate: null,
+    history: null,
+    today: null
+};
+
+function formatarDataHistorico(data, incluirAno = true) {
+    const civil = componentesDataCivil(data);
+    if (!civil) return "";
+    const texto = `${civil.day} DE ${MESES_HISTORICO[civil.month - 1]}`;
+    return incluirAno ? `${texto} DE ${civil.year}` : texto;
+}
+
+function rotuloAcessivelDiaHistorico(dia) {
+    const partes = [formatarDataHistorico(dia.date).toLocaleLowerCase("pt-BR")];
+    if (dia.isToday) partes.push("hoje");
+    if (dia.isFuture) partes.push("data futura");
+    else if (dia.isBeforeTracking) partes.push("histórico indisponível para esta data");
+    else if (!dia.hasRecord) partes.push("sem registro disponível");
+    else if (dia.complete) partes.push("4 de 4 desafios concluídos");
+    else if (dia.completedCount > 0) partes.push(`${dia.completedCount} de 4 desafios concluídos`);
+    else if (dia.startedCount > 0) partes.push("desafio iniciado, nenhum de 4 concluído");
+    else partes.push("registro sem progresso concluído");
+    return partes.join(", ");
+}
+
+function textoIndicadorDiaHistorico(dia) {
+    if (dia.complete) return "✓ 4/4";
+    if (dia.completedCount > 0) return `${dia.completedCount}/4`;
+    if (dia.state === "started") return "• 0/4";
+    if (dia.state === "recorded") return "0/4";
+    return "";
+}
+
+function renderizarPlaceholderDiaHistorico(dia) {
+    if (!historyDayPlaceholder) return;
+    if (!dia) {
+        historyDayPlaceholder.textContent = "Selecione um dia para ver o progresso.";
+        return;
+    }
+    const data = formatarDataHistorico(dia.date, false);
+    historyDayPlaceholder.textContent = dia.hasRecord
+        ? `${data} — ${dia.completedCount}/4 DESAFIOS`
+        : `${data} — SEM REGISTRO DISPONÍVEL`;
+}
+
+function selecionarDiaHistorico(data, devolverFoco = false) {
+    const grade = gerarGradeMensalHistorico(
+        estadoHistoricoUI.year,
+        estadoHistoricoUI.month,
+        estadoHistoricoUI.history,
+        estadoHistoricoUI.today
+    );
+    const dia = grade.days.find(item => item.date === data && !item.isFuture && !item.isBeforeTracking);
+    if (!dia) return;
+    estadoHistoricoUI.selectedDate = data;
+    renderizarCalendarioHistorico();
+    if (devolverFoco) historyCalendarGrid?.querySelector(`[data-history-date="${data}"]`)?.focus();
+}
+
+function renderizarCalendarioHistorico() {
+    if (!historyCalendarGrid || !estadoHistoricoUI.history || !estadoHistoricoUI.today) return;
+    const grade = gerarGradeMensalHistorico(
+        estadoHistoricoUI.year,
+        estadoHistoricoUI.month,
+        estadoHistoricoUI.history,
+        estadoHistoricoUI.today
+    );
+    estadoHistoricoUI.year = grade.year;
+    estadoHistoricoUI.month = grade.month;
+    if (historyMonthTitle) historyMonthTitle.textContent = `${MESES_HISTORICO[grade.month - 1]} ${grade.year}`;
+    if (historyPreviousMonth) historyPreviousMonth.disabled = !grade.navigation.canGoPrevious;
+    if (historyNextMonth) historyNextMonth.disabled = !grade.navigation.canGoNext;
+
+    historyCalendarGrid.replaceChildren();
+    for (let index = 0; index < grade.firstWeekOffset; index++) {
+        const vazio = document.createElement("span");
+        vazio.className = "history-calendar-empty";
+        vazio.setAttribute("aria-hidden", "true");
+        historyCalendarGrid.appendChild(vazio);
+    }
+
+    grade.days.forEach(dia => {
+        const selecionado = dia.date === estadoHistoricoUI.selectedDate;
+        const classeEstado = `is-${dia.state}`;
+        const celula = document.createElement("div");
+        celula.className = `history-day-cell ${CLASSES_ESTADO_HISTORICO.includes(classeEstado) ? classeEstado : "is-no-record"}${dia.isToday ? " is-today" : ""}${selecionado ? " is-selected" : ""}`;
+        celula.setAttribute("role", "gridcell");
+        celula.setAttribute("aria-selected", String(selecionado));
+
+        const botao = document.createElement("button");
+        botao.type = "button";
+        botao.className = "history-day-button";
+        botao.dataset.historyDate = dia.date;
+        botao.disabled = dia.isFuture || dia.isBeforeTracking;
+        botao.setAttribute("aria-label", rotuloAcessivelDiaHistorico(dia));
+        botao.setAttribute("aria-pressed", String(selecionado));
+        if (dia.isToday) botao.setAttribute("aria-current", "date");
+
+        const numero = document.createElement("span");
+        numero.className = "history-day-number";
+        numero.textContent = String(dia.day);
+        botao.appendChild(numero);
+
+        if (dia.isToday) {
+            const hoje = document.createElement("span");
+            hoje.className = "history-today-marker";
+            hoje.textContent = "HOJE";
+            botao.appendChild(hoje);
+        }
+
+        const indicador = textoIndicadorDiaHistorico(dia);
+        if (indicador) {
+            const progresso = document.createElement("span");
+            progresso.className = "history-day-progress";
+            progresso.textContent = indicador;
+            botao.appendChild(progresso);
+        }
+
+        if (!botao.disabled) botao.addEventListener("click", () => selecionarDiaHistorico(dia.date, true));
+        celula.appendChild(botao);
+        historyCalendarGrid.appendChild(celula);
+    });
+
+    const selecionado = grade.days.find(dia => dia.date === estadoHistoricoUI.selectedDate);
+    renderizarPlaceholderDiaHistorico(selecionado || null);
+}
+
+function navegarMesHistorico(direcao) {
+    if (direcao !== -1 && direcao !== 1) return;
+    const gradeAtual = gerarGradeMensalHistorico(
+        estadoHistoricoUI.year,
+        estadoHistoricoUI.month,
+        estadoHistoricoUI.history,
+        estadoHistoricoUI.today
+    );
+    const destino = direcao < 0 ? gradeAtual.navigation.previousMonth : gradeAtual.navigation.nextMonth;
+    if (!destino) return;
+    estadoHistoricoUI.year = destino.year;
+    estadoHistoricoUI.month = destino.month;
+    const novaGrade = gerarGradeMensalHistorico(
+        destino.year,
+        destino.month,
+        estadoHistoricoUI.history,
+        estadoHistoricoUI.today
+    );
+    estadoHistoricoUI.selectedDate = novaGrade.days
+        .filter(dia => dia.hasRecord && !dia.isFuture && !dia.isBeforeTracking)
+        .at(-1)?.date || null;
+    renderizarCalendarioHistorico();
+}
+
+function abrirHistorico() {
+    const today = getDataLocalString();
+    const civil = componentesDataCivil(today);
+    if (!civil) return;
+    estadoHistoricoUI.history = carregarHistorico();
+    estadoHistoricoUI.today = today;
+    estadoHistoricoUI.year = civil.year;
+    estadoHistoricoUI.month = civil.month;
+    estadoHistoricoUI.selectedDate = today;
+    renderizarCalendarioHistorico();
+    abrirModalAcessivel(historyModal, btnOpenHistory, btnCloseHistory);
+}
+
+function fecharHistorico() {
+    fecharModalAcessivel(historyModal, btnOpenHistory);
+}
+
 const focoAnteriorPorModal = new WeakMap();
 
 function elementosFocaveisDoModal(modal) {
@@ -1000,22 +1187,30 @@ function fecharComoJogar() {
 
 btnOpenIntegratedStats?.addEventListener("click", abrirEstatisticasIntegradas);
 btnCloseIntegratedStats?.addEventListener("click", fecharEstatisticasIntegradas);
+btnOpenHistory?.addEventListener("click", abrirHistorico);
+btnCloseHistory?.addEventListener("click", fecharHistorico);
+historyPreviousMonth?.addEventListener("click", () => navegarMesHistorico(-1));
+historyNextMonth?.addEventListener("click", () => navegarMesHistorico(1));
 btnOpenHowToPlay?.addEventListener("click", abrirComoJogar);
 btnCloseHowToPlay?.addEventListener("click", fecharComoJogar);
 integratedStatsModal?.addEventListener("click", event => {
     if (event.target === integratedStatsModal) fecharEstatisticasIntegradas();
+});
+historyModal?.addEventListener("click", event => {
+    if (event.target === historyModal) fecharHistorico();
 });
 howToPlayModal?.addEventListener("click", event => {
     if (event.target === howToPlayModal) fecharComoJogar();
 });
 document.addEventListener("keydown", event => {
     const modalTutorialFoto = document.getElementById("photoTutorialModal");
-    const modalAtivo = [howToPlayModal, integratedStatsModal, modalTutorialFoto]
+    const modalAtivo = [howToPlayModal, integratedStatsModal, historyModal, modalTutorialFoto]
         .find(modal => modal && !modal.classList.contains("hidden"));
     if (!modalAtivo) return;
     if (event.key === "Escape") {
         if (modalAtivo === howToPlayModal) fecharComoJogar();
         else if (modalAtivo === integratedStatsModal) fecharEstatisticasIntegradas();
+        else if (modalAtivo === historyModal) fecharHistorico();
         else fecharTutorialFoto();
         return;
     }

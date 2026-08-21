@@ -69,7 +69,7 @@ test("estados estruturais dos quatro modos têm contrato CSS", () => {
 });
 
 test("modais preservam semântica e bloqueio de scroll", () => {
-    for (const id of ["photoTutorialModal", "integratedStatsModal", "howToPlayModal"]) {
+    for (const id of ["photoTutorialModal", "integratedStatsModal", "historyModal", "howToPlayModal"]) {
         const tag = html.match(new RegExp(`<[^>]+id=["']${id}["'][^>]*>`, "i"))?.[0] || "";
         assert.match(tag, /role=["']dialog["']/i, id);
         assert.match(tag, /aria-modal=["']true["']/i, id);
@@ -77,6 +77,32 @@ test("modais preservam semântica e bloqueio de scroll", () => {
     }
     assert.ok(script.includes('classList.add("modal-open")'));
     assert.ok(script.includes('classList.remove("modal-open")'));
+});
+
+test("Histórico preserva modal, calendário e estados acessíveis", () => {
+    const modal = html.match(/<div[^>]+id=["']historyModal["'][^>]*>/i)?.[0] || "";
+    const grid = html.match(/<div[^>]+id=["']historyCalendarGrid["'][^>]*>/i)?.[0] || "";
+    assert.match(modal, /role=["']dialog["']/i);
+    assert.match(modal, /aria-modal=["']true["']/i);
+    assert.match(modal, /aria-labelledby=["']historyModalTitle["']/i);
+    assert.match(grid, /role=["']grid["']/i);
+    assert.ok(html.includes('id="btnOpenHistory"'));
+    assert.ok(html.includes('id="historyPreviousMonth"'));
+    assert.ok(html.includes('id="historyNextMonth"'));
+    assert.match(cssRule(".history-modal-content"), /width:\s*min\(500px/);
+    assert.match(cssRule(".history-modal-content"), /max-height:[^;]*100dvh/);
+    assert.match(cssRule(".history-calendar-grid"), /grid-template-columns:\s*repeat\(7/);
+    for (const state of ["future", "before-tracking", "no-record", "recorded", "started", "partial", "complete"]) {
+        assert.ok(css.includes(`.history-day-cell.is-${state}`), state);
+        assert.ok(script.includes(`is-${state}`), state);
+    }
+    for (const token of [
+        'setAttribute("aria-selected"', 'setAttribute("aria-pressed"',
+        'setAttribute("aria-current", "date")', "botao.disabled = dia.isFuture || dia.isBeforeTracking",
+        "historyPreviousMonth.disabled = !grade.navigation.canGoPrevious",
+        "historyNextMonth.disabled = !grade.navigation.canGoNext",
+        "abrirModalAcessivel(historyModal", "fecharModalAcessivel(historyModal"
+    ]) assert.ok(script.includes(token), token);
 });
 
 test("Como Jogar preserva largura e grid responsivos próprios", () => {

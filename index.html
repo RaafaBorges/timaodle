@@ -104,7 +104,10 @@
                     </div>
                 </section>
 
-                <button id="btnOpenIntegratedStats" class="home-stats-btn" type="button">Ver estatísticas</button>
+                <div class="home-secondary-actions" aria-label="Histórico e estatísticas">
+                    <button id="btnOpenIntegratedStats" class="home-stats-btn" type="button">Estatísticas</button>
+                    <button id="btnOpenHistory" class="home-stats-btn home-history-btn" type="button">Histórico</button>
+                </div>
 
                 <div class="mode-buttons-container">
                     <button class="pokedle-btn active" id="btnPlayDiario" aria-describedby="homeStatusClassic">
@@ -475,6 +478,40 @@
                 <button id="btnCloseIntegratedStats" class="stats-close-btn" type="button" aria-label="Fechar estatísticas">×</button>
             </div>
             <div id="integratedStatsContent" class="integrated-stats-scroll"></div>
+        </div>
+    </div>
+
+    <div id="historyModal" class="modal hidden" role="dialog" aria-modal="true"
+        aria-labelledby="historyModalTitle">
+        <div class="modal-content history-modal-content">
+            <div class="integrated-stats-header history-modal-header">
+                <h2 id="historyModalTitle">HISTÓRICO</h2>
+                <button id="btnCloseHistory" class="stats-close-btn" type="button"
+                    aria-label="Fechar histórico">×</button>
+            </div>
+            <div class="history-modal-scroll">
+                <div class="history-month-navigation" aria-label="Navegação entre meses">
+                    <button id="historyPreviousMonth" class="history-month-button" type="button"
+                        aria-label="Mês anterior">‹</button>
+                    <h3 id="historyMonthTitle" aria-live="polite">MÊS</h3>
+                    <button id="historyNextMonth" class="history-month-button" type="button"
+                        aria-label="Próximo mês">›</button>
+                </div>
+                <div class="history-weekdays" aria-label="Dias da semana">
+                    <span aria-label="Segunda-feira"><span aria-hidden="true">SEG</span></span>
+                    <span aria-label="Terça-feira"><span aria-hidden="true">TER</span></span>
+                    <span aria-label="Quarta-feira"><span aria-hidden="true">QUA</span></span>
+                    <span aria-label="Quinta-feira"><span aria-hidden="true">QUI</span></span>
+                    <span aria-label="Sexta-feira"><span aria-hidden="true">SEX</span></span>
+                    <span aria-label="Sábado"><span aria-hidden="true">SÁB</span></span>
+                    <span aria-label="Domingo"><span aria-hidden="true">DOM</span></span>
+                </div>
+                <div id="historyCalendarGrid" class="history-calendar-grid" role="grid"
+                    aria-labelledby="historyMonthTitle"></div>
+                <section id="historyDayPlaceholder" class="history-day-placeholder" aria-live="polite">
+                    Selecione um dia para ver o progresso.
+                </section>
+            </div>
         </div>
     </div>
 

@@ -50,6 +50,17 @@ node tests/viewport-smoke.js
 - Espaçamentos, padding e tipografia responsiva usam `clamp()` onde substituem os antigos overrides de 360/480 px.
 - Permanece apenas a exceção visual de 480 px para mudar a borda de conclusão 4/4 de lateral para superior.
 - `is-complete`, `is-in-progress`, `is-completed` e `celebrate-once` continuam protegidas como estados do JavaScript.
+- Estatísticas e Histórico dividem uma ação secundária compacta, mantendo o limite de 400 px da Home.
+
+## Histórico / calendário
+
+- `#historyModal` reutiliza a infraestrutura acessível comum sem herdar a largura de outro modal.
+- `.history-modal-content` limita o calendário a 500 px e usa `100dvh` para viewports baixos.
+- A grade possui sete colunas, começa na segunda-feira e consome somente os dados puros da Fase A.
+- Estados `future`, `before-tracking`, `no-record`, `recorded`, `started`, `partial` e `complete`
+  permanecem combináveis com `is-today` e `is-selected`.
+- Futuro e pré-tracking usam botões realmente desabilitados; dias sem registro continuam selecionáveis.
+- Seleção e mês exibido existem apenas em memória e não alteram `timaodle_history_v1`.
 
 ## Componentes compartilhados
 

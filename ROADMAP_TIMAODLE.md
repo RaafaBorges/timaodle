@@ -2229,7 +2229,7 @@ Pendências futuras, sem bloqueio para a v2.7:
 
 Fases:
 - [x] Fase A — modelo, datas civis, limites e testes permanentes;
-- [ ] Fase B — modal e calendário visual;
+- [x] Fase B — modal e calendário visual;
 - [ ] Fase C — resumo seguro do dia selecionado;
 - [ ] Fase D — acessibilidade e navegação por teclado;
 - [ ] Fase E — streak histórico, polimento e validação final.
@@ -2281,3 +2281,53 @@ Pendências:
 Próximo passo:
 - implementar a Fase B em etapa isolada: botão na Home, modal específico e grade mensal
   responsiva consumindo exclusivamente as derivações concluídas nesta fase.
+
+
+## 21/08/2026 — v2.8 Fase B: modal de histórico e calendário visual
+
+Implementado:
+- botão secundário `HISTÓRICO` integrado ao lado de Estatísticas, sem adicionar outro card à Home;
+- modal próprio de 500 px, fluido até 360 px, com header fora da área rolável e altura
+  protegida por `100dvh`;
+- infraestrutura acessível existente reutilizada para foco inicial, focus trap, Escape,
+  retorno de foco, fechamento pelo backdrop e bloqueio do scroll da página;
+- navegação mensal em PT-BR, com botões reais desabilitados no primeiro mês permitido
+  e no mês atual;
+- grade de sete colunas iniciada na segunda-feira, sem células interativas fora do mês;
+- estados visuais proprietários para futuro, pré-tracking, sem registro, registro 0/4,
+  iniciado 0/4, parcial e completo;
+- hoje e seleção funcionam como dimensões independentes dos estados de progresso;
+- dias completos usam borda, check e texto `4/4`, sem depender somente da cor;
+- futuro e pré-tracking não são selecionáveis; dias sem registro são selecionáveis e
+  mostram a mensagem neutra `SEM REGISTRO DISPONÍVEL`;
+- abertura no mês atual com hoje selecionado; mudança de mês seleciona o último registro
+  disponível ou deixa o placeholder neutro;
+- seleção, ano e mês permanecem apenas em memória; nenhum storage ou dia é modificado;
+- placeholder básico limitado à data e ao progresso agregado, sem métricas dos modos.
+
+Acessibilidade:
+- `role="dialog"`, `aria-modal`, `aria-labelledby`, botão fechar nomeado e grid rotulada;
+- `aria-current="date"` para hoje, `aria-selected`/`aria-pressed` para seleção e labels
+  completas por data;
+- botões futuros/pré-tracking realmente desabilitados e navegação mensal com nomes acessíveis;
+- navegação avançada por setas dentro da grade permanece reservada para a Fase D.
+
+Testado:
+- suíte completa aprovada com storage A–X, 39 cenários de regras, 40 cenários do
+  calendário e 24 cenários estruturais;
+- 139 IDs verificados sem duplicidade;
+- contrato permanente ampliado para botão, modal, largura, sete colunas, estados,
+  limites, seleção e semântica acessível;
+- `script.js` e `storage-normalizers.js` aprovados por `node --check`;
+- `git diff --check`, três JSONs e 651 pares de chaves CSS aprovados;
+- teste visual real nos viewports prioritários continua pendente.
+
+Compatibilidade preservada:
+- Fase A, `trackingStartedAt`, histórico v1, progresso, streak, estatísticas,
+  compartilhamento, celebração 4/4, saves, seeds e quatro modos;
+- nenhum JSON foi alterado;
+- nenhum resumo detalhado, streak histórico por dia ou compartilhamento antigo foi adicionado.
+
+Próximo passo:
+- implementar a Fase C: resumo seguro e detalhado dos quatro modos para o dia selecionado,
+  sem respostas, palpites ou outros spoilers.
