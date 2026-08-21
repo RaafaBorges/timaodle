@@ -87,3 +87,15 @@ node tests/viewport-smoke.js
 - O atraso funcional de 1,5 s continua definido no JavaScript por `ATRASO_AVANCO_MM`.
 - Os breakpoints 680, 480 e 360 px preservam a escala de fotos 88, 80, 72 e 64 px.
 - O bloco de movimento reduzido desativa revelação, overlay, barra temporal e entrada da rodada.
+
+## Onze Inicial
+
+- `#escalacaoView` limita o modo a 440 px e seus painéis a `min(430px, 100%)`.
+- `.pitch` preserva proporção 2/3; `.player-chip` continua absoluto, portanto `top` e `left`
+  percentuais do JSON permanecem a fonte das coordenadas.
+- Labels de jogadores aceitam até duas linhas e usam quebra natural por palavras.
+- `dense-line` é aplicada pelo JavaScript quando quatro ou mais atletas compartilham a mesma
+  coordenada `top`; reduz somente largura, padding e fonte do rótulo, sem mover o marcador.
+- Placar, busca com avatar, feedback `aria-live`, resultado, countdown e compartilhar mantêm
+  variantes proprietárias.
+- Os breakpoints 480 e 360 px preservam os degraus de campo, jogadores, labels e placar.

@@ -2028,3 +2028,53 @@ Pendências:
 
 Próximo passo:
 - validar visualmente o Mais ou Menos e consolidar o Onze Inicial em etapa isolada e de maior risco.
+
+
+## 21/08/2026 — v2.7: consolidação individual do Onze Inicial
+
+Implementado:
+- camada final do Onze Inicial formalizada sob `#escalacaoView`, cobrindo layout, placar,
+  campo, jogadores, busca, feedback, resultado e responsividade;
+- painéis principais convertidos de `width` + `max-width` para `min(430px, 100%)`,
+  preservando o limite visual e protegendo viewports estreitas;
+- proporção 2/3, desenho do campo, pseudo-elementos e posicionamento absoluto preservados;
+- nenhuma coordenada `top`/`left`, formação, escalação ou partida foi alterada;
+- nomes de jogadores, confronto, times, autocomplete, feedback e resultado passaram de
+  `overflow-wrap: anywhere` para `break-word`, mantendo contenção com quebra mais natural;
+- labels continuam limitadas a duas linhas;
+- `dense-line` preservado: aplicado quando quatro ou mais atletas dividem a mesma linha
+  (`top`), reduz apenas largura/padding/fonte do rótulo e não desloca o marcador;
+- placar, três jogadores ocultos, erros, jogador fora do onze, fotos, conclusão,
+  countdown, compartilhamento, F5, histórico e persistência preservados.
+
+Limpeza:
+- removidos cinco overrides mobile globais comprovadamente superados pela camada final;
+- resultado mobile antes separado foi incorporado ao breakpoint proprietário de 480 px;
+- seletor de nomes dos times no polimento visual passou a ser explicitamente escopado;
+- bases estruturais antigas do campo foram mantidas quando ainda forneciam propriedades
+  residuais essenciais, evitando uma reescrita arriscada.
+
+Medição estática:
+- blocos associados ao Onze Inicial: aproximadamente 197 antes e 192 depois;
+- seletores associados distintos: aproximadamente 118 antes e 124 depois; o aumento vem
+  do escopo explícito em `#escalacaoView`, não de novos componentes;
+- camadas funcionais reduzidas de quatro para três: base estrutural, polimento visual e
+  camada proprietária final;
+- media queries relacionadas ao modo: seis antes e quatro depois, incluindo movimento reduzido;
+- breakpoints proprietários preservados em 480 e 360 px, sem novos breakpoints.
+
+Testado:
+- baseline completa aprovada antes da alteração;
+- contrato estrutural ampliado para campo, player absoluto, label em duas linhas,
+  `dense-line`, placar, feedback, resultado e countdown;
+- testes automatizados e validações estáticas registrados no relatório desta etapa.
+
+Pendências:
+- validação visual real de placar, transição, campo comum/denso, nomes longos,
+  resolvidos, erros, jogador fora do onze e resultado;
+- confirmar scroll e ausência de overflow em 360, 390, 412, 430, 480, 768, desktop e 412 × 600;
+- quatro partidas em 4-2-3-1 continuam pendentes de validação histórica, fora desta etapa;
+- a v2.7 permanece em andamento.
+
+Próximo passo:
+- executar validação visual real dos quatro modos consolidados antes da auditoria final da v2.7.

@@ -2693,11 +2693,6 @@ body {
    ------------------------------------------------------------------------ */
 @media (max-width: 480px) {
     .subtitle { font-size: 13px; }
-    .match-confronto { font-size: 27px; }
-    .match-score-question { font-size: 14px; }
-    .lineup-title { font-size: 13px; }
-    .player-chip { width: 74px; }
-    .player-chip .chip-label { max-width: 74px; font-size: 9px; }
 }
 
 
@@ -2788,12 +2783,12 @@ body {
     gap: 7px;
 }
 
-.match-team span {
+#escalacaoView .match-team span {
     font-size: 13px;
     font-weight: 900;
     color: var(--ink);
     line-height: 1.2;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
 }
 
 .match-crest {
@@ -3231,23 +3226,9 @@ body {
     color: #080807;
 }
 
-@media (max-width: 480px) {
-    .lineup-result-card {
-        padding: 19px 14px;
-    }
-
-    .lineup-result-card h3 {
-        font-size: 26px;
-    }
-
-    .lineup-result-score strong {
-        font-size: 27px;
-    }
-}
-
 /* ==========================================================================
-   ONZE INICIAL — POLIMENTO RESPONSIVO FINAL
-   Regras isoladas no modo para preservar as demais telas do jogo.
+   ONZE INICIAL — CAMADA PROPRIETÁRIA CONSOLIDADA
+   Layout, placar, campo, jogadores, busca, resultado e responsividade.
    ========================================================================== */
 #escalacaoView {
     max-width: 440px;
@@ -3258,8 +3239,7 @@ body {
 #escalacaoView .match-card,
 #escalacaoView .lineup-card,
 #escalacaoView .lineup-result-card {
-    width: 100%;
-    max-width: 430px;
+    width: min(430px, 100%);
 }
 
 #escalacaoView .match-card,
@@ -3270,7 +3250,7 @@ body {
 
 #escalacaoView .match-confronto {
     max-width: 100%;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
     text-wrap: balance;
 }
 
@@ -3301,7 +3281,7 @@ body {
     gap: 12px;
     padding: 10px 14px;
     line-height: 1.25;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
 }
 
 #escalacaoView .autocomplete-avatar-img {
@@ -3342,7 +3322,7 @@ body {
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     white-space: normal;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
     text-overflow: clip;
     font-size: 9.5px;
     line-height: 1.12;
@@ -3373,7 +3353,7 @@ body {
 
 #escalacaoView .escalacao-feedback,
 #escalacaoView .escalacao-fora {
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
     line-height: 1.45;
 }
 
@@ -3390,7 +3370,7 @@ body {
 
 #escalacaoView .lineup-result-errors {
     font-size: 12px;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
 }
 
 #escalacaoView .lineup-next-challenge {
@@ -3432,6 +3412,18 @@ body {
     #escalacaoView .lineup-card,
     #escalacaoView .lineup-result-card {
         border-radius: 14px;
+    }
+
+    #escalacaoView .lineup-result-card {
+        padding: 19px 14px;
+    }
+
+    #escalacaoView .lineup-result-card h3 {
+        font-size: 26px;
+    }
+
+    #escalacaoView .lineup-result-score strong {
+        font-size: 27px;
     }
 
     #escalacaoView .match-confronto {

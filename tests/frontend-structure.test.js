@@ -159,6 +159,23 @@ test("Mais ou Menos preserva layout, overlay e escala responsiva", () => {
     assert.match(reducedMotionCss, /animation:\s*none/);
 });
 
+test("Onze Inicial preserva campo, dense-line, placar e resultado", () => {
+    assert.match(cssRule("#escalacaoView"), /max-width:\s*440px/);
+    assert.match(cssRule("#escalacaoView .game-sticky-top,\n#escalacaoView .match-card,\n#escalacaoView .lineup-card,\n#escalacaoView .lineup-result-card"), /width:\s*min\(430px,\s*100%\)/);
+    assert.match(cssRule(".pitch"), /aspect-ratio:\s*2\s*\/\s*3/);
+    assert.match(cssRule(".player-chip"), /position:\s*absolute/);
+    assert.match(cssRule("#escalacaoView .player-chip .chip-label"), /-webkit-line-clamp:\s*2/);
+    assert.match(cssRule("#escalacaoView .player-chip .chip-label"), /overflow-wrap:\s*break-word/);
+    assert.match(cssRule("#escalacaoView .player-chip.dense-line"), /width:\s*78px/);
+    assert.match(cssRule("#escalacaoView .match-score-row"), /grid-template-columns:\s*minmax\(66px/);
+    assert.ok(css.includes("#escalacaoView .escalacao-feedback"));
+    assert.ok(css.includes("#escalacaoView .lineup-result-errors"));
+    assert.ok(css.includes("#escalacaoView .lineup-next-challenge-time"));
+    for (const breakpoint of [480, 360]) {
+        assert.ok(css.includes(`@media (max-width: ${breakpoint}px)`), `${breakpoint}px`);
+    }
+});
+
 test("viewports canônicos da v2.7 permanecem formalizados", () => {
     assert.deepEqual(contract.viewports.map(viewport => viewport.width), [360, 390, 412, 430, 480, 768, 1440, 412]);
     assert.ok(contract.viewports.some(viewport => viewport.height <= 600), "viewport baixo ausente");
