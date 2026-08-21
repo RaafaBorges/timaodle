@@ -685,12 +685,13 @@ Concluído:
 5.  Checklist visual reutilizável e smoke headless opcional, sem dependência no runner.
 6.  Shell global consolidado com eixo central, gutters compartilhados e scroll previsível.
 7.  Descontinuidade de largura da Home em 480/481 px removida.
+8.  Home consolidada em uma única área proprietária, com responsividade fluida.
 
 Próxima etapa:
 
-1.  Validar manualmente o shell global nos viewports canônicos.
-2.  Consolidar breakpoints e regras responsivas da Home em alterações pequenas.
-3.  Avançar modo a modo somente depois da validação do shell e da Home.
+1.  Validar manualmente shell e Home nos viewports canônicos.
+2.  Tratar separadamente o widget lateral de links úteis.
+3.  Avançar modo a modo somente depois da validação das camadas globais.
 
 Ainda não concluído:
 
@@ -1775,3 +1776,79 @@ Pendências:
 Próximo passo:
 - executar a validação visual manual do shell e, se aprovada, consolidar incrementalmente
   somente a Home e seus breakpoints.
+
+
+## 21/08/2026 — v2.7: consolidação estrutural da Home
+
+Implementado:
+- estilos de estrutura, Timãodle do Dia, progresso, streak, estatísticas, compartilhar,
+  conclusão e cards dos modos reunidos em uma única área proprietária do CSS;
+- largura comum de 400 px e gutters do shell preservados em todos os estados;
+- valores tipográficos vencedores de `.btn-title`, `.pill-text` e informações diárias
+  incorporados às regras-base, eliminando overrides tardios;
+- espaçamentos, padding e tamanhos responsivos convertidos para `clamp()` onde os valores
+  existentes de desktop, 480 e 360 px podiam ser interpolados sem redesenho;
+- media queries específicas da Home reduzidas de quatro para duas: uma exceção visual em
+  480 px para a borda do card 4/4 e uma para `prefers-reduced-motion`;
+- estados `is-complete`, `is-in-progress`, `is-completed` e `celebrate-once` preservados;
+- contrato estrutural ampliado para proteger a propriedade fluida da Home;
+- widget lateral, footer global e layouts internos dos quatro modos preservados.
+
+Limpeza:
+- removido o bloco tardio duplicado de conclusão, estados e responsividade da Home;
+- removido o media query de 360 px exclusivo da Home;
+- removidos do media query de 480 px os overrides substituídos por valores fluidos;
+- removidas redefinições tardias de títulos, pills, timer/jogador anterior e título mobile.
+
+Medição estática:
+- regras/blocos relacionados à Home: 73 antes e 54 depois;
+- seletores proprietários distintos: 55 antes e 52 depois;
+- media queries contendo regras da Home: quatro antes e duas depois.
+
+Testado:
+- baseline anterior aprovada antes das alterações;
+- `node tests/run-tests.js`: storage A–X, 39 cenários de regras e 15 cenários estruturais;
+- `node tests/storage.test.js`;
+- `node --check script.js`, `storage-normalizers.js` e testes envolvidos;
+- três JSONs válidos e sem alteração;
+- CSS com chaves balanceadas e `git diff --check` aprovado;
+- `node tests/viewport-smoke.js`: `SKIP` por indisponibilidade do processo GPU no headless.
+
+Pendências:
+- validar visualmente Home 0/4, em andamento e 4/4, streak zero/positivo, estatísticas e
+  compartilhamento nos viewports canônicos e em 481/482 px;
+- widget lateral continua pendente e fora da consolidação da Home;
+- os quatro modos ainda não foram consolidados; a revisão responsiva da v2.7 continua aberta.
+
+Próximo passo:
+- validar a Home em navegador real e tratar o widget lateral como etapa isolada antes de
+  iniciar a consolidação responsiva dos modos.
+
+
+## 21/08/2026 — v2.7: correção responsiva do modal Como Jogar
+
+Implementado:
+- limite específico do Como Jogar ampliado de 620 para 700 px, sem afetar os demais modais;
+- largura vinculada à viewport com margem lateral segura de 16 px;
+- grid dos quatro modos convertido para `auto-fit`, alternando entre uma e duas colunas
+  conforme o espaço real e mantendo o desktop em 2 × 2;
+- cards protegidos com `min-width: 0` e textos com quebra normal por palavras;
+- `max-height` específico usa fallback por `100vh` e `100dvh`, preservando header, botão
+  de fechar e scroll interno apenas quando o conteúdo excede a viewport;
+- focus trap, Escape, retorno de foco, semântica ARIA e bloqueio de scroll preservados;
+- contrato estrutural ampliado para proteger largura, altura e grid do modal.
+
+Testado:
+- `node tests/run-tests.js`: storage A–X, 39 cenários de regras e 16 cenários estruturais;
+- `node tests/storage.test.js`;
+- `node --check script.js`, `storage-normalizers.js` e teste estrutural;
+- CSS com chaves balanceadas e `git diff --check` aprovado;
+- IDs e atributos `role`, `aria-modal` e `aria-labelledby` preservados estaticamente.
+
+Pendências:
+- validar visualmente 360 × 800, 390 × 844, 412 × 915, 480 × 900, 768 × 1024,
+  1024 × 768, 1280 × 720, 1440 × 900 e 1920 × 1080;
+- a v2.7 não avançou de fase; permanecem as pendências de widget lateral e modos.
+
+Próximo passo:
+- confirmar o modal em navegador real e retomar a próxima etapa incremental da v2.7.

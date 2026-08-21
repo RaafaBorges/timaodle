@@ -79,6 +79,16 @@ test("modais preservam semântica e bloqueio de scroll", () => {
     assert.ok(script.includes('classList.remove("modal-open")'));
 });
 
+test("Como Jogar preserva largura e grid responsivos próprios", () => {
+    const modalRule = cssRule(".integrated-stats-modal-content.help-modal-content");
+    const gridRule = cssRule(".help-mode-grid");
+    assert.match(modalRule, /width:\s*min\(700px/);
+    assert.match(modalRule, /max-height:[^;]*100dvh/);
+    assert.match(gridRule, /repeat\(auto-fit/);
+    assert.match(gridRule, /min\(280px,\s*100%\)/);
+    assert.ok(css.includes("word-break: normal"));
+});
+
 test("viewports canônicos da v2.7 permanecem formalizados", () => {
     assert.deepEqual(contract.viewports.map(viewport => viewport.width), [360, 390, 412, 430, 480, 768, 1440, 412]);
     assert.ok(contract.viewports.some(viewport => viewport.height <= 600), "viewport baixo ausente");
@@ -96,6 +106,11 @@ test("shell global preserva eixo, gutters e um único scroll vertical", () => {
     for (const selector of [".home-daily-info", ".mode-buttons-container", ".home-progress-card", ".home-stats-btn"]) {
         assert.match(cssRule(selector), /max-width:\s*400px/, selector);
     }
+    assert.match(cssRule(".home-menu"), /gap:\s*clamp\(/);
+    assert.match(cssRule(".pokedle-btn"), /padding:\s*clamp\(/);
+    assert.match(cssRule(".btn-title"), /font-size:\s*clamp\(/);
+    assert.equal((css.match(/\.btn-title\s*\{/g) || []).length, 1);
+    assert.equal((css.match(/\.pill-text\s*\{/g) || []).length, 1);
 });
 
 console.log(`frontend-structure.test.js: ${scenarios} cenários estruturais aprovados; ${htmlIds.length} IDs verificados`);

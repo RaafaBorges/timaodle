@@ -43,3 +43,10 @@ node tests/viewport-smoke.js
 - `--shell-max-width`, `--shell-gutter` e `--shell-inline-space` alinham header, conteúdo e footer.
 - O gutter varia fluidamente entre 12 e 16 px, sem salto estrutural em 480/481 px.
 - Os quatro grupos principais da Home usam o mesmo limite de 400 px nos dois lados de 480 px.
+
+## Home
+
+- A seção principal da Home concentra estrutura, progresso, streak, estatísticas, conclusão e cards dos modos.
+- Espaçamentos, padding e tipografia responsiva usam `clamp()` onde substituem os antigos overrides de 360/480 px.
+- Permanece apenas a exceção visual de 480 px para mudar a borda de conclusão 4/4 de lateral para superior.
+- `is-complete`, `is-in-progress`, `is-completed` e `celebrate-once` continuam protegidas como estados do JavaScript.
