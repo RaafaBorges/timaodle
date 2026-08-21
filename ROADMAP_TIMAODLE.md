@@ -1357,3 +1357,36 @@ Pendências:
 
 Próximo passo:
 - definir o escopo do calendário/histórico visual baseado em `timaodle_history_v1` antes de implementar.
+
+
+## 21/08/2026 — Correção responsiva da comparação do Modo Diário
+
+Implementado:
+- tabela desktop do Clássico preservada sem alterações;
+- em telas de até 480 px, cada tentativa passa de oito colunas comprimidas para uma grade responsiva de duas colunas;
+- Jogador e Títulos ocupam a largura completa da tentativa no mobile;
+- cabeçalho único é ocultado somente no mobile e substituído por labels individuais dentro de cada atributo;
+- valores receberam fonte, altura de linha e padding mais legíveis;
+- palavras comuns usam quebra normal, enquanto textos realmente longos podem quebrar apenas quando necessário;
+- cada tentativa ganhou contorno e espaçamento próprios para manter históricos extensos visualmente separados;
+- cores, setas, fallback `—`, animação e estrutura das oito células foram preservados.
+
+Causa corrigida:
+- o breakpoint móvel mantinha as oito colunas do desktop em uma largura reduzida e diminuía as células para 10 px;
+- `word-break: break-word` nessas colunas extremamente estreitas permitia a fragmentação visual de palavras como “Lateral”, “Brasil” e “Esquerdo”.
+
+Testado:
+- `node --check script.js`;
+- `git diff --check`;
+- IDs e classes usados pelo tabuleiro verificados;
+- estrutura e chaves do CSS verificadas;
+- cálculo estático da grade revisado em 360, 390, 412, 430 e 480 px;
+- uma, três e seis ou mais tentativas mantêm separação pelo fluxo vertical do `board-body`;
+- regras desktop permanecem fora do breakpoint e o compartilhamento do Clássico não foi alterado.
+
+Pendências:
+- validar visualmente o histórico de tentativas em navegador mobile real;
+- calendário/histórico visual permanece como próxima funcionalidade planejada.
+
+Próximo passo:
+- realizar a auditoria geral planejada ou definir o escopo do calendário/histórico visual.

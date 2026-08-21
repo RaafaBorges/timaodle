@@ -2322,8 +2322,69 @@ input:focus-visible {
    ========================================================================== */
 @media (max-width: 480px) {
     .logo-box h1 { font-size: 28px; }
-    .cell { font-size: 10px; min-height: 50px; }
-    .board-header .col { font-size: 8px; }
+
+    #gameView .board-header {
+        display: none;
+    }
+
+    #gameView .board-body {
+        gap: 12px;
+    }
+
+    #gameView .attempt-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 7px;
+        padding: 8px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-m);
+    }
+
+    #gameView .attempt-row .cell {
+        min-width: 0;
+        min-height: 66px;
+        padding: 9px 8px;
+        flex-direction: column;
+        gap: 5px;
+        font-size: 13px;
+        line-height: 1.4;
+        word-break: normal;
+        overflow-wrap: break-word;
+    }
+
+    #gameView .attempt-row .cell::before {
+        color: rgba(255, 255, 255, 0.76);
+        font-size: 8px;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: 0.65px;
+    }
+
+    #gameView .attempt-row .cell:nth-child(1),
+    #gameView .attempt-row .cell:nth-child(6) {
+        grid-column: 1 / -1;
+    }
+
+    #gameView .attempt-row .cell:nth-child(1)::before { content: "JOGADOR"; }
+    #gameView .attempt-row .cell:nth-child(2)::before { content: "POSIÇÃO"; }
+    #gameView .attempt-row .cell:nth-child(3)::before { content: "NACIONALIDADE"; }
+    #gameView .attempt-row .cell:nth-child(4)::before { content: "ESTREIA"; }
+    #gameView .attempt-row .cell:nth-child(5)::before { content: "PÉ"; }
+    #gameView .attempt-row .cell:nth-child(6)::before { content: "TÍTULOS"; }
+    #gameView .attempt-row .cell:nth-child(7)::before { content: "GOLS"; }
+    #gameView .attempt-row .cell:nth-child(8)::before { content: "ASSISTÊNCIAS"; }
+
+    #gameView .attempt-row .cell:nth-child(1) .cell-text {
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    #gameView .attempt-row .cell:nth-child(6) .cell-text {
+        max-width: 100%;
+        font-size: 12px;
+        line-height: 1.45;
+        white-space: normal;
+    }
 }
 
 /* ==========================================================================
