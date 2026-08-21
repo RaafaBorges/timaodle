@@ -90,9 +90,16 @@ const welcomeSubmitBtn = document.getElementById("welcomeSubmitBtn");
 function aplicarSaudacao(nome) {
     if (!welcomeGreetingEl) return;
     if (nome) {
-        welcomeGreetingEl.innerHTML = `Fala, <strong>${nome}</strong>! 🖤`;
+        const destaqueNome = document.createElement("strong");
+        destaqueNome.textContent = nome;
+        welcomeGreetingEl.replaceChildren(
+            document.createTextNode("Fala, "),
+            destaqueNome,
+            document.createTextNode("! 🖤")
+        );
         welcomeGreetingEl.classList.remove("hidden");
     } else {
+        welcomeGreetingEl.replaceChildren();
         welcomeGreetingEl.classList.add("hidden");
     }
 }
@@ -932,7 +939,6 @@ function iniciarDesafioDiario() {
 
     const hoje = getDataLocalString();
     jogadorSecreto = sortearJogadorDoDia(hoje);
-    console.log("Desafio do dia:", hoje, "→ Jogador Secreto:", jogadorSecreto.nome);
 
     const salvo = carregarEstadoDiario();
 
@@ -2938,17 +2944,3 @@ carregarJogadores().then(() => {
 
 carregarManifestoFotos();
 sincronizarProgressoDiario();
-
-// ⚠️ BOTÃO DE RESET — SÓ PARA TESTES, REMOVER ANTES DE LANÇAR DE VERDADE
-const devResetBtn = document.getElementById("devResetBtn");
-if (devResetBtn) {
-    devResetBtn.addEventListener("click", () => {
-        const confirmou = confirm(
-            "[DEV] Isso vai apagar TODO o progresso salvo (Modo Diário, Modo Foto, Mais ou Menos e nome) e recarregar a página. Confirmar?"
-        );
-        if (confirmou) {
-            localStorage.clear();
-            location.reload();
-        }
-    });
-}

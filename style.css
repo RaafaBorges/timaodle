@@ -2577,33 +2577,6 @@ input:focus-visible {
 }
 
 /* ==========================================================================
-   BOTÃO DE RESET (DEV) — remover antes do lançamento final
-   ========================================================================== */
-.dev-reset-btn {
-    position: fixed;
-    right: 14px;
-    bottom: 14px;
-    z-index: 90;
-    background-color: rgba(21, 21, 19, 0.9);
-    border: 1px dashed var(--bad-line);
-    color: var(--bad-line);
-    border-radius: 20px;
-    padding: 8px 14px;
-    font-family: var(--font-body);
-    font-weight: 700;
-    font-size: 11px;
-    letter-spacing: 0.3px;
-    cursor: pointer;
-    backdrop-filter: blur(4px);
-    transition: background-color 0.15s ease, transform 0.1s ease;
-}
-
-.dev-reset-btn:hover {
-    background-color: rgba(150, 54, 50, 0.18);
-    transform: translateY(-1px);
-}
-
-/* ==========================================================================
    WIDGET DE LINKS ÚTEIS — abinha lateral fixa
    ========================================================================== */
 .useful-links-widget {

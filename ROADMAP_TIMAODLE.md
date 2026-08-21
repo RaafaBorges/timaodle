@@ -1,6 +1,6 @@
 # TIMÃODLE --- ROADMAP E CONTEXTO DO PROJETO
 
-**Versão do documento:** 2.5\
+**Versão do documento:** 2.6\
 **Data:** 21/08/2026\
 **Projeto:** Timãodle\
 **Objetivo deste arquivo:** servir como documento de contexto para
@@ -673,14 +673,14 @@ Depois disso, atualizar o checklist principal deste arquivo.
 
 # 17. PRÓXIMA TAREFA OFICIAL
 
-## 🎯 CALENDÁRIO / HISTÓRICO VISUAL
+## 🎯 v2.6 — HARDENING E NORMALIZAÇÃO DE SAVES
 
 Próximos itens:
 
-1.  Planejar uma visualização simples dos dias registrados em `timaodle_history_v1`.
-2.  Preservar o compartilhamento unificado, streak, estatísticas e os saves detalhados atuais.
-3.  Não reconstruir dias anteriores à criação do histórico versionado.
-4.  Definir o escopo visual antes da implementação.
+1.  Normalizar defensivamente os saves individuais dos quatro modos.
+2.  Recalcular de forma segura o indicador diário `complete` ao consumir o histórico.
+3.  Preservar todas as chaves, migrações, mecânicas e o progresso já salvo.
+4.  Adicionar testes permanentes antes de qualquer modularização ampla.
 
 ------------------------------------------------------------------------
 
@@ -1390,3 +1390,39 @@ Pendências:
 
 Próximo passo:
 - realizar a auditoria geral planejada ou definir o escopo do calendário/histórico visual.
+
+
+## 21/08/2026 — v2.6: hardening básico para jogadores reais
+
+Implementado:
+- removido o `console.log` que revelava diretamente o jogador secreto do Clássico;
+- varredura de `console.log`, `console.debug`, `console.table` e `console.info` confirmou ausência de outros logs de respostas ou estado sensível;
+- preservados somente `console.warn` e `console.error` úteis para falhas de storage, compartilhamento e carregamento de dados;
+- controle `🔄 DEV` removido integralmente da interface de produção;
+- removidos também o listener de reset global, a chamada a `localStorage.clear()` e os estilos exclusivos do botão DEV;
+- saudação reconstruída com nós de texto e elemento `strong`, preservando o visual sem interpretar o apelido como HTML;
+- botão “Como Jogar” mantido neutro e sem erro; a experiência de ajuda completa permanece fora desta etapa.
+
+Varredura de desenvolvimento:
+- não foram encontrados outros botões ocultos de desenvolvimento, parâmetros de debug, atalhos de teste, dados falsos, `TODO`, `FIXME` ou `HACK` executáveis;
+- o `alert` de falha ao carregar jogadores e o fallback manual do compartilhamento do Clássico foram mantidos por terem função real para o usuário;
+- comentários sobre testes e migrações foram mantidos por serem documentação técnica, sem comportamento de produção.
+
+Testado:
+- `node --check script.js`;
+- `git diff --check`;
+- JSONs validados e confirmados sem alterações;
+- saudação com apelido normal;
+- saudação com `<img src=x onerror=alert(1)>`, mantida literalmente como texto e sem criação de imagem;
+- ausência de `devResetBtn`, `.dev-reset-btn`, `localStorage.clear()` e listeners órfãos associados;
+- busca final sem `console.log/debug/table/info` e sem impressão de respostas diárias;
+- referências de navegação da Home e dos quatro modos verificadas estaticamente.
+
+Pendências:
+- implementar a experiência completa de “Como Jogar” em etapa própria;
+- normalizar defensivamente saves malformados dos quatro modos;
+- reduzir a exposição antecipada da sequência/plano do Mais ou Menos dentro dos limites de uma aplicação client-side;
+- realizar teste manual dos fluxos em navegador real.
+
+Próximo passo:
+- implementar a normalização defensiva dos saves individuais e do campo `complete` do histórico, preservando compatibilidade.
