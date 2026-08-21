@@ -45,7 +45,7 @@ const calendar = compileFunctions([
     "compararDatasCivis", "diasNoMesCivil", "deslocamentoPrimeiraSemanaCivil",
     "moverMesCivil", "compararMesesCivis", "obterLimitesMesesHistorico",
     "limitarMesAoHistorico", "obterNavegacaoMesHistorico", "obterEstadoDiaHistorico",
-    "gerarGradeMensalHistorico"
+    "obterResumoHistoricoDia", "gerarGradeMensalHistorico"
 ], {
     dataHistoricoValida: storage.validDate,
     getDataLocalString: () => TODAY,
@@ -242,6 +242,146 @@ test("pedido futuro é limitado ao mês atual", () => {
 });
 test("pedido anterior é limitado ao primeiro mês", () => {
     assert.deepEqual(calendar.limitarMesAoHistorico(2025, 1, navigationHistory, TODAY), { year: 2026, month: 6 });
+});
+
+// Resumo seguro do dia selecionado.
+function summaryFromDay(day) {
+    const history = day === undefined ? normalized({}, "2026-08-01") : normalized({ [TODAY]: day }, "2026-08-01");
+    return calendar.obterResumoHistoricoDia(TODAY, history);
+}
+
+test("resumo Clássico não iniciado", () => assert.equal(summaryFromDay(emptyDay()).classic.statusText, "Não iniciado"));
+test("resumo Clássico em andamento com singular", () => {
+    const day = emptyDay();
+    day.classic = { started: true, completed: false, outcome: null, attempts: 1 };
+    assert.equal(summaryFromDay(day).classic.statusText, "Em andamento · 1 tentativa");
+});
+test("resumo Clássico em andamento com plural", () => {
+    const day = emptyDay();
+    day.classic = { started: true, completed: false, outcome: null, attempts: 3 };
+    assert.equal(summaryFromDay(day).classic.statusText, "Em andamento · 3 tentativas");
+});
+test("resumo Clássico concluído", () => assert.equal(summaryFromDay(dayWithCompleted(1)).classic.statusText, "Concluído · 1 tentativa"));
+
+test("resumo Foto não iniciado", () => assert.equal(summaryFromDay(emptyDay()).photo.statusText, "Não iniciado"));
+test("resumo Foto em andamento", () => {
+    const day = emptyDay();
+    day.photo = { started: true, completed: false, outcome: null, attempts: 3 };
+    assert.equal(summaryFromDay(day).photo.statusText, "Em andamento · 3/6");
+});
+test("resumo Foto com vitória", () => {
+    const day = emptyDay();
+    day.photo = { started: true, completed: true, outcome: "won", attempts: 4 };
+    assert.equal(summaryFromDay(day).photo.statusText, "Vitória · 4/6");
+});
+test("resumo Foto com derrota", () => {
+    const day = emptyDay();
+    day.photo = { started: true, completed: true, outcome: "lost", attempts: 6 };
+    assert.equal(summaryFromDay(day).photo.statusText, "Derrota · 6/6");
+});
+
+test("resumo MM não iniciado", () => assert.equal(summaryFromDay(emptyDay()).moreLess.statusText, "Não iniciado"));
+test("resumo MM em andamento com singular", () => {
+    const day = emptyDay();
+    day.moreLess = { started: true, completed: false, outcome: null, rounds: 1, hits: 1 };
+    assert.equal(summaryFromDay(day).moreLess.statusText, "Em andamento · 1 rodada · 1 acerto");
+});
+test("resumo MM em andamento com plural", () => {
+    const day = emptyDay();
+    day.moreLess = { started: true, completed: false, outcome: null, rounds: 5, hits: 3 };
+    assert.equal(summaryFromDay(day).moreLess.statusText, "Em andamento · 5 rodadas · 3 acertos");
+});
+test("resumo MM com vitória", () => {
+    const day = emptyDay();
+    day.moreLess = { started: true, completed: true, outcome: "won", rounds: 10, hits: 8 };
+    assert.equal(summaryFromDay(day).moreLess.statusText, "Vitória · 8/10");
+});
+test("resumo MM com derrota", () => {
+    const day = emptyDay();
+    day.moreLess = { started: true, completed: true, outcome: "lost", rounds: 10, hits: 6 };
+    assert.equal(summaryFromDay(day).moreLess.statusText, "Derrota · 6/10");
+});
+test("resumo MM preserva zero acertos", () => {
+    const day = emptyDay();
+    day.moreLess = { started: true, completed: true, outcome: "lost", rounds: 10, hits: 0 };
+    const summary = summaryFromDay(day);
+    assert.equal(summary.moreLess.hits, 0);
+    assert.equal(summary.moreLess.statusText, "Derrota · 0/10");
+});
+
+test("resumo Onze não iniciado", () => assert.equal(summaryFromDay(emptyDay()).lineup.statusText, "Não iniciado"));
+test("resumo Onze na fase do placar", () => {
+    const day = emptyDay();
+    day.lineup = { started: true, completed: false, outcome: null, phase: "score", resolved: 0, total: 3, errors: 0, exactScore: null };
+    assert.equal(summaryFromDay(day).lineup.statusText, "Fase do placar");
+});
+for (const resolved of [1, 2]) {
+    test(`resumo Onze com ${resolved}/3 resolvidos`, () => {
+        const day = emptyDay();
+        day.lineup = { started: true, completed: false, outcome: null, phase: "lineup", resolved, total: 3, errors: 0, exactScore: null };
+        assert.equal(summaryFromDay(day).lineup.statusText, `Escalação · ${resolved}/3`);
+    });
+}
+test("resumo Onze concluído com zero erros", () => assert.equal(summaryFromDay(dayWithCompleted(4)).lineup.statusText, "Concluído · 3/3 · 0 erros"));
+test("resumo Onze concluído com um erro", () => {
+    const day = dayWithCompleted(4);
+    day.lineup.errors = 1;
+    assert.equal(summaryFromDay(day).lineup.statusText, "Concluído · 3/3 · 1 erro");
+});
+test("resumo Onze concluído com múltiplos erros", () => {
+    const day = dayWithCompleted(4);
+    day.lineup.errors = 4;
+    assert.equal(summaryFromDay(day).lineup.statusText, "Concluído · 3/3 · 4 erros");
+});
+test("resumo Onze preserva somente placar exato positivo", () => {
+    const day = dayWithCompleted(4);
+    day.lineup.exactScore = true;
+    assert.equal(summaryFromDay(day).lineup.exactScore, true);
+});
+
+test("resumo geral sem registro", () => {
+    const summary = summaryFromDay(undefined);
+    assert.equal(summary.hasRecord, false);
+    assert.equal(summary.completedCount, 0);
+});
+for (let completed = 0; completed <= 4; completed++) {
+    test(`resumo geral registrado ${completed}/4`, () => {
+        const summary = summaryFromDay(dayWithCompleted(completed));
+        assert.equal(summary.hasRecord, true);
+        assert.equal(summary.completedCount, completed);
+        assert.equal(summary.complete, completed === 4);
+    });
+}
+
+test("resumo histórico bloqueia todos os marcadores de spoiler", () => {
+    const markers = [
+        "SEGREDO_CLASSICO_HIST", "SEGREDO_FOTO_HIST", "SEGREDO_MM_HIST",
+        "SEGREDO_LINEUP_HIST", "PLACAR_SECRETO_HIST", "PALPITE_SECRETO_HIST",
+        "CONFRONTO_SECRETO_HIST", "MAIS_MENOS_SECRETO_HIST", "JOGOS_SECRETOS_HIST"
+    ];
+    const contaminated = {
+        version: 1,
+        trackingStartedAt: TODAY,
+        days: {
+            [TODAY]: {
+                ...dayWithCompleted(4),
+                classic: { ...completedModes[0], secretName: markers[0], guesses: [markers[0]] },
+                photo: { ...completedModes[1], secretName: markers[1] },
+                moreLess: { ...completedModes[2], sequence: [markers[2]], answers: [markers[7]], games: markers[8] },
+                lineup: { ...completedModes[3], hiddenPlayers: [markers[3]], score: markers[4], guess: markers[5], match: markers[6] }
+            }
+        }
+    };
+    const summary = calendar.obterResumoHistoricoDia(TODAY, contaminated);
+    const renderedText = [
+        summary.classic.statusText, summary.photo.statusText,
+        summary.moreLess.statusText, summary.lineup.statusText
+    ].join(" ");
+    const serialized = JSON.stringify(summary);
+    for (const marker of markers) {
+        assert.equal(serialized.includes(marker), false, marker);
+        assert.equal(renderedText.includes(marker), false, marker);
+    }
 });
 
 console.log(`history-calendar.test.js: ${scenarios} cenários aprovados`);

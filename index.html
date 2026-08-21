@@ -508,8 +508,38 @@
                 </div>
                 <div id="historyCalendarGrid" class="history-calendar-grid" role="grid"
                     aria-labelledby="historyMonthTitle"></div>
-                <section id="historyDayPlaceholder" class="history-day-placeholder" aria-live="polite">
-                    Selecione um dia para ver o progresso.
+                <section id="historyDaySummary" class="history-day-summary" aria-live="polite"
+                    aria-labelledby="historySelectedDateTitle">
+                    <p id="historySummaryEmpty" class="history-summary-empty">
+                        Selecione um dia para ver o progresso.
+                    </p>
+                    <h3 id="historySelectedDateTitle" class="history-selected-date-title hidden">DIA SELECIONADO</h3>
+                    <div id="historyNoRecord" class="history-no-record hidden">
+                        <strong>SEM REGISTRO DISPONÍVEL</strong>
+                        <span>Não há progresso registrado para esta data.</span>
+                    </div>
+                    <div id="historyDayDetails" class="history-day-details hidden">
+                        <div class="history-mode-summary-list">
+                            <div class="history-mode-summary" data-history-mode="classic">
+                                <span>CLÁSSICO</span>
+                                <strong id="historyClassicSummary">Não iniciado</strong>
+                            </div>
+                            <div class="history-mode-summary" data-history-mode="photo">
+                                <span>FOTO</span>
+                                <strong id="historyPhotoSummary">Não iniciado</strong>
+                            </div>
+                            <div class="history-mode-summary" data-history-mode="moreLess">
+                                <span>MAIS OU MENOS</span>
+                                <strong id="historyMoreLessSummary">Não iniciado</strong>
+                            </div>
+                            <div class="history-mode-summary" data-history-mode="lineup">
+                                <span>ONZE INICIAL</span>
+                                <strong id="historyLineupSummary">Não iniciado</strong>
+                                <small id="historyLineupExactScore" class="history-exact-score hidden">PLACAR EXATO</small>
+                            </div>
+                        </div>
+                        <div id="historyOverallProgress" class="history-overall-progress">0/4 DESAFIOS</div>
+                    </div>
                 </section>
             </div>
         </div>

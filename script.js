@@ -92,7 +92,17 @@ const historyPreviousMonth = document.getElementById("historyPreviousMonth");
 const historyNextMonth = document.getElementById("historyNextMonth");
 const historyMonthTitle = document.getElementById("historyMonthTitle");
 const historyCalendarGrid = document.getElementById("historyCalendarGrid");
-const historyDayPlaceholder = document.getElementById("historyDayPlaceholder");
+const historyDaySummary = document.getElementById("historyDaySummary");
+const historySummaryEmpty = document.getElementById("historySummaryEmpty");
+const historyNoRecord = document.getElementById("historyNoRecord");
+const historyDayDetails = document.getElementById("historyDayDetails");
+const historySelectedDateTitle = document.getElementById("historySelectedDateTitle");
+const historyClassicSummary = document.getElementById("historyClassicSummary");
+const historyPhotoSummary = document.getElementById("historyPhotoSummary");
+const historyMoreLessSummary = document.getElementById("historyMoreLessSummary");
+const historyLineupSummary = document.getElementById("historyLineupSummary");
+const historyLineupExactScore = document.getElementById("historyLineupExactScore");
+const historyOverallProgress = document.getElementById("historyOverallProgress");
 const btnOpenHowToPlay = document.getElementById("btnOpenHowToPlay");
 const howToPlayModal = document.getElementById("howToPlayModal");
 const btnCloseHowToPlay = document.getElementById("btnCloseHowToPlay");
@@ -396,6 +406,112 @@ function obterEstadoDiaHistorico(data, historico, hoje = getDataLocalString()) {
         completedCount: progresso.completed,
         complete: progresso.complete,
         state
+    };
+}
+
+function obterResumoHistoricoDia(data, historico) {
+    const hasRecord = dataHistoricoValida(data)
+        && Object.prototype.hasOwnProperty.call(historico?.days || {}, data)
+        && historico.days[data] && typeof historico.days[data] === "object"
+        && !Array.isArray(historico.days[data]);
+    const dia = hasRecord ? historico.days[data] : criarResumoDiaVazio();
+    const quantidade = (valor, maximo) => Number.isFinite(valor)
+        ? Math.min(maximo, Math.max(0, Math.trunc(valor)))
+        : 0;
+    const plural = (valor, singular, pluralTexto) => `${valor} ${valor === 1 ? singular : pluralTexto}`;
+
+    const classicSource = dia.classic && typeof dia.classic === "object" ? dia.classic : {};
+    const classicStarted = classicSource.started === true;
+    const classicCompleted = classicStarted && classicSource.completed === true;
+    const classicAttempts = quantidade(classicSource.attempts, 10000);
+    const classic = {
+        started: classicStarted,
+        completed: classicCompleted,
+        attempts: classicAttempts,
+        statusText: !classicStarted
+            ? "Não iniciado"
+            : `${classicCompleted ? "Concluído" : "Em andamento"} · ${plural(classicAttempts, "tentativa", "tentativas")}`
+    };
+
+    const photoSource = dia.photo && typeof dia.photo === "object" ? dia.photo : {};
+    const photoStarted = photoSource.started === true;
+    const photoCompleted = photoStarted && photoSource.completed === true;
+    const photoOutcome = photoCompleted && (photoSource.outcome === "won" || photoSource.outcome === "lost")
+        ? photoSource.outcome
+        : null;
+    const photoAttempts = quantidade(photoSource.attempts, 6);
+    const photo = {
+        started: photoStarted,
+        completed: photoCompleted,
+        outcome: photoOutcome,
+        attempts: photoAttempts,
+        statusText: !photoStarted
+            ? "Não iniciado"
+            : photoCompleted
+                ? `${photoOutcome === "lost" ? "Derrota" : "Vitória"} · ${photoAttempts}/6`
+                : `Em andamento · ${photoAttempts}/6`
+    };
+
+    const mmSource = dia.moreLess && typeof dia.moreLess === "object" ? dia.moreLess : {};
+    const mmStarted = mmSource.started === true;
+    const mmCompleted = mmStarted && mmSource.completed === true;
+    const mmOutcome = mmCompleted && (mmSource.outcome === "won" || mmSource.outcome === "lost")
+        ? mmSource.outcome
+        : null;
+    const mmRounds = quantidade(mmSource.rounds, 10);
+    const mmHits = quantidade(mmSource.hits, 10);
+    const moreLess = {
+        started: mmStarted,
+        completed: mmCompleted,
+        outcome: mmOutcome,
+        hits: mmHits,
+        rounds: mmRounds,
+        statusText: !mmStarted
+            ? "Não iniciado"
+            : mmCompleted
+                ? `${mmOutcome === "lost" ? "Derrota" : "Vitória"} · ${mmHits}/10`
+                : `Em andamento · ${plural(mmRounds, "rodada", "rodadas")} · ${plural(mmHits, "acerto", "acertos")}`
+    };
+
+    const lineupSource = dia.lineup && typeof dia.lineup === "object" ? dia.lineup : {};
+    const lineupStarted = lineupSource.started === true;
+    const lineupCompleted = lineupStarted && lineupSource.completed === true;
+    const lineupResolved = quantidade(lineupSource.resolved, 3);
+    const lineupTotal = 3;
+    const lineupErrors = quantidade(lineupSource.errors, 100000);
+    const lineupPhase = lineupCompleted ? "completed"
+        : lineupSource.phase === "score" ? "score"
+            : lineupStarted ? "lineup" : null;
+    const lineup = {
+        started: lineupStarted,
+        completed: lineupCompleted,
+        phase: lineupPhase,
+        resolved: lineupResolved,
+        total: lineupTotal,
+        errors: lineupErrors,
+        exactScore: lineupSource.exactScore === true,
+        statusText: !lineupStarted
+            ? "Não iniciado"
+            : lineupCompleted
+                ? `Concluído · ${lineupResolved}/${lineupTotal} · ${plural(lineupErrors, "erro", "erros")}`
+                : lineupPhase === "score"
+                    ? "Fase do placar"
+                    : `Escalação · ${lineupResolved}/${lineupTotal}`
+    };
+
+    const modos = [classic, photo, moreLess, lineup];
+    const startedCount = modos.filter(modo => modo.started).length;
+    const completedCount = modos.filter(modo => modo.completed).length;
+    return {
+        date: data,
+        hasRecord: Boolean(hasRecord),
+        startedCount,
+        completedCount,
+        complete: completedCount === 4,
+        classic,
+        photo,
+        moreLess,
+        lineup
     };
 }
 
@@ -987,16 +1103,55 @@ function textoIndicadorDiaHistorico(dia) {
     return "";
 }
 
-function renderizarPlaceholderDiaHistorico(dia) {
-    if (!historyDayPlaceholder) return;
+function renderizarResumoDiaHistorico(dia) {
+    if (!historyDaySummary) return;
     if (!dia) {
-        historyDayPlaceholder.textContent = "Selecione um dia para ver o progresso.";
+        historySummaryEmpty?.classList.remove("hidden");
+        historySelectedDateTitle?.classList.add("hidden");
+        historyNoRecord?.classList.add("hidden");
+        historyDayDetails?.classList.add("hidden");
         return;
     }
-    const data = formatarDataHistorico(dia.date, false);
-    historyDayPlaceholder.textContent = dia.hasRecord
-        ? `${data} — ${dia.completedCount}/4 DESAFIOS`
-        : `${data} — SEM REGISTRO DISPONÍVEL`;
+    const resumo = obterResumoHistoricoDia(dia.date, estadoHistoricoUI.history);
+    historySummaryEmpty?.classList.add("hidden");
+    if (historySelectedDateTitle) {
+        historySelectedDateTitle.textContent = formatarDataHistorico(dia.date, false);
+        historySelectedDateTitle.classList.remove("hidden");
+    }
+
+    if (!resumo.hasRecord) {
+        historyNoRecord?.classList.remove("hidden");
+        historyDayDetails?.classList.add("hidden");
+        return;
+    }
+
+    historyNoRecord?.classList.add("hidden");
+    historyDayDetails?.classList.remove("hidden");
+    if (historyClassicSummary) historyClassicSummary.textContent = resumo.classic.statusText;
+    if (historyPhotoSummary) historyPhotoSummary.textContent = resumo.photo.statusText;
+    if (historyMoreLessSummary) historyMoreLessSummary.textContent = resumo.moreLess.statusText;
+    if (historyLineupSummary) historyLineupSummary.textContent = resumo.lineup.statusText;
+    historyLineupExactScore?.classList.toggle("hidden", !resumo.lineup.exactScore);
+
+    const estados = {
+        classic: resumo.classic,
+        photo: resumo.photo,
+        moreLess: resumo.moreLess,
+        lineup: resumo.lineup
+    };
+    Object.entries(estados).forEach(([modo, estado]) => {
+        const linha = historyDayDetails?.querySelector(`[data-history-mode="${modo}"]`);
+        if (!linha) return;
+        linha.classList.remove("is-not-started", "is-in-progress", "is-completed", "is-won", "is-lost");
+        linha.classList.add(!estado.started ? "is-not-started" : estado.completed ? "is-completed" : "is-in-progress");
+        if (estado.outcome === "won") linha.classList.add("is-won");
+        if (estado.outcome === "lost") linha.classList.add("is-lost");
+    });
+
+    if (historyOverallProgress) {
+        historyOverallProgress.textContent = `${resumo.completedCount}/4 DESAFIOS`;
+        historyOverallProgress.classList.toggle("is-complete", resumo.complete);
+    }
 }
 
 function selecionarDiaHistorico(data, devolverFoco = false) {
@@ -1078,7 +1233,7 @@ function renderizarCalendarioHistorico() {
     });
 
     const selecionado = grade.days.find(dia => dia.date === estadoHistoricoUI.selectedDate);
-    renderizarPlaceholderDiaHistorico(selecionado || null);
+    renderizarResumoDiaHistorico(selecionado || null);
 }
 
 function navegarMesHistorico(direcao) {

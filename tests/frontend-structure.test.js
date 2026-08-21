@@ -105,6 +105,42 @@ test("Histórico preserva modal, calendário e estados acessíveis", () => {
     ]) assert.ok(script.includes(token), token);
 });
 
+test("Resumo histórico preserva quatro modos, progresso e estado sem registro", () => {
+    for (const id of [
+        "historyDaySummary", "historySelectedDateTitle", "historyNoRecord", "historyDayDetails",
+        "historyClassicSummary", "historyPhotoSummary", "historyMoreLessSummary",
+        "historyLineupSummary", "historyOverallProgress"
+    ]) assert.ok(htmlIdSet.has(id), id);
+    for (const mode of ["classic", "photo", "moreLess", "lineup"]) {
+        assert.ok(html.includes(`data-history-mode="${mode}"`), mode);
+    }
+    assert.ok(!htmlIdSet.has("historyDayPlaceholder"));
+    assert.ok(script.includes("function obterResumoHistoricoDia(data, historico)"));
+    assert.ok(script.includes("historyClassicSummary.textContent = resumo.classic.statusText"));
+    assert.ok(script.includes("historyPhotoSummary.textContent = resumo.photo.statusText"));
+    assert.ok(script.includes("historyMoreLessSummary.textContent = resumo.moreLess.statusText"));
+    assert.ok(script.includes("historyLineupSummary.textContent = resumo.lineup.statusText"));
+    assert.ok(script.includes('historyOverallProgress.classList.toggle("is-complete", resumo.complete)'));
+    for (const selector of [
+        ".history-day-summary", ".history-no-record", ".history-mode-summary",
+        ".history-exact-score", ".history-overall-progress.is-complete"
+    ]) assert.ok(css.includes(selector), selector);
+});
+
+test("Estatísticas e Histórico ampliam somente em tablet e desktop", () => {
+    assert.equal((css.match(/@media\s*\(min-width:\s*700px\)/g) || []).length, 1);
+    const statsDesktop = cssRule("#integratedStatsModal .integrated-stats-modal-content");
+    const historyDesktop = cssRule("#historyModal .history-modal-content");
+    assert.match(statsDesktop, /width:\s*min\(820px,\s*calc\(100vw - 48px\)\)/);
+    assert.match(statsDesktop, /max-width:\s*820px/);
+    assert.match(historyDesktop, /width:\s*min\(720px,\s*calc\(100vw - 48px\)\)/);
+    assert.match(historyDesktop, /max-width:\s*720px/);
+    assert.match(cssRule("#historyModal .history-month-navigation,\n    #historyModal .history-weekdays,\n    #historyModal .history-calendar-grid"), /max-width:\s*620px/);
+    assert.match(cssRule(".integrated-mode-grid"), /repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
+    assert.match(cssRule(".integrated-stats-general"), /repeat\(4,\s*minmax\(0,\s*1fr\)\)/);
+    assert.match(cssRule(".history-modal-content"), /width:\s*min\(500px/);
+});
+
 test("Como Jogar preserva largura e grid responsivos próprios", () => {
     const modalRule = cssRule(".integrated-stats-modal-content.help-modal-content");
     const gridRule = cssRule(".help-mode-grid");

@@ -55,12 +55,23 @@ node tests/viewport-smoke.js
 ## Histórico / calendário
 
 - `#historyModal` reutiliza a infraestrutura acessível comum sem herdar a largura de outro modal.
-- `.history-modal-content` limita o calendário a 500 px e usa `100dvh` para viewports baixos.
+- `.history-modal-content` preserva a base fluida de 500 px no mobile, amplia o modal para
+  até 720 px a partir de 700 px e continua usando `100dvh` para viewports baixos.
+- O modal de Estatísticas amplia somente em tablet/desktop para até 820 px; seu grid 2 × 2
+  de modos e as quatro colunas de métricas gerais permanecem inalterados.
+- Ambos os modais usam `calc(100vw - 48px)` na camada ampla, garantindo gutters de 24 px.
 - A grade possui sete colunas, começa na segunda-feira e consome somente os dados puros da Fase A.
 - Estados `future`, `before-tracking`, `no-record`, `recorded`, `started`, `partial` e `complete`
   permanecem combináveis com `is-today` e `is-selected`.
 - Futuro e pré-tracking usam botões realmente desabilitados; dias sem registro continuam selecionáveis.
 - Seleção e mês exibido existem apenas em memória e não alteram `timaodle_history_v1`.
+- O resumo do dia usa uma allowlist derivada exclusivamente do registro normalizado selecionado.
+- Dias sem registro exibem somente mensagem neutra; registros `0/4` mantêm as quatro linhas
+  para distinguir progresso existente de ausência de dados.
+- Clássico, Foto, Mais ou Menos e Onze Inicial usam linhas compactas com estados textuais,
+  métricas seguras e progresso geral de `0/4` a `4/4`.
+- O resumo nunca recebe nomes, tentativas nominais, sequência do MM, valores de jogos,
+  jogadores ocultos, confronto, placar ou palpite.
 
 ## Componentes compartilhados
 

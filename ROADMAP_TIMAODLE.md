@@ -2230,7 +2230,7 @@ Pendências futuras, sem bloqueio para a v2.7:
 Fases:
 - [x] Fase A — modelo, datas civis, limites e testes permanentes;
 - [x] Fase B — modal e calendário visual;
-- [ ] Fase C — resumo seguro do dia selecionado;
+- [x] Fase C — resumo detalhado e seguro do dia selecionado;
 - [ ] Fase D — acessibilidade e navegação por teclado;
 - [ ] Fase E — streak histórico, polimento e validação final.
 
@@ -2331,3 +2331,75 @@ Compatibilidade preservada:
 Próximo passo:
 - implementar a Fase C: resumo seguro e detalhado dos quatro modos para o dia selecionado,
   sem respostas, palpites ou outros spoilers.
+
+
+## 21/08/2026 — v2.8 Fase C: resumo detalhado e seguro do dia
+
+Implementado:
+- função pura `obterResumoHistoricoDia(data, historico)` baseada exclusivamente no resumo
+  normalizado de `timaodle_history_v1.days[data]`;
+- retorno por allowlist com data, presença de registro, progresso geral e somente flags,
+  outcomes e contadores seguros dos quatro modos;
+- Clássico com não iniciado, andamento e concluído, incluindo tentativas e pluralização;
+- Foto com não iniciado, andamento, vitória e derrota, sempre em escala de 6 tentativas;
+- Mais ou Menos com não iniciado, andamento, vitória e derrota, incluindo rodadas,
+  acertos, pluralização e preservação de zero acertos;
+- Onze Inicial com não iniciado, fase do placar, escalação em andamento, conclusão,
+  resolvidos, erros e indicador discreto somente para `exactScore === true`;
+- quatro linhas compactas substituem o placeholder para dias registrados, com progresso
+  geral de `0/4` a `4/4` e destaque dourado no fechamento completo;
+- dia registrado `0/4` mantém os estados individuais dos modos e continua distinto de
+  uma data sem registro;
+- data sem registro mostra somente mensagem neutra, sem afirmar que o usuário não jogou;
+- troca de seleção e de mês atualiza imediatamente o resumo sem reload, consulta a saves
+  individuais ou escrita no storage;
+- região do resumo associada ao heading da data selecionada e atualizada por `aria-live="polite"`.
+
+Segurança:
+- a derivação nunca retorna nomes secretos, tentativas nominais, jogadores, sequência MM,
+  valores de jogos, direções MAIS/MENOS, ocultos, confronto, placar ou palpite;
+- fixture permanente contaminada com nove marcadores de spoiler confirma que nenhum deles
+  chega à estrutura segura nem aos textos usados pela UI;
+- `trackingStartedAt`, `completionCelebrated`, histórico, saves, seeds e mecânicas não foram alterados.
+
+Testado:
+- 29 novos cenários de resumo adicionados à suíte do calendário, agora com 69 cenários;
+- todos os estados solicitados de Clássico, Foto, Mais ou Menos e Onze Inicial;
+- pluralizações, zero válido, `0/4` a `4/4`, ausência de registro e anti-spoiler;
+- suíte completa aprovada com storage A–X, 39 cenários de regras e 25 cenários estruturais;
+- 149 IDs verificados sem duplicidade;
+- `script.js`, `storage-normalizers.js`, `git diff --check`, três JSONs e 667 pares de
+  chaves CSS aprovados;
+- teste visual real do resumo nos viewports prioritários continua pendente.
+
+Próximas fases:
+- Fase D — navegação por teclado e acessibilidade avançada do calendário;
+- Fase E — streak histórico, polimento e validação final da v2.8.
+
+
+## 21/08/2026 — v2.8: polimento desktop dos modais de Estatísticas e Histórico
+
+Implementado:
+- correção exclusivamente visual, sem avanço das fases funcionais da v2.8;
+- modal de Estatísticas ampliado de 680 px para até 820 px em telas a partir de 700 px;
+- modal de Histórico ampliado de 500 px para até 720 px na mesma camada ampla;
+- ambos usam `calc(100vw - 48px)`, preservando gutters mínimos de 24 px em tablet/desktop;
+- Estatísticas mantém quatro métricas gerais por linha e os modos em grid 2 × 2, agora
+  com cards, gaps e padding mais confortáveis;
+- calendário permanece com sete colunas e foi centralizado em até 620 px para crescer sem
+  se transformar em uma área excessivamente grande;
+- resumo histórico aproveita a largura adicional com coluna de modo mínima de 150 px,
+  textos maiores e estados à direita;
+- regras mobile de 360 a 480 px permaneceram intactas;
+- alturas, `100dvh`, scroll interno, foco, Escape, ARIA, JavaScript e dados não foram alterados.
+
+Testado:
+- contrato estrutural ampliado para as larguras 820/720 px, gutters, limite do calendário
+  e preservação dos grids existentes;
+- suíte completa, sintaxe, JSONs, IDs, CSS e whitespace validados no encerramento;
+- validação visual real em tablet e desktop permanece recomendada.
+
+Estado da versão:
+- Fase C continua concluída;
+- Fase D não foi iniciada;
+- próxima etapa funcional permanece a acessibilidade avançada do calendário.

@@ -38,7 +38,9 @@ const essentialIds = {
         "welcomeModal", "photoTutorialModal", "integratedStatsModal", "historyModal", "howToPlayModal",
         "btnOpenHowToPlay", "btnCloseIntegratedStats", "btnCloseHistory", "btnCloseHowToPlay",
         "historyPreviousMonth", "historyNextMonth", "historyMonthTitle",
-        "historyCalendarGrid", "historyDayPlaceholder"
+        "historyCalendarGrid", "historyDaySummary", "historySelectedDateTitle",
+        "historyNoRecord", "historyDayDetails", "historyClassicSummary", "historyPhotoSummary",
+        "historyMoreLessSummary", "historyLineupSummary", "historyOverallProgress"
     ],
     navigation: [
         "btnPlayDiario", "btnPlayFoto", "btnPlayMaisMenos", "btnPlayEscalacao",
@@ -73,7 +75,8 @@ const essentialCssSelectors = [
     "#escalacaoView .player-chip.dense-line", ".slot-btn.correct", ".result-status.acertou",
     ".result-status.errou", "body.modal-open .page-content", ".modal", ".autocomplete-active",
     ".history-modal-content", ".history-calendar-grid", ".history-day-cell.is-complete",
-    ".history-day-cell.is-today", ".history-day-cell.is-selected"
+    ".history-day-cell.is-today", ".history-day-cell.is-selected", ".history-day-summary",
+    ".history-mode-summary", ".history-overall-progress.is-complete", ".history-no-record"
 ];
 
 const decorativeClasses = [
