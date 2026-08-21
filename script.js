@@ -45,6 +45,8 @@ const homeProgressValueEl = document.getElementById("homeProgressValue");
 const homeProgressUnitEl = document.getElementById("homeProgressUnit");
 const homeProgressBarEl = document.getElementById("homeProgressBar");
 const homeProgressFillEl = document.getElementById("homeProgressFill");
+const homeStreakCurrentEl = document.getElementById("homeStreakCurrent");
+const homeStreakBestEl = document.getElementById("homeStreakBest");
 const homeCompletionSummaryEl = document.getElementById("homeCompletionSummary");
 const homeCompletionMetricEls = {
     classic: document.getElementById("homeCompletionClassic"),
@@ -290,6 +292,46 @@ function obterProgressoDiario(data = getDataLocalString()) {
     return { data, ...calcularProgressoDoResumo(dia), modes: dia };
 }
 
+function indiceDiaCivil(data) {
+    if (!dataHistoricoValida(data)) return null;
+    const [ano, mes, dia] = data.split("-").map(Number);
+    return Math.trunc(Date.UTC(ano, mes - 1, dia) / 86400000);
+}
+
+function obterStreakGeral(dataReferencia = getDataLocalString()) {
+    const indiceReferencia = indiceDiaCivil(dataReferencia);
+    const vazio = { current: 0, best: 0, totalCompleteDays: 0, lastCompleteDate: null };
+    if (indiceReferencia === null) return vazio;
+
+    const historico = carregarHistorico();
+    const diasCompletos = Object.entries(historico.days || {})
+        .filter(([data, resumo]) => dataHistoricoValida(data)
+            && resumo && typeof resumo === "object" && resumo.complete === true
+            && indiceDiaCivil(data) <= indiceReferencia)
+        .map(([data]) => ({ data, indice: indiceDiaCivil(data) }))
+        .sort((a, b) => a.indice - b.indice);
+
+    if (diasCompletos.length === 0) return vazio;
+
+    let melhor = 1;
+    let tamanhoSequencia = 1;
+    for (let i = 1; i < diasCompletos.length; i++) {
+        tamanhoSequencia = diasCompletos[i].indice - diasCompletos[i - 1].indice === 1
+            ? tamanhoSequencia + 1
+            : 1;
+        melhor = Math.max(melhor, tamanhoSequencia);
+    }
+
+    const ultimo = diasCompletos[diasCompletos.length - 1];
+    const sequenciaVigente = indiceReferencia - ultimo.indice <= 1 ? tamanhoSequencia : 0;
+    return {
+        current: sequenciaVigente,
+        best: melhor,
+        totalCompleteDays: diasCompletos.length,
+        lastCompleteDate: ultimo.data
+    };
+}
+
 function marcarConclusaoCelebrada(data) {
     const historico = carregarHistorico();
     const dia = historico.days[data];
@@ -349,6 +391,16 @@ function renderizarProgressoHome() {
             : progresso.completed === 0
                 ? "Quatro desafios esperam por você."
                 : `${progresso.completed} de 4 concluídos. Continue jogando!`;
+    }
+
+    const streak = obterStreakGeral(progresso.data);
+    if (homeStreakCurrentEl) {
+        homeStreakCurrentEl.textContent = streak.current > 0
+            ? `${streak.current} ${streak.current === 1 ? "dia" : "dias"}`
+            : "Comece sua sequência";
+    }
+    if (homeStreakBestEl) {
+        homeStreakBestEl.textContent = `Recorde: ${streak.best} ${streak.best === 1 ? "dia" : "dias"}`;
     }
 
     if (homeCompletionSummaryEl) {

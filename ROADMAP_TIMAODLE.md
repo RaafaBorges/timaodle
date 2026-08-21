@@ -1,6 +1,6 @@
 # TIMÃODLE --- ROADMAP E CONTEXTO DO PROJETO
 
-**Versão do documento:** 2.2\
+**Versão do documento:** 2.3\
 **Data:** 20/08/2026\
 **Projeto:** Timãodle\
 **Objetivo deste arquivo:** servir como documento de contexto para
@@ -507,7 +507,7 @@ Prioridade máxima.
 [x] Progresso diário integrado na Home
 [x] Conclusão visual 4/4
 [ ] Estatísticas gerais
-[ ] Sequência de vitórias
+[x] Sequência diária de dias completos 4/4
 [ ] Melhor sequência
 [ ] Taxa de acerto
 [x] Infraestrutura de histórico
@@ -1160,3 +1160,50 @@ Pendências:
 
 Próximo passo:
 - implementar o streak diário integrado usando `timaodle_history_v1`.
+
+
+## 20/08/2026 — Streak diário integrado 4/4
+
+Implementado:
+- função central `obterStreakGeral()` calculada exclusivamente a partir de `timaodle_history_v1.days` com `complete === true`;
+- retorno com streak atual, recorde, total de dias completos e último dia completo;
+- cálculo direto do histórico, sem cache ou dependência de `timaodle_stats.streak`;
+- diferença entre datas baseada em componentes civis e `Date.UTC`, evitando efeitos de horário de verão;
+- sequência vigente quando termina hoje ou ontem;
+- sequência atual zerada quando o último dia completo é anterior a ontem;
+- lacunas reiniciam a próxima sequência em 1, sem duplicar o mesmo dia;
+- viradas de mês e ano tratadas como dias consecutivos;
+- exibição compacta na Home com sequência atual e recorde;
+- mensagem “Comece sua sequência” quando o valor atual é zero;
+- streak incluído no card persistente da conclusão 4/4 e atualizado imediatamente após os saves;
+- `completionCelebrated`, celebração única, progresso e quatro saves preservados.
+
+Regra do dia em aberto:
+- se hoje ainda não foi concluído e ontem encerrou uma sequência válida, essa sequência permanece como atual;
+- se ontem não foi completo, o streak atual é zero até que hoje seja concluído.
+
+Testado:
+- A: histórico vazio (`0/0/0`);
+- B: somente hoje completo;
+- C: ontem e hoje completos;
+- D: três dias consecutivos;
+- E: recorde antigo de 5, lacuna e hoje completo iniciando em 1;
+- F: recorde antigo de 5, ontem e hoje incompletos, atual em 0;
+- G: hoje em aberto e sequência válida encerrada ontem;
+- H: virada de `31/08` para `01/09`;
+- I: virada de `31/12` para `01/01`;
+- J: mesmo dia sincronizado duas vezes sem duplicação;
+- K: recálculo equivalente ao F5 sem alteração do streak;
+- L: JSON inválido, histórico estruturalmente malformado e datas inválidas;
+- derrota no Foto contando como conclusão durante sincronização dos quatro modos;
+- `node --check script.js` e `git diff --check` sem erros;
+- JSONs de dados validados e confirmados sem alterações;
+- referências de IDs, listeners existentes e estrutura CSS verificados.
+
+Pendências:
+- validar visualmente o streak na Home em navegadores desktop, tablet e mobile reais;
+- estatísticas integradas, compartilhamento unificado e calendário/histórico visual continuam futuros;
+- `timaodle_stats` permanece legado exclusivo do Clássico e não participa do streak geral.
+
+Próximo passo:
+- implementar as estatísticas integradas gerais usando o histórico versionado.
