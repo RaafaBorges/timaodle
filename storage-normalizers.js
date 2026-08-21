@@ -25,6 +25,13 @@
             && conferida.getUTCDate() === dia;
     }
 
+    function localDateString(agora = new Date()) {
+        const ano = agora.getFullYear();
+        const mes = String(agora.getMonth() + 1).padStart(2, "0");
+        const dia = String(agora.getDate()).padStart(2, "0");
+        return `${ano}-${mes}-${dia}`;
+    }
+
     function intInRange(valor, minimo, maximo, padrao = minimo) {
         return Number.isFinite(valor)
             ? Math.min(maximo, Math.max(minimo, Math.trunc(valor)))
@@ -230,9 +237,10 @@
         };
     }
 
-    function normalizeHistory(valor, version = 1) {
+    function normalizeHistory(valor, version = 1, dataAtual = localDateString()) {
+        const fallbackTracking = validDate(dataAtual) ? dataAtual : localDateString();
         if (!isObject(valor) || valor.version !== version || !isObject(valor.days)) {
-            return { version, days: {} };
+            return { version, trackingStartedAt: fallbackTracking, days: {} };
         }
         const days = {};
         for (const [data, dia] of Object.entries(valor.days)) {
@@ -247,11 +255,15 @@
                 completionCelebrated: complete && dia.completionCelebrated === true
             };
         }
-        return { version, days };
+        const datasValidas = Object.keys(days).sort();
+        const trackingStartedAt = validDate(valor.trackingStartedAt)
+            ? valor.trackingStartedAt
+            : datasValidas[0] || fallbackTracking;
+        return { version, trackingStartedAt, days };
     }
 
     return {
-        isObject, parseJson, validDate, intInRange, nameList,
+        isObject, parseJson, validDate, localDateString, intInRange, nameList,
         normalizeLegacyStats, normalizeClassic, normalizePhoto,
         normalizeMoreLess, normalizeLineup, normalizeHistory, normalizeHistoryMode
     };

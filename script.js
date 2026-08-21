@@ -244,7 +244,15 @@ function normalizarResumoOnzeInicial(estado) {
 
 function carregarHistorico() {
     const salvo = lerJsonLocalStorage(CHAVE_HISTORICO);
-    const normalizado = NormalizadoresStorage.normalizeHistory(salvo, VERSAO_HISTORICO);
+    const normalizado = NormalizadoresStorage.normalizeHistory(
+        salvo,
+        VERSAO_HISTORICO,
+        getDataLocalString()
+    );
+    if (!NormalizadoresStorage.isObject(salvo)) {
+        salvarHistorico(normalizado);
+        return normalizado;
+    }
     return persistirNormalizacaoSegura(CHAVE_HISTORICO, salvo, normalizado);
 }
 
@@ -266,6 +274,138 @@ function calcularProgressoDoResumo(dia) {
         total: 4,
         progress: `${completed}/4`,
         complete: completed === 4
+    };
+}
+
+function componentesDataCivil(data) {
+    if (!dataHistoricoValida(data)) return null;
+    const [year, month, day] = data.split("-").map(Number);
+    return { year, month, day };
+}
+
+function criarDataCivilString(year, month, day) {
+    if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) return null;
+    const data = `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    return dataHistoricoValida(data) ? data : null;
+}
+
+function compararDatasCivis(dataA, dataB) {
+    if (!dataHistoricoValida(dataA) || !dataHistoricoValida(dataB)) return null;
+    return dataA === dataB ? 0 : dataA < dataB ? -1 : 1;
+}
+
+function diasNoMesCivil(year, month) {
+    if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) return 0;
+    return new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+function deslocamentoPrimeiraSemanaCivil(year, month) {
+    if (diasNoMesCivil(year, month) === 0) return null;
+    const diaDaSemana = new Date(Date.UTC(year, month - 1, 1)).getUTCDay();
+    return (diaDaSemana + 6) % 7;
+}
+
+function moverMesCivil(year, month, deslocamento) {
+    if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12
+        || !Number.isInteger(deslocamento)) return null;
+    const data = new Date(Date.UTC(year, month - 1 + deslocamento, 1));
+    return { year: data.getUTCFullYear(), month: data.getUTCMonth() + 1 };
+}
+
+function compararMesesCivis(mesA, mesB) {
+    if (!mesA || !mesB || !Number.isInteger(mesA.year) || !Number.isInteger(mesA.month)
+        || !Number.isInteger(mesB.year) || !Number.isInteger(mesB.month)) return null;
+    const indiceA = mesA.year * 12 + mesA.month - 1;
+    const indiceB = mesB.year * 12 + mesB.month - 1;
+    return indiceA === indiceB ? 0 : indiceA < indiceB ? -1 : 1;
+}
+
+function obterLimitesMesesHistorico(historico, hoje = getDataLocalString()) {
+    const hojeCivil = componentesDataCivil(hoje) || componentesDataCivil(getDataLocalString());
+    const tracking = dataHistoricoValida(historico?.trackingStartedAt)
+        ? componentesDataCivil(historico.trackingStartedAt)
+        : hojeCivil;
+    const currentMonth = { year: hojeCivil.year, month: hojeCivil.month };
+    const trackingMonth = { year: tracking.year, month: tracking.month };
+    const firstMonth = compararMesesCivis(trackingMonth, currentMonth) > 0
+        ? currentMonth
+        : trackingMonth;
+    return { firstMonth, currentMonth };
+}
+
+function limitarMesAoHistorico(year, month, historico, hoje = getDataLocalString()) {
+    const solicitado = moverMesCivil(year, month, 0);
+    const limites = obterLimitesMesesHistorico(historico, hoje);
+    if (!solicitado || compararMesesCivis(solicitado, limites.firstMonth) < 0) return { ...limites.firstMonth };
+    if (compararMesesCivis(solicitado, limites.currentMonth) > 0) return { ...limites.currentMonth };
+    return solicitado;
+}
+
+function obterNavegacaoMesHistorico(year, month, historico, hoje = getDataLocalString()) {
+    const displayedMonth = limitarMesAoHistorico(year, month, historico, hoje);
+    const { firstMonth, currentMonth } = obterLimitesMesesHistorico(historico, hoje);
+    const canGoPrevious = compararMesesCivis(displayedMonth, firstMonth) > 0;
+    const canGoNext = compararMesesCivis(displayedMonth, currentMonth) < 0;
+    return {
+        displayedMonth,
+        firstMonth,
+        currentMonth,
+        canGoPrevious,
+        canGoNext,
+        previousMonth: canGoPrevious ? moverMesCivil(displayedMonth.year, displayedMonth.month, -1) : null,
+        nextMonth: canGoNext ? moverMesCivil(displayedMonth.year, displayedMonth.month, 1) : null
+    };
+}
+
+function obterEstadoDiaHistorico(data, historico, hoje = getDataLocalString()) {
+    const isToday = data === hoje;
+    const isFuture = compararDatasCivis(data, hoje) === 1;
+    const trackingStartedAt = dataHistoricoValida(historico?.trackingStartedAt)
+        ? historico.trackingStartedAt
+        : hoje;
+    const isBeforeTracking = compararDatasCivis(data, trackingStartedAt) === -1;
+    const hasRecord = Object.prototype.hasOwnProperty.call(historico?.days || {}, data);
+    const registro = hasRecord && historico.days[data] && typeof historico.days[data] === "object"
+        ? historico.days[data]
+        : criarResumoDiaVazio();
+    const progresso = calcularProgressoDoResumo(registro);
+    let state = "no-record";
+    if (isFuture) state = "future";
+    else if (isBeforeTracking) state = "before-tracking";
+    else if (hasRecord && progresso.complete) state = "complete";
+    else if (hasRecord && progresso.completed > 0) state = "partial";
+    else if (hasRecord && progresso.started > 0) state = "started";
+    else if (hasRecord) state = "recorded";
+
+    return {
+        date: data,
+        day: componentesDataCivil(data)?.day || null,
+        isToday,
+        isFuture,
+        isBeforeTracking,
+        hasRecord,
+        startedCount: progresso.started,
+        completedCount: progresso.completed,
+        complete: progresso.complete,
+        state
+    };
+}
+
+function gerarGradeMensalHistorico(year, month, historico, hoje = getDataLocalString()) {
+    const navigation = obterNavegacaoMesHistorico(year, month, historico, hoje);
+    const displayedMonth = navigation.displayedMonth;
+    const totalDays = diasNoMesCivil(displayedMonth.year, displayedMonth.month);
+    const days = Array.from({ length: totalDays }, (_, index) => {
+        const date = criarDataCivilString(displayedMonth.year, displayedMonth.month, index + 1);
+        return obterEstadoDiaHistorico(date, historico, hoje);
+    });
+    return {
+        year: displayedMonth.year,
+        month: displayedMonth.month,
+        daysInMonth: totalDays,
+        firstWeekOffset: deslocamentoPrimeiraSemanaCivil(displayedMonth.year, displayedMonth.month),
+        days,
+        navigation
     };
 }
 

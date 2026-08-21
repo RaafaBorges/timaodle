@@ -1,6 +1,6 @@
 # TIMÃODLE --- ROADMAP E CONTEXTO DO PROJETO
 
-**Versão do documento:** 2.7\
+**Versão do documento:** 2.8\
 **Data:** 21/08/2026\
 **Projeto:** Timãodle\
 **Objetivo deste arquivo:** servir como documento de contexto para
@@ -2225,11 +2225,59 @@ Pendências futuras, sem bloqueio para a v2.7:
 - validação histórica das quatro partidas 4-2-3-1;
 - bases históricas residuais do CSS do Onze Inicial.
 
-## PRÓXIMA VERSÃO — v2.8
+## 🚧 v2.8 — EM ANDAMENTO: CALENDÁRIO / HISTÓRICO VISUAL
 
-Funcionalidades candidatas já registradas neste roadmap, ainda sem implementação ou prioridade definida:
-- melhor sequência e taxa de acerto;
-- interface de histórico/calendário;
-- melhorias adicionais de telas de resultado e experiência;
-- expansão de jogadores, fotos e partidas;
-- validações pendentes de acessibilidade e conteúdo histórico.
+Fases:
+- [x] Fase A — modelo, datas civis, limites e testes permanentes;
+- [ ] Fase B — modal e calendário visual;
+- [ ] Fase C — resumo seguro do dia selecionado;
+- [ ] Fase D — acessibilidade e navegação por teclado;
+- [ ] Fase E — streak histórico, polimento e validação final.
+
+Estado atual:
+- `timaodle_history_v1` continua sendo a única fonte diária;
+- metadata `trackingStartedAt` integrada ao mesmo objeto, sem nova chave de storage;
+- calendário visual, botão, modal, CSS e resumo ainda não foram implementados.
+
+
+## 21/08/2026 — v2.8 Fase A: modelo, limites e testes do histórico visual
+
+Implementado:
+- histórico v1 evoluído para `{ version, trackingStartedAt, days }`;
+- migração defensiva preserva metadata válida, usa o menor dia válido quando a metadata
+  está ausente/inválida e usa a data local na primeira execução com histórico vazio;
+- primeira criação do histórico persiste a metadata sem criar entrada diária artificial;
+- `trackingStartedAt` válido nunca é movido automaticamente para uma data posterior;
+- helpers puros adicionados para datas civis, comparação, quantidade de dias, início da
+  semana na segunda-feira, virada de mês/ano, limites e navegação permitida;
+- grade mensal retorna somente dados, com estado independente de hoje e campos para futuro,
+  período anterior ao tracking, presença de registro, modos iniciados/concluídos e 4/4;
+- estados derivados disponíveis: `future`, `before-tracking`, `no-record`, `recorded`,
+  `started`, `partial` e `complete`;
+- nenhuma derivação chama `obterProgressoDiario()` em loop, altera dias ou consome
+  `completionCelebrated`;
+- suíte permanente `tests/history-calendar.test.js` integrada ao runner principal.
+
+Testado:
+- 40 cenários permanentes do calendário e migração;
+- fevereiro comum e bissexto, meses iniciando segunda/domingo, viradas de mês e ano;
+- estados 0/4 a 4/4, hoje parcial/completo, futuro, ausência de registro e pré-tracking;
+- metadata válida, ausente e inválida, histórico vazio/malformado, idempotência,
+  zeros válidos e preservação de `completionCelebrated`;
+- limites inferior/superior e bloqueio do próximo mês no mês atual;
+- suíte completa, sintaxe, JSONs e whitespace validados no encerramento da etapa.
+
+Compatibilidade preservada:
+- saves dos quatro modos, progresso, streak, estatísticas, compartilhamento, MM v2,
+  seeds e celebração 4/4;
+- `jogadores.json`, `partidas.json` e `fotos-manifest.json` inalterados;
+- `index.html` e `style.css` inalterados.
+
+Pendências:
+- o calendário ainda não possui interface;
+- validação visual e acessível pertence às fases seguintes;
+- datas sem entrada devem continuar usando linguagem neutra, sem afirmar que o usuário não jogou.
+
+Próximo passo:
+- implementar a Fase B em etapa isolada: botão na Home, modal específico e grade mensal
+  responsiva consumindo exclusivamente as derivações concluídas nesta fase.
