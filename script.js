@@ -11,6 +11,27 @@ const CHAVE_ESTADO_ESCALACAO = "timaodle_escalacao_daily_state";
 const CHAVE_HISTORICO = "timaodle_history_v1";
 const VERSAO_HISTORICO = 1;
 const URL_OFICIAL_TIMAODLE = "timaodle.net";
+const NormalizadoresStorage = globalThis.TimaodleStorage;
+
+function lerJsonLocalStorage(chave) {
+    try {
+        return NormalizadoresStorage.parseJson(localStorage.getItem(chave));
+    } catch {
+        return null;
+    }
+}
+
+function persistirNormalizacaoSegura(chave, original, normalizado) {
+    if (!normalizado || !NormalizadoresStorage.isObject(original)) return normalizado;
+    try {
+        if (JSON.stringify(original) !== JSON.stringify(normalizado)) {
+            localStorage.setItem(chave, JSON.stringify(normalizado));
+        }
+    } catch (error) {
+        console.warn(`Não foi possível persistir a normalização de ${chave}:`, error);
+    }
+    return normalizado;
+}
 
 let jogadores = [];
 let jogadorSecreto = null;
@@ -20,15 +41,12 @@ let selectedIndex = -1; // Índice do item selecionado no autocomplete via tecla
 // Estatísticas legadas do Clássico. Não representam o streak geral e são
 // mantidas somente por compatibilidade com instalações existentes.
 function carregarEstatisticasLegadas() {
-    const padrao = { jogos: 0, vitorias: 0, streak: 0, maxStreak: 0 };
-    try {
-        const salvo = JSON.parse(localStorage.getItem(CHAVE_STATS));
-        return salvo && typeof salvo === "object" && !Array.isArray(salvo)
-            ? { ...padrao, ...salvo }
-            : padrao;
-    } catch {
-        return padrao;
-    }
+    const salvo = lerJsonLocalStorage(CHAVE_STATS);
+    return persistirNormalizacaoSegura(
+        CHAVE_STATS,
+        salvo,
+        NormalizadoresStorage.normalizeLegacyStats(salvo)
+    );
 }
 
 let stats = carregarEstatisticasLegadas();
@@ -149,12 +167,7 @@ function getDataLocalString() {
 // ==========================================================================
 
 function dataHistoricoValida(data) {
-    if (typeof data !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(data)) return false;
-    const [ano, mes, dia] = data.split("-").map(Number);
-    const conferida = new Date(Date.UTC(ano, mes - 1, dia));
-    return conferida.getUTCFullYear() === ano
-        && conferida.getUTCMonth() === mes - 1
-        && conferida.getUTCDate() === dia;
+    return NormalizadoresStorage.validDate(data);
 }
 
 function quantidadeSegura(valor, maximo = Number.MAX_SAFE_INTEGER) {
@@ -227,16 +240,9 @@ function normalizarResumoOnzeInicial(estado) {
 }
 
 function carregarHistorico() {
-    try {
-        const salvo = JSON.parse(localStorage.getItem(CHAVE_HISTORICO));
-        if (!salvo || salvo.version !== VERSAO_HISTORICO
-            || !salvo.days || typeof salvo.days !== "object" || Array.isArray(salvo.days)) {
-            return { version: VERSAO_HISTORICO, days: {} };
-        }
-        return salvo;
-    } catch {
-        return { version: VERSAO_HISTORICO, days: {} };
-    }
+    const salvo = lerJsonLocalStorage(CHAVE_HISTORICO);
+    const normalizado = NormalizadoresStorage.normalizeHistory(salvo, VERSAO_HISTORICO);
+    return persistirNormalizacaoSegura(CHAVE_HISTORICO, salvo, normalizado);
 }
 
 function salvarHistorico(historico) {
@@ -245,19 +251,6 @@ function salvarHistorico(historico) {
     } catch (error) {
         console.warn("Não foi possível salvar o histórico diário:", error);
     }
-}
-
-function lerJsonLocalStorage(chave) {
-    try {
-        return JSON.parse(localStorage.getItem(chave));
-    } catch {
-        return null;
-    }
-}
-
-function mesclarResumoModo(anterior, atual) {
-    if (anterior?.completed === true && atual?.completed !== true) return anterior;
-    return atual;
 }
 
 function calcularProgressoDoResumo(dia) {
@@ -276,10 +269,10 @@ function calcularProgressoDoResumo(dia) {
 function sincronizarProgressoDiario() {
     const historico = carregarHistorico();
     const estados = [
-        ["classic", lerJsonLocalStorage(CHAVE_ESTADO_DIARIO), normalizarResumoClassico],
-        ["photo", lerJsonLocalStorage(CHAVE_ESTADO_FOTO), normalizarResumoFoto],
-        ["moreLess", lerJsonLocalStorage(CHAVE_ESTADO_MM), normalizarResumoMaisMenos],
-        ["lineup", lerJsonLocalStorage(CHAVE_ESTADO_ESCALACAO), normalizarResumoOnzeInicial]
+        ["classic", carregarEstadoDiario(), normalizarResumoClassico],
+        ["photo", carregarEstadoFoto(), normalizarResumoFoto],
+        ["moreLess", carregarEstadoMM(), normalizarResumoMaisMenos],
+        ["lineup", carregarEstadoEscalacao(), normalizarResumoOnzeInicial]
     ];
 
     estados.forEach(([modo, estado, normalizar]) => {
@@ -288,7 +281,9 @@ function sincronizarProgressoDiario() {
         const dia = historico.days[estado.data] && typeof historico.days[estado.data] === "object"
             ? historico.days[estado.data]
             : criarResumoDiaVazio();
-        dia[modo] = mesclarResumoModo(dia[modo], resumo);
+        // O save individual normalizado é a autoridade do jogo corrente.
+        // O histórico nunca promove ou mantém um estado que esse save não confirma.
+        dia[modo] = resumo;
         dia.complete = calcularProgressoDoResumo(dia).complete;
         historico.days[estado.data] = dia;
     });
@@ -883,11 +878,13 @@ function iniciarTimer() {
 // ==========================================================================
 
 function carregarEstadoDiario() {
-    try {
-        return JSON.parse(localStorage.getItem(CHAVE_ESTADO_DIARIO));
-    } catch {
-        return null;
-    }
+    const salvo = lerJsonLocalStorage(CHAVE_ESTADO_DIARIO);
+    const nomes = jogadores.length ? jogadores.map(jogador => jogador.nome) : null;
+    const normalizado = NormalizadoresStorage.normalizeClassic(salvo, {
+        playerNames: nomes,
+        secretName: jogadorSecreto?.nome || null
+    });
+    return persistirNormalizacaoSegura(CHAVE_ESTADO_DIARIO, salvo, normalizado);
 }
 
 function salvarEstadoDiario(estado) {
@@ -1496,11 +1493,12 @@ function obterJogadorFotoDoEstado(estado, dataStr) {
 }
 
 function carregarEstadoFoto() {
-    try {
-        return JSON.parse(localStorage.getItem(CHAVE_ESTADO_FOTO));
-    } catch {
-        return null;
-    }
+    const salvo = lerJsonLocalStorage(CHAVE_ESTADO_FOTO);
+    const normalizado = NormalizadoresStorage.normalizePhoto(salvo, {
+        playerNames: jogadores.length ? jogadores.map(jogador => jogador.nome) : null,
+        photoNames: JOGADORES_COM_FOTO.length ? JOGADORES_COM_FOTO : null
+    });
+    return persistirNormalizacaoSegura(CHAVE_ESTADO_FOTO, salvo, normalizado);
 }
 
 function salvarEstadoFoto(estado) {
@@ -2014,11 +2012,9 @@ function gerarSequenciaMMV1(dataStr) {
 }
 
 function carregarEstadoMM() {
-    try {
-        return JSON.parse(localStorage.getItem(CHAVE_ESTADO_MM));
-    } catch {
-        return null;
-    }
+    const salvo = lerJsonLocalStorage(CHAVE_ESTADO_MM);
+    const normalizado = NormalizadoresStorage.normalizeMoreLess(salvo);
+    return persistirNormalizacaoSegura(CHAVE_ESTADO_MM, salvo, normalizado);
 }
 
 function salvarEstadoMM(estado) {
@@ -2439,11 +2435,14 @@ function fotoOuGenerico(nome) {
 
 // ---------- ETAPA 1: contexto da partida + palpite de placar ----------
 function carregarEstadoEscalacao() {
-    try {
-        return JSON.parse(localStorage.getItem(CHAVE_ESTADO_ESCALACAO));
-    } catch {
-        return null;
-    }
+    const salvo = lerJsonLocalStorage(CHAVE_ESTADO_ESCALACAO);
+    const normalizado = NormalizadoresStorage.normalizeLineup(salvo, {
+        matchIds: PARTIDAS_ESCALACAO.length ? PARTIDAS_ESCALACAO.map(partida => partida.id) : null,
+        playerNames: jogadores.length ? jogadores.map(jogador => jogador.nome) : null,
+        hiddenNames: dadosEscalacao?.jogadores_ocultos?.map(slot => slot.nome_correto) || null,
+        realScore: dadosEscalacao?.placar_real || null
+    });
+    return persistirNormalizacaoSegura(CHAVE_ESTADO_ESCALACAO, salvo, normalizado);
 }
 
 function salvarEstadoEscalacao() {

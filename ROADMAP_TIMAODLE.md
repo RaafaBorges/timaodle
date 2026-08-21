@@ -1426,3 +1426,57 @@ Pendências:
 
 Próximo passo:
 - implementar a normalização defensiva dos saves individuais e do campo `complete` do histórico, preservando compatibilidade.
+
+
+## 21/08/2026 — v2.6: normalização defensiva de saves e histórico
+
+Implementado:
+- unidade pequena e independente `storage-normalizers.js`, carregada antes de `script.js` e reutilizável pelo navegador e Node;
+- leitura JSON segura central preservada, sem apagar outras chaves quando uma delas falha;
+- persistência automática apenas quando um objeto recuperável foi efetivamente normalizado, com comparação para evitar loops de escrita;
+- datas validadas como dias civis reais no formato `AAAA-MM-DD`, sem conversão do desafio local para UTC;
+- números limitados a inteiros finitos e faixas plausíveis de cada mecânica;
+- Clássico filtra tentativas inválidas/inexistentes e neutraliza vitória sem tentativa compatível;
+- Foto valida jogador persistido, tentativas e outcome; jogador fora do pool reinicia somente o desafio Foto do dia, permitindo novo sorteio determinístico seguro;
+- Mais ou Menos preserva v1, v2, seed, snapshots válidos, sequência iniciada, rodada e acertos; snapshots corrompidos são descartados isoladamente quando nomes suficientes ainda permitem recuperação;
+- Onze Inicial preserva a migração de `partidaId: null`, filtra resolvidos, limita erros e placares, e descarta save com ID explicitamente inválido após a lista de partidas estar disponível;
+- histórico v1 normalizado dia a dia, descartando apenas datas/estruturas inválidas;
+- outcomes limitados a `won`, `lost` ou estado neutro conforme a mecânica;
+- `complete` agora é sempre derivado de `classic.completed && photo.completed && moreLess.completed && lineup.completed`;
+- `completionCelebrated` só permanece verdadeiro para um dia realmente 4/4;
+- streak, estatísticas e compartilhamento passam a consumir o histórico já normalizado.
+
+Autoridade dos dados:
+- jogo atual/em andamento: save individual normalizado;
+- histórico, streak e estatísticas: `timaodle_history_v1` normalizado;
+- sincronização deriva resumos somente dos saves válidos e nunca usa histórico malformado para sobrescrever o progresso detalhado.
+
+Compatibilidade preservada:
+- mesmas oito chaves de `localStorage`;
+- saves atuais válidos;
+- MM v1 e v2;
+- snapshots do MM;
+- Onze Inicial antigo com `partidaId: null`;
+- progresso 4/4, celebração única, streak, estatísticas e compartilhamentos.
+
+Testes permanentes:
+- criada `tests/storage.test.js` com `node:assert/strict`, sem framework, bundler ou dependência;
+- execução: `node tests/storage.test.js`;
+- cenários A–X cobrem storage inexistente, JSON truncado, objetos/arrays/null, tipos errados, limites, datas impossíveis, saves atuais e antigos, corrupção dos quatro modos, divergências de `complete`, outcome arbitrário, isolamento entre dias, F5/idempotência e troca de data.
+
+Testado:
+- `node tests/storage.test.js` com cenários A–X aprovados;
+- `node --check storage-normalizers.js`;
+- `node --check script.js`;
+- `git diff --check`;
+- três JSONs validados e confirmados sem alterações;
+- ordem dos scripts e referências literais de IDs verificadas.
+
+Pendências:
+- executar os quatro fluxos completos e migrações em navegador real com cópias de saves de produção;
+- ampliar a suíte permanente para seed/determinismo, streak e estatísticas integradas;
+- exposição antecipada do MM no DevTools continua fora do escopo desta etapa;
+- experiência “Como Jogar” continua pendente.
+
+Próximo passo:
+- adicionar testes permanentes de histórico/streak/estatísticas ou implementar a ajuda básica, antes de consolidar responsividade e CSS.
