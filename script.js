@@ -39,10 +39,19 @@ const btnPlayDiario = document.getElementById("btnPlayDiario");
 const backHomeBtn = document.getElementById("backHomeBtn");
 const welcomeGreetingEl = document.getElementById("welcomeGreeting");
 const homeDailyProgressEl = document.getElementById("homeDailyProgress");
+const homeProgressTitleEl = document.getElementById("homeProgressTitle");
 const homeProgressMessageEl = document.getElementById("homeProgressMessage");
 const homeProgressValueEl = document.getElementById("homeProgressValue");
+const homeProgressUnitEl = document.getElementById("homeProgressUnit");
 const homeProgressBarEl = document.getElementById("homeProgressBar");
 const homeProgressFillEl = document.getElementById("homeProgressFill");
+const homeCompletionSummaryEl = document.getElementById("homeCompletionSummary");
+const homeCompletionMetricEls = {
+    classic: document.getElementById("homeCompletionClassic"),
+    photo: document.getElementById("homeCompletionPhoto"),
+    moreLess: document.getElementById("homeCompletionMoreLess"),
+    lineup: document.getElementById("homeCompletionLineup")
+};
 const homeStatusEls = {
     classic: document.getElementById("homeStatusClassic"),
     photo: document.getElementById("homeStatusPhoto"),
@@ -146,7 +155,8 @@ function criarResumoDiaVazio() {
         photo: { ...criarResumoModoBase(), attempts: 0 },
         moreLess: { ...criarResumoModoBase(), hits: 0, rounds: 0 },
         lineup: { ...criarResumoModoBase(), phase: null, resolved: 0, total: 3, errors: 0, exactScore: null },
-        complete: false
+        complete: false,
+        completionCelebrated: false
     };
 }
 
@@ -280,6 +290,15 @@ function obterProgressoDiario(data = getDataLocalString()) {
     return { data, ...calcularProgressoDoResumo(dia), modes: dia };
 }
 
+function marcarConclusaoCelebrada(data) {
+    const historico = carregarHistorico();
+    const dia = historico.days[data];
+    if (!dia || dia.complete !== true || dia.completionCelebrated === true) return false;
+    dia.completionCelebrated = true;
+    salvarHistorico(historico);
+    return true;
+}
+
 function pluralizarQuantidade(valor, singular, plural) {
     return `${valor} ${valor === 1 ? singular : plural}`;
 }
@@ -321,6 +340,8 @@ function renderizarProgressoHome() {
     homeProgressFillEl.style.width = `${(progresso.completed / progresso.total) * 100}%`;
     homeProgressBarEl?.setAttribute("aria-valuenow", String(progresso.completed));
     homeDailyProgressEl.classList.toggle("is-complete", progresso.complete);
+    if (homeProgressTitleEl) homeProgressTitleEl.textContent = progresso.complete ? "TIMÃODLE DO DIA CONCLUÍDO" : "TIMÃODLE DO DIA";
+    if (homeProgressUnitEl) homeProgressUnitEl.textContent = progresso.complete ? "DESAFIOS" : "CONCLUÍDOS";
 
     if (homeProgressMessageEl) {
         homeProgressMessageEl.textContent = progresso.complete
@@ -328,6 +349,16 @@ function renderizarProgressoHome() {
             : progresso.completed === 0
                 ? "Quatro desafios esperam por você."
                 : `${progresso.completed} de 4 concluídos. Continue jogando!`;
+    }
+
+    if (homeCompletionSummaryEl) {
+        homeCompletionSummaryEl.classList.toggle("hidden", !progresso.complete);
+        if (progresso.complete) {
+            homeCompletionMetricEls.classic.textContent = pluralizarQuantidade(progresso.modes.classic.attempts, "tentativa", "tentativas");
+            homeCompletionMetricEls.photo.textContent = pluralizarQuantidade(progresso.modes.photo.attempts, "tentativa", "tentativas");
+            homeCompletionMetricEls.moreLess.textContent = `${progresso.modes.moreLess.hits}/10 acertos`;
+            homeCompletionMetricEls.lineup.textContent = pluralizarQuantidade(progresso.modes.lineup.errors, "erro", "erros");
+        }
     }
 
     Object.entries(homeStatusEls).forEach(([tipo, elemento]) => {
@@ -338,6 +369,20 @@ function renderizarProgressoHome() {
         botao?.classList.add(`is-${status.estado}`);
         elemento.innerHTML = `<strong>${status.rotulo}</strong><span>${status.detalhe}</span>`;
     });
+
+    const homeVisivel = !homeView?.classList.contains("hidden");
+    if (progresso.complete && !progresso.modes.completionCelebrated && homeVisivel
+        && marcarConclusaoCelebrada(progresso.data)) {
+        const reduzirMovimento = typeof window !== "undefined"
+            && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+        if (reduzirMovimento) return;
+        homeDailyProgressEl.classList.remove("celebrate-once");
+        void homeDailyProgressEl.offsetWidth;
+        homeDailyProgressEl.classList.add("celebrate-once");
+        homeDailyProgressEl.addEventListener("animationend", () => {
+            homeDailyProgressEl.classList.remove("celebrate-once");
+        }, { once: true });
+    }
 }
 
 // Hash simples e determinístico (mesma string sempre gera o mesmo número)
@@ -587,14 +632,35 @@ document.addEventListener("click", function (e) {
 // COMPARAÇÃO DE ATRIBUTOS
 // ==========================================================================
 
+function atributoAusente(valor) {
+    return valor === null
+        || valor === undefined
+        || (typeof valor === "string" && valor.trim() === "");
+}
+
+function formatarAtributoClassico(valor) {
+    return atributoAusente(valor) ? "—" : String(valor);
+}
+
 function compararTexto(palpite, correto) {
-    if (palpite === correto) return { classe: "correct", texto: palpite };
-    return { classe: "wrong", texto: palpite };
+    const palpiteAusente = atributoAusente(palpite);
+    const corretoAusente = atributoAusente(correto);
+    const classe = (palpiteAusente && corretoAusente) || palpite === correto ? "correct" : "wrong";
+    return { classe, texto: formatarAtributoClassico(palpite) };
 }
 
 function compararNumero(palpite, correto) {
+    const palpiteAusente = atributoAusente(palpite);
+    const corretoAusente = atributoAusente(correto);
+    if (palpiteAusente || corretoAusente) {
+        return {
+            classe: palpiteAusente && corretoAusente ? "correct" : "wrong",
+            texto: formatarAtributoClassico(palpite)
+        };
+    }
+
     if (palpite === correto) {
-        return { classe: "correct", texto: palpite };
+        return { classe: "correct", texto: formatarAtributoClassico(palpite) };
     } else if (palpite < correto) {
         return { classe: "wrong", texto: `${palpite} ↑` };
     } else {
@@ -611,15 +677,26 @@ function extrairNomesTitulos(textoTitulos) {
 }
 
 function compararTitulos(palpiteTitulos, corretoTitulos) {
-    if (palpiteTitulos === corretoTitulos) return { classe: "correct", texto: palpiteTitulos };
+    const palpiteAusente = atributoAusente(palpiteTitulos);
+    const corretoAusente = atributoAusente(corretoTitulos);
+    if (palpiteAusente || corretoAusente) {
+        return {
+            classe: palpiteAusente && corretoAusente ? "correct" : "wrong",
+            texto: formatarAtributoClassico(palpiteTitulos)
+        };
+    }
+
+    if (palpiteTitulos === corretoTitulos) {
+        return { classe: "correct", texto: formatarAtributoClassico(palpiteTitulos) };
+    }
 
     const nomesPalpite = extrairNomesTitulos(palpiteTitulos);
     const nomesCorreto = extrairNomesTitulos(corretoTitulos);
 
     const temCoincidencia = nomesPalpite.some(titulo => nomesCorreto.includes(titulo));
-    if (temCoincidencia) return { classe: "partial", texto: palpiteTitulos };
+    if (temCoincidencia) return { classe: "partial", texto: formatarAtributoClassico(palpiteTitulos) };
 
-    return { classe: "wrong", texto: palpiteTitulos };
+    return { classe: "wrong", texto: formatarAtributoClassico(palpiteTitulos) };
 }
 
 function dispararConfetes() {

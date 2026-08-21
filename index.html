@@ -94,11 +94,22 @@
                             <span id="homeProgressTitle" class="home-progress-kicker">TIMÃODLE DO DIA</span>
                             <p id="homeProgressMessage">Quatro desafios esperam por você.</p>
                         </div>
-                        <strong id="homeProgressValue">0/4</strong>
+                        <div class="home-progress-score">
+                            <strong id="homeProgressValue">0/4</strong>
+                            <span id="homeProgressUnit">CONCLUÍDOS</span>
+                        </div>
                     </div>
                     <div id="homeProgressBar" class="home-progress-track" role="progressbar" aria-label="Desafios concluídos hoje" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0">
                         <span id="homeProgressFill"></span>
                     </div>
+                    <div id="homeCompletionSummary" class="home-completion-summary hidden" aria-label="Resumo dos desafios concluídos" aria-live="polite">
+                        <div><span>CLÁSSICO</span><strong id="homeCompletionClassic">—</strong></div>
+                        <div><span>FOTO</span><strong id="homeCompletionPhoto">—</strong></div>
+                        <div><span>MAIS OU MENOS</span><strong id="homeCompletionMoreLess">—</strong></div>
+                        <div><span>ONZE INICIAL</span><strong id="homeCompletionLineup">—</strong></div>
+                    </div>
+                    <!-- Espaço reservado para o compartilhamento unificado em uma etapa futura. -->
+                    <div id="homeCompletionActions" class="home-completion-actions hidden"></div>
                 </section>
 
                 <div class="mode-buttons-container">

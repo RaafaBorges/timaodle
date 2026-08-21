@@ -460,12 +460,27 @@ input:focus-visible {
     line-height: 1.35;
 }
 
-.home-progress-heading > strong {
+.home-progress-score {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.home-progress-score strong {
     flex-shrink: 0;
     color: var(--gold);
     font-family: var(--font-display);
     font-size: 30px;
     line-height: 1;
+}
+
+.home-progress-score span {
+    margin-top: 3px;
+    color: var(--ink-muted);
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 1px;
 }
 
 .home-progress-track {
@@ -489,6 +504,66 @@ input:focus-visible {
 .home-progress-card.is-complete {
     border-color: var(--gold);
     box-shadow: inset 3px 0 0 var(--gold);
+}
+
+.home-progress-card.is-complete .home-progress-kicker {
+    color: var(--gold);
+}
+
+.home-completion-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 13px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+}
+
+.home-completion-summary > div {
+    min-width: 0;
+    padding: 8px 9px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-s);
+}
+
+.home-completion-summary span,
+.home-completion-summary strong {
+    display: block;
+}
+
+.home-completion-summary span {
+    overflow: hidden;
+    color: var(--ink-muted);
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.65px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.home-completion-summary strong {
+    margin-top: 3px;
+    overflow-wrap: anywhere;
+    color: var(--ink);
+    font-size: 11px;
+    line-height: 1.25;
+}
+
+.home-completion-actions:not(.hidden) {
+    display: flex;
+    justify-content: center;
+    margin-top: 12px;
+}
+
+.home-progress-card.celebrate-once {
+    animation: home-completion-reveal 0.7s ease-out;
+}
+
+@keyframes home-completion-reveal {
+    0% { transform: scale(0.97); opacity: 0.72; }
+    55% { transform: scale(1.015); box-shadow: 0 0 24px rgba(212, 175, 55, 0.25), inset 3px 0 0 var(--gold); }
+    100% { transform: scale(1); opacity: 1; }
 }
 
 .mode-progress-status {
@@ -539,7 +614,7 @@ input:focus-visible {
         padding: 12px 13px;
     }
 
-    .home-progress-heading > strong {
+    .home-progress-score strong {
         font-size: 27px;
     }
 
@@ -572,6 +647,20 @@ input:focus-visible {
 
     .mode-progress-status span {
         font-size: 10.5px;
+    }
+
+    .home-completion-summary {
+        gap: 6px;
+    }
+
+    .home-completion-summary > div {
+        padding: 7px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-progress-card.celebrate-once {
+        animation: none;
     }
 }
 

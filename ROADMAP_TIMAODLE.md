@@ -1,6 +1,6 @@
 # TIMÃODLE --- ROADMAP E CONTEXTO DO PROJETO
 
-**Versão do documento:** 2.0\
+**Versão do documento:** 2.2\
 **Data:** 20/08/2026\
 **Projeto:** Timãodle\
 **Objetivo deste arquivo:** servir como documento de contexto para
@@ -131,6 +131,7 @@ Mecânica principal:
 -   [x] Compartilhamento
 -   [x] Contador diário
 -   [x] Jogador de ontem
+-   [x] Fallback visual para atributos históricos ausentes
 
 ------------------------------------------------------------------------
 
@@ -504,6 +505,7 @@ Prioridade máxima.
 ``` text
 [x] Camada versionada de histórico e progresso diário
 [x] Progresso diário integrado na Home
+[x] Conclusão visual 4/4
 [ ] Estatísticas gerais
 [ ] Sequência de vitórias
 [ ] Melhor sequência
@@ -1024,7 +1026,8 @@ Estrutura resumida por dia:
 - `photo`: `started`, `completed`, `outcome`, `attempts`;
 - `moreLess`: `started`, `completed`, `outcome`, `hits`, `rounds`;
 - `lineup`: `started`, `completed`, `outcome`, `phase`, `resolved`, `total`, `errors`, `exactScore`;
-- `complete`: conclusão dos quatro modos.
+- `complete`: conclusão dos quatro modos;
+- `completionCelebrated`: controla a celebração única do dia.
 
 Testado:
 - `node --check script.js` e `git diff --check` sem erros;
@@ -1086,3 +1089,74 @@ Pendências:
 
 Próximo passo:
 - implementar a conclusão visual 4/4 e, depois, evoluir para streak, estatísticas e compartilhamento unificado.
+
+
+## 20/08/2026 — Conclusão visual diária 4/4
+
+Implementado:
+- estado especial “TIMÃODLE DO DIA CONCLUÍDO” com `4/4 DESAFIOS` na Home;
+- resumo persistente e sem respostas dos quatro modos;
+- métricas seguras: tentativas do Clássico e Foto, acertos do Mais ou Menos e erros do Onze Inicial;
+- animação curta em preto, branco e dourado, com respeito a `prefers-reduced-motion`;
+- campo `completionCelebrated` no resumo diário de `timaodle_history_v1`;
+- celebração consumida somente quando a Home está visível, permitindo que o quarto modo termine antes do retorno;
+- celebração exibida uma única vez por data, sem repetição após F5;
+- estrutura reservada e oculta para uma futura ação de compartilhamento unificado;
+- layout do resumo em grade responsiva, incluindo ajustes para 480 px e 360 px.
+
+Testado:
+- transição automatizada de `3/4` para `4/4`;
+- título, placar e resumo persistente após conclusão;
+- métricas seguras dos quatro modos;
+- conclusão enquanto a Home está oculta e celebração no retorno;
+- persistência de `completionCelebrated` e ausência de nova celebração equivalente ao F5;
+- troca de data retornando progresso `0/4`;
+- `node --check script.js` sem erros;
+- `git diff --check` sem erros de whitespace;
+- estrutura CSS e breakpoints de mobile revisados estaticamente.
+
+Pendências:
+- validar visualmente a animação e o card em navegadores desktop e mobile reais;
+- streak, estatísticas integradas e compartilhamento unificado continuam futuros;
+- calendário permanece fora do escopo atual.
+
+Próximo passo:
+- implementar o streak diário integrado usando o histórico versionado, sem depender das estatísticas legadas do Clássico.
+
+
+## 20/08/2026 — Clássico: atributos ausentes e valores zero
+
+Implementado:
+- fallback visual `—` para atributos `null`, `undefined` ou strings vazias;
+- valores numéricos `0` preservados explicitamente como informação válida;
+- tratamento central aplicado às comparações de texto, números e títulos do Clássico;
+- comparações com um lado ausente não exibem setas numéricas enganosas;
+- comparação com ambos os lados ausentes preserva a classe visual anterior, mas agora mostra `—`;
+- mecânica, cores, saves, histórico v1, progresso 4/4 e compartilhamento preservados;
+- `jogadores.json` mantido sem alterações.
+
+Auditoria do banco:
+- 156 jogadores analisados;
+- 20 jogadores possuem pelo menos um campo `null`; não existem campos ausentes nem strings vazias nos atributos auditados;
+- `jogos` é o atributo mais afetado, com 20 valores `null`;
+- estreia, pé, títulos, gols e assistências possuem 19 valores `null` cada;
+- existem 23 jogadores com `gols: 0` e 53 com `assistencias: 0`;
+- o fluxo anterior não usava `valor || ""` e já preservava zeros, mas não tinha fallback explícito para valores ausentes.
+
+Testado:
+- Fábio Costa com os cinco atributos históricos `null`, todos exibidos como `—`;
+- jogador com `gols: 0`;
+- jogador com `assistencias: 0`;
+- comparação entre campo ausente e campo preenchido;
+- jogador com todos os campos do Clássico preenchidos;
+- `node --check script.js` sem erros;
+- `git diff --check` sem erros de whitespace;
+- `jogadores.json` validado e confirmado sem alterações.
+
+Pendências:
+- os valores históricos ausentes continuam aguardando validação antes de qualquer alteração no banco;
+- teste visual manual do tabuleiro em navegador real;
+- streak diário continua como próxima funcionalidade planejada.
+
+Próximo passo:
+- implementar o streak diário integrado usando `timaodle_history_v1`.
