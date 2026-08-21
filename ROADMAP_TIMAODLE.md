@@ -1520,3 +1520,101 @@ Pendências:
 
 Próximo passo:
 - concluir a v2.6 com testes permanentes de histórico/streak/estatísticas e revisão final de hardening antes da consolidação responsiva da v2.7.
+
+
+## 21/08/2026 — v2.6: polimento de UX do Mais ou Menos
+
+Implementado:
+- avanço automático após cada resposta, preservando o feedback de acerto, erro ou empate por 1,5 segundo;
+- remoção do botão “Próxima rodada”, do listener e do estilo exclusivo que ficaram desnecessários;
+- feedback mais direto com os textos `✓ ACERTOU — ERA MAIS/MENOS` e `✕ ERROU — ERA MAIS/MENOS`, mantendo a revelação do valor e as cores existentes;
+- bloqueio imediato dos botões e trava lógica durante a transição, evitando duplo clique, escolhas alternadas rápidas e nova ativação por teclado;
+- timer único e controlado, cancelado ao voltar para a Home ou reinicializar o modo;
+- persistência da resposta, rodada, acertos e histórico antes do início do timer, mantendo o F5 coerente sem alterar o formato do save;
+- rodada 10 permanece com o feedback por 1,5 segundo e abre diretamente o resultado final, sem criar rodada 11;
+- transição leve de 200 ms na entrada da rodada, desativada por `prefers-reduced-motion` sem remover o tempo de leitura;
+- algoritmo v2, seed, plano 3/4/3, sequência, snapshots, 10 rodadas e meta de 7 preservados.
+
+Testado:
+- fluxos de acerto e erro nas direções MAIS e MENOS;
+- bloqueio de duplo clique, alternância rápida e ativação por teclado durante a pausa;
+- cancelamento ao sair para a Home e ao reinicializar o modo;
+- recuperação coerente por F5 com o estado já persistido;
+- transição da rodada 9 para 10, vitória com 7+ e derrota com menos de 7;
+- atualização do histórico diário, estatísticas e progresso 4/4 pelo salvamento existente;
+- reduced motion verificado na regra CSS;
+- `node tests/storage.test.js`;
+- `node --check storage-normalizers.js`;
+- `node --check script.js`;
+- `git diff --check`;
+- JSONs confirmados sem alterações.
+
+Pendências:
+- validar o ritmo de 1,5 segundo e a transição em navegador e dispositivos reais;
+- concluir os testes permanentes de histórico, streak e estatísticas previstos para a v2.6;
+- autocompletes com semântica ARIA completa permanecem planejados para a v2.7.
+
+Próximo passo:
+- concluir a v2.6 com testes permanentes de histórico/streak/estatísticas e revisão final de hardening.
+
+
+## 21/08/2026 — v2.6: polimento visual e textual do feedback do Mais ou Menos
+
+Implementado:
+- linguagem do overlay reformulada para `ACERTOU!` ou `QUASE!`, seguida de uma frase natural com jogador e direção correta;
+- `MAIS`/`MENOS` destacado na cor do estado e número de jogos destacado em dourado;
+- composição centralizada com ícone, título, nome legível e informação numérica hierarquizada;
+- fundo preto translúcido com blur leve, deixando verde/vermelho apenas no contorno e nos detalhes de estado;
+- barra inferior discreta esvazia durante os mesmos 1,5 segundo do avanço automático;
+- animação de entrada reduzida para 180 ms e desativada, junto da barra, por `prefers-reduced-motion`;
+- frase exclusiva para tecnologia assistiva dentro do `aria-live`, sem depender da cor ou da concatenação dos elementos decorativos;
+- timer, bloqueio de resposta, cancelamento, F5, save, histórico, estatísticas, rodada 10 e algoritmo v2 preservados.
+
+Testado:
+- conteúdo de acerto MAIS/MENOS e erro MAIS/MENOS;
+- nome curto e nome longo com quebra por palavras;
+- estrutura responsiva inspecionada para 360, 390, 412 e 430 px e desktop;
+- texto acessível e `aria-live` preservados;
+- barra sincronizada em 1,5 segundo e reduced motion sem animação;
+- rodada 10 preservada pelo fluxo existente;
+- `node tests/storage.test.js`;
+- `node --check script.js`;
+- `git diff --check`;
+- JSONs confirmados sem alterações.
+
+Pendências:
+- validar visualmente a leitura em 1,5 segundo e o comportamento com leitor de tela em navegador/dispositivo real;
+- permanecem as mesmas pendências funcionais da v2.6, sem nova feature ou avanço de versão.
+
+Próximo passo:
+- concluir a v2.6 com testes permanentes de histórico/streak/estatísticas e revisão final de hardening.
+
+
+## 21/08/2026 — v2.6: feedback sobreposto do Mais ou Menos
+
+Implementado:
+- feedback de acerto, erro e empate convertido em overlay temporário contido pelo card do Mais ou Menos;
+- camada escura translúcida mantém a rodada visível e atenuada, sem cobrir header/footer ou ocupar espaço no fluxo da página;
+- hierarquia visual separa resultado, direção correta e jogador/número de jogos;
+- verde e vermelho existentes preservados para os estados, com branco e dourado nos destaques;
+- o mesmo elemento `aria-live="polite"` foi preservado dentro do card;
+- timer único de 1,5 segundo, cancelamento, bloqueio de interação, persistência e avanço automático permaneceram inalterados;
+- animação curta do overlay continua desativada por `prefers-reduced-motion`.
+
+Testado:
+- acerto e erro com conteúdo e classes visuais correspondentes;
+- overlay absoluto limitado ao card e removido do fluxo da página;
+- estrutura responsiva inspecionada para 360, 390, 412 e 430 px e desktop;
+- saída durante o timer, rodada 10 e reduced motion preservados pela implementação existente;
+- `node tests/storage.test.js`;
+- `node --check storage-normalizers.js`;
+- `node --check script.js`;
+- `git diff --check`;
+- JSONs confirmados sem alterações.
+
+Pendências:
+- validar contraste, ritmo e enquadramento do overlay em navegador e dispositivos reais;
+- permanecem as mesmas pendências funcionais da v2.6, sem nova feature ou avanço de versão.
+
+Próximo passo:
+- concluir a v2.6 com testes permanentes de histórico/streak/estatísticas e revisão final de hardening.

@@ -3952,7 +3952,6 @@ body {
 
 #maisMenosView .game-sticky-top,
 #maisMenosView .mm-card,
-#maisMenosView .mm-round-feedback,
 #maisMenosView .mm-result-card {
     width: 100%;
     max-width: 520px;
@@ -4248,44 +4247,118 @@ body {
 }
 
 #maisMenosView .mm-round-feedback {
+    --mm-feedback-accent: var(--gold);
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    max-width: none;
+    margin: 0;
+    padding: clamp(18px, 6vw, 36px);
+    border: 0;
+    border-radius: inherit;
+    background: rgba(8, 8, 7, 0.91);
+    box-shadow: inset 0 0 0 2px var(--mm-feedback-accent);
+    text-align: center;
+    pointer-events: auto;
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+    animation: mm-feedback-in 0.18s ease-out;
+}
+
+#maisMenosView .mm-round-feedback::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: var(--mm-feedback-accent);
+    transform-origin: left center;
+    animation: mm-feedback-timer 1.5s linear forwards;
+}
+
+#maisMenosView .mm-feedback-visual {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
-    padding: 13px 16px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-m);
-    text-align: center;
-    animation: mm-feedback-in 0.24s ease-out;
+    gap: clamp(5px, 1.5vw, 9px);
+    width: 100%;
 }
 
-#maisMenosView .mm-round-feedback strong {
-    color: #fff;
-    font-size: 13px;
+#maisMenosView .mm-feedback-icon {
+    color: var(--mm-feedback-accent);
+    font-size: clamp(35px, 9vw, 54px);
     font-weight: 900;
-    letter-spacing: 0.4px;
+    line-height: 0.8;
 }
 
-#maisMenosView .mm-round-feedback span {
-    color: #d0cdc4;
-    font-size: 12px;
-    font-weight: 650;
+#maisMenosView .mm-feedback-title {
+    color: var(--mm-feedback-accent);
+    font-family: var(--font-display);
+    font-size: clamp(29px, 7.5vw, 44px);
+    font-weight: 900;
+    letter-spacing: 1px;
+    line-height: 1;
+}
+
+#maisMenosView .mm-feedback-comparison {
+    max-width: 30ch;
+    color: #fff;
+    font-size: clamp(14px, 3.8vw, 18px);
+    font-weight: 700;
+    line-height: 1.3;
+    overflow-wrap: break-word;
+    text-wrap: balance;
+}
+
+#maisMenosView .mm-feedback-comparison em {
+    color: #fff;
+    font-style: normal;
+    font-weight: 900;
+}
+
+#maisMenosView .mm-feedback-comparison b {
+    color: var(--mm-feedback-accent);
+    font-weight: 900;
+    letter-spacing: 0.5px;
+}
+
+#maisMenosView .mm-feedback-stat {
+    color: #d7d4ca;
+    font-size: clamp(12px, 3.2vw, 15px);
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+#maisMenosView .mm-feedback-stat b {
+    color: var(--gold);
+    font-size: 1.35em;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+}
+
+#maisMenosView .mm-feedback-announcement {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 #maisMenosView .mm-round-feedback.correct,
 #maisMenosView .mm-round-feedback.tie {
-    border-color: var(--ok-line);
-    background: rgba(38, 58, 45, 0.76);
+    --mm-feedback-accent: var(--ok-line);
 }
 
 #maisMenosView .mm-round-feedback.wrong {
-    border-color: var(--bad-line);
-    background: rgba(96, 34, 31, 0.72);
-}
-
-#maisMenosView .mm-next-btn {
-    width: min(300px, 100%);
-    min-height: 48px;
+    --mm-feedback-accent: var(--bad-line);
 }
 
 #maisMenosView.resultado-final .mm-card {
@@ -4400,7 +4473,21 @@ body {
 }
 
 @keyframes mm-feedback-in {
-    from { transform: translateY(-5px); opacity: 0; }
+    from { transform: scale(0.985); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes mm-feedback-timer {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+}
+
+#maisMenosView .mm-card.mm-round-enter {
+    animation: mm-round-enter 0.2s ease-out;
+}
+
+@keyframes mm-round-enter {
+    from { transform: translateY(4px); opacity: 0.82; }
     to { transform: translateY(0); opacity: 1; }
 }
 
@@ -4539,7 +4626,9 @@ body {
 @media (prefers-reduced-motion: reduce) {
     #maisMenosView .mm-player-candidate.answered,
     #maisMenosView .mm-player-stat.revealed,
-    #maisMenosView .mm-round-feedback {
+    #maisMenosView .mm-round-feedback,
+    #maisMenosView .mm-round-feedback::after,
+    #maisMenosView .mm-card.mm-round-enter {
         animation: none;
     }
 }

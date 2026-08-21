@@ -1834,6 +1834,7 @@ const RODADAS_MM = 10;
 const MIN_ACERTOS_MM = 7;
 const CHAVE_ESTADO_MM = "timaodle_mm_daily_state";
 const VERSAO_ALGORITMO_MM = 2;
+const ATRASO_AVANCO_MM = 1500;
 const PLANO_DIFICULDADES_MM = ["facil", "facil", "facil", "media", "media", "media", "media", "dificil", "dificil", "dificil"];
 
 // Elementos da interface
@@ -1859,8 +1860,8 @@ const mmCaptionRoundEl = document.getElementById("mmCaptionRound");
 const mmBtnMenos = document.getElementById("mmBtnMenos");
 const mmBtnMais = document.getElementById("mmBtnMais");
 const mmRoundResultEl = document.getElementById("mmRoundResult");
-const mmNextBtn = document.getElementById("mmNextBtn");
 const mmEndMessageEl = document.getElementById("mmEndMessage");
+const mmCardEl = maisMenosView.querySelector(".mm-card");
 
 let sequenciaMM = [];
 let referenciaAtualMM = null;
@@ -1869,6 +1870,8 @@ let acertosMM = 0;
 let historicoMM = [];
 let mmAtivo = true;
 let estadoMMDiario = null;
+let timerAvancoMM = null;
+let transicaoMMAtiva = false;
 
 // Gerador de números pseudoaleatórios com semente (determinístico —
 // mesma semente sempre gera a mesma sequência).
@@ -2140,13 +2143,40 @@ function flagDoJogador(nacionalidade) {
     return FLAGS_NACIONALIDADE[nacionalidade] || "🌎";
 }
 
+function cancelarAvancoAutomaticoMM() {
+    if (timerAvancoMM !== null) {
+        clearTimeout(timerAvancoMM);
+        timerAvancoMM = null;
+    }
+    transicaoMMAtiva = false;
+}
+
+function agendarAvancoAutomaticoMM(finalizou) {
+    if (timerAvancoMM !== null) clearTimeout(timerAvancoMM);
+
+    timerAvancoMM = setTimeout(() => {
+        timerAvancoMM = null;
+        transicaoMMAtiva = false;
+
+        // Sair do modo cancela o timer, mas esta guarda também impede uma
+        // mutação tardia caso a view tenha sido ocultada por outro fluxo.
+        if (maisMenosView.classList.contains("hidden")) return;
+
+        if (finalizou) {
+            mostrarFimDeJogoMM(true);
+        } else if (mmAtivo && estadoMMDiario?.status === "playing") {
+            renderizarRodadaMM();
+        }
+    }, ATRASO_AVANCO_MM);
+}
+
 function renderizarRodadaMM() {
+    transicaoMMAtiva = false;
     mmRoundLabelEl.innerText = `Rodada ${rodadaAtualMM + 1}/${RODADAS_MM}`;
     mmCaptionRoundEl.innerText = rodadaAtualMM + 1;
     mmDividerTextEl.innerText = `FEZ MAIS OU MENOS ${rotuloStatMM().toUpperCase()}?`;
     mmRoundResultEl.classList.add("hidden");
     mmRoundResultEl.classList.remove("correct", "wrong", "tie");
-    mmNextBtn.classList.add("hidden");
     mmCandRowEl.classList.remove("answered", "answer-correct", "answer-wrong");
     mmCandStatEl.classList.remove("revealed");
 
@@ -2173,9 +2203,14 @@ function renderizarRodadaMM() {
     mmBtnMais.classList.remove("correct-answer");
 
     renderizarDotsMM();
+
+    mmCardEl.classList.remove("mm-round-enter");
+    void mmCardEl.offsetWidth;
+    mmCardEl.classList.add("mm-round-enter");
 }
 
 function iniciarDesafioMMDoDia() {
+    cancelarAvancoAutomaticoMM();
     const hoje = getDataLocalString();
     mmEndMessageEl.classList.add("hidden");
     maisMenosView.classList.remove("resultado-final");
@@ -2253,7 +2288,8 @@ function iniciarDesafioMMDoDia() {
 }
 
 function responderMM(direcaoEscolhida) {
-    if (!mmAtivo) return;
+    if (!mmAtivo || transicaoMMAtiva) return;
+    transicaoMMAtiva = true;
 
     const candidato = sequenciaMM[rodadaAtualMM + 1];
     const statRef = referenciaAtualMM[CAMPO_STAT_MM];
@@ -2282,13 +2318,34 @@ function responderMM(direcaoEscolhida) {
     mmRoundResultEl.classList.remove("hidden");
     if (empate) {
         mmRoundResultEl.classList.add("tie");
-        mmRoundResultEl.innerHTML = `<strong>EMPATE</strong><span>Os dois têm ${statCand} ${rotuloStatMM()}. Qualquer opção contou como acerto.</span>`;
+        mmRoundResultEl.innerHTML = `
+            <span class="mm-feedback-announcement">Acertou. ${candidato.nome} tinha o mesmo número de jogos. ${statCand} jogos pelo Corinthians.</span>
+            <span class="mm-feedback-visual" aria-hidden="true">
+                <span class="mm-feedback-icon">✓</span>
+                <strong class="mm-feedback-title">ACERTOU!</strong>
+                <span class="mm-feedback-comparison"><em>${candidato.nome}</em> tinha o mesmo número de jogos</span>
+                <span class="mm-feedback-stat"><b>${statCand}</b> jogos pelo Corinthians</span>
+            </span>`;
     } else if (correto) {
         mmRoundResultEl.classList.add("correct");
-        mmRoundResultEl.innerHTML = `<strong>ACERTOU — ERA ${direcaoCorreta.toUpperCase()}</strong><span>${candidato.nome} tem ${statCand} ${rotuloStatMM()} pelo Corinthians.</span>`;
+        mmRoundResultEl.innerHTML = `
+            <span class="mm-feedback-announcement">Acertou. ${candidato.nome} tinha ${direcaoCorreta} jogos. ${statCand} jogos pelo Corinthians.</span>
+            <span class="mm-feedback-visual" aria-hidden="true">
+                <span class="mm-feedback-icon">✓</span>
+                <strong class="mm-feedback-title">ACERTOU!</strong>
+                <span class="mm-feedback-comparison"><em>${candidato.nome}</em> tinha <b>${direcaoCorreta.toUpperCase()}</b> jogos</span>
+                <span class="mm-feedback-stat"><b>${statCand}</b> jogos pelo Corinthians</span>
+            </span>`;
     } else {
         mmRoundResultEl.classList.add("wrong");
-        mmRoundResultEl.innerHTML = `<strong>A RESPOSTA ERA ${direcaoCorreta.toUpperCase()}</strong><span>${candidato.nome} tem ${statCand} ${rotuloStatMM()} pelo Corinthians.</span>`;
+        mmRoundResultEl.innerHTML = `
+            <span class="mm-feedback-announcement">Quase. ${candidato.nome} tinha ${direcaoCorreta} jogos. ${statCand} jogos pelo Corinthians.</span>
+            <span class="mm-feedback-visual" aria-hidden="true">
+                <span class="mm-feedback-icon">✕</span>
+                <strong class="mm-feedback-title">QUASE!</strong>
+                <span class="mm-feedback-comparison"><em>${candidato.nome}</em> tinha <b>${direcaoCorreta.toUpperCase()}</b> jogos</span>
+                <span class="mm-feedback-stat"><b>${statCand}</b> jogos pelo Corinthians</span>
+            </span>`;
     }
 
     // O jogador de referência sempre avança pro próximo candidato,
@@ -2305,17 +2362,16 @@ function responderMM(direcaoEscolhida) {
         estadoMMDiario.status = acertosMM >= MIN_ACERTOS_MM ? "won" : "lost";
         salvarEstadoMM(estadoMMDiario);
         mmAtivo = false;
-        setTimeout(() => mostrarFimDeJogoMM(true), 900);
+        agendarAvancoAutomaticoMM(true);
     } else {
         estadoMMDiario.status = "playing";
         salvarEstadoMM(estadoMMDiario);
-        mmNextBtn.classList.remove("hidden");
+        agendarAvancoAutomaticoMM(false);
     }
 }
 
 function mostrarFimDeJogoMM(comAnimacao) {
     mmRoundResultEl.classList.add("hidden");
-    mmNextBtn.classList.add("hidden");
     mmEndMessageEl.classList.remove("hidden");
     maisMenosView.classList.add("resultado-final");
 
@@ -2338,9 +2394,9 @@ function mostrarFimDeJogoMM(comAnimacao) {
 
 mmBtnMenos.addEventListener("click", () => responderMM("menos"));
 mmBtnMais.addEventListener("click", () => responderMM("mais"));
-mmNextBtn.addEventListener("click", renderizarRodadaMM);
 
 btnPlayMaisMenos.addEventListener("click", async () => {
+    cancelarAvancoAutomaticoMM();
     homeView.classList.add("hidden");
     maisMenosView.classList.remove("hidden");
 
@@ -2353,6 +2409,7 @@ btnPlayMaisMenos.addEventListener("click", async () => {
 });
 
 backHomeBtnMM.addEventListener("click", () => {
+    cancelarAvancoAutomaticoMM();
     maisMenosView.classList.add("hidden");
     homeView.classList.remove("hidden");
     renderizarProgressoHome();
