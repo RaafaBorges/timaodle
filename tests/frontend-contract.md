@@ -66,3 +66,14 @@ node tests/viewport-smoke.js
 - Enquadramento, fallback e estados de revelação permanecem proprietários do modo.
 - Busca, autocomplete, barra de status e mensagem final consomem a base compartilhada sem overrides responsivos.
 - O tutorial continua sob a infraestrutura comum e acessível de modais, sem CSS duplicado no Foto.
+
+## Modo Clássico
+
+- `#gameView` delimita tabuleiro, tentativas, células, animações e estados de comparação.
+- Desktop preserva oito colunas na ordem Jogador, Posição, Nacionalidade, Estreia, Pé,
+  Títulos, Gols e Assistências.
+- Em até 480 px, o cabeçalho é ocultado e cada tentativa vira uma grade de duas colunas;
+  Jogador e Títulos ocupam a largura completa.
+- As labels mobile permanecem ligadas à ordem das oito células por `nth-child`.
+- Células usam quebra normal de palavras, com `overflow-wrap: break-word` apenas como proteção.
+- Busca, autocomplete, status, mensagem final e compartilhamento continuam na base compartilhada.

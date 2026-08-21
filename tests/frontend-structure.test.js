@@ -118,6 +118,26 @@ test("Modo Foto preserva layout fluido e estados visuais próprios", () => {
     }
 });
 
+test("Modo Clássico preserva oito colunas no desktop e duas no mobile", () => {
+    const desktopGrid = cssRule("#gameView .board-header,\n#gameView .attempt-row");
+    assert.match(desktopGrid, /grid-template-columns:\s*1\.3fr 1fr 1fr 0\.7fr 1\.15fr 1\.6fr 0\.7fr 0\.75fr/);
+    assert.match(cssRule("#gameView .cell"), /word-break:\s*normal/);
+    assert.match(cssRule("#gameView .cell"), /overflow-wrap:\s*break-word/);
+
+    const mobileStart = css.indexOf("/* No mobile, Jogador e Títulos");
+    const mobileEnd = css.indexOf("/* ==========================================================================\n   MODAL", mobileStart);
+    const mobileCss = css.slice(mobileStart, mobileEnd);
+    assert.match(mobileCss, /@media\s*\(max-width:\s*480px\)/);
+    assert.match(mobileCss, /grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
+    assert.match(mobileCss, /nth-child\(1\)[\s\S]*nth-child\(6\)[\s\S]*grid-column:\s*1\s*\/\s*-1/);
+    for (const label of ["JOGADOR", "POSIÇÃO", "NACIONALIDADE", "ESTREIA", "PÉ", "TÍTULOS", "GOLS", "ASSISTÊNCIAS"]) {
+        assert.ok(mobileCss.includes(`content: "${label}"`), label);
+    }
+    for (const state of ["correct", "partial", "wrong"]) {
+        assert.ok(css.includes(`#gameView .cell.${state}`), state);
+    }
+});
+
 test("viewports canônicos da v2.7 permanecem formalizados", () => {
     assert.deepEqual(contract.viewports.map(viewport => viewport.width), [360, 390, 412, 430, 480, 768, 1440, 412]);
     assert.ok(contract.viewports.some(viewport => viewport.height <= 600), "viewport baixo ausente");

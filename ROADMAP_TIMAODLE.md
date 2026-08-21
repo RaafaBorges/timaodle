@@ -1934,3 +1934,49 @@ Pendências:
 
 Próximo passo:
 - validar visualmente o Modo Foto e consolidar o próximo modo em uma etapa isolada.
+
+
+## 21/08/2026 — v2.7: consolidação individual do Modo Clássico
+
+Implementado:
+- estilos exclusivos do Clássico reunidos em uma área proprietária sob `#gameView`;
+- grade desktop de oito colunas preservada com as mesmas proporções e ordem de atributos;
+- grade mobile de duas colunas movida para junto da base do modo, sem alterar o breakpoint
+  de 480 px nem a dependência segura da ordem das células;
+- Jogador e Títulos continuam ocupando a largura completa no mobile;
+- células passaram a declarar explicitamente quebra normal por palavras, preservando
+  `overflow-wrap: break-word` como proteção para conteúdo excepcional;
+- estados `correct`, `partial`, `wrong`, animações, setas e fallback `—` preservados;
+- busca, autocomplete, barra de status, resultado e compartilhamento continuam usando
+  os componentes compartilhados sem overrides redundantes;
+- JavaScript, HTML, persistência, mecânicas e JSONs permaneceram intactos.
+
+Limpeza:
+- seletores globais exclusivos de tabuleiro, tentativas e células substituídos por
+  equivalentes sob `#gameView`;
+- bloco responsivo do Clássico removido da seção responsiva genérica e incorporado à
+  área do modo;
+- nenhuma propriedade visual residual ou regra do shell, Home, Foto, MM ou Onze Inicial removida.
+
+Medição estática:
+- blocos/regras proprietários do Clássico: 28 antes e 29 depois, incluindo o novo bloco
+  estrutural de propriedade do modo;
+- 12 seletores globais exclusivos substituídos por seletores escopados em `#gameView`;
+- media queries específicas: duas antes e duas depois; mobile e movimento reduzido são
+  exceções necessárias e não foram fragmentadas.
+
+Testado:
+- baseline completa aprovada antes da alteração;
+- contrato estrutural ampliado para oito colunas, grade mobile, labels, quebra de palavras
+  e três estados de comparação;
+- testes automatizados e validações estáticas registrados no relatório desta etapa.
+
+Pendências:
+- validar visualmente os estados inicial, 1, 3, 6+ e muitas tentativas em navegador real;
+- confirmar títulos longos, fallback `—`, gols/assistências zero, cores, setas,
+  autocomplete, compartilhar e scroll nos viewports canônicos;
+- Mais ou Menos e Onze Inicial ainda aguardam consolidação individual;
+- a v2.7 permanece em andamento.
+
+Próximo passo:
+- validar visualmente o Clássico e consolidar o Mais ou Menos em uma etapa isolada.

@@ -2112,7 +2112,14 @@ body.modal-open .page-content {
     transform: translateY(1px);
 }
 
-/* TABULEIRO DE PALPITES */
+/* ==========================================================================
+   MODO CLÁSSICO
+   Layout, tabuleiro desktop, tentativas, comparações e grade mobile.
+   ========================================================================== */
+#gameView {
+    min-width: 0;
+}
+
 /* Bloco fixo no topo da área de jogo: status + busca + cabeçalho das
    colunas ficam sempre visíveis, tipo cabeçalho de planilha, enquanto
    só a lista de tentativas rola por baixo. */
@@ -2128,14 +2135,14 @@ body.modal-open .page-content {
     padding-bottom: 10px;
 }
 
-.board-header,
-.attempt-row {
+#gameView .board-header,
+#gameView .attempt-row {
     display: grid;
     grid-template-columns: 1.3fr 1fr 1fr 0.7fr 1.15fr 1.6fr 0.7fr 0.75fr;
     gap: 6px;
 }
 
-.board-header .col {
+#gameView .board-header .col {
     background-color: transparent;
     padding: 6px 2px;
     text-align: center;
@@ -2152,14 +2159,14 @@ body.modal-open .page-content {
     text-transform: uppercase;
 }
 
-.board-body {
+#gameView .board-body {
     display: flex;
     flex-direction: column;
     gap: 8px;
     width: 100%;
 }
 
-.cell {
+#gameView .cell {
     padding: 12px 8px;
     text-align: center;
     font-size: 13px;
@@ -2170,7 +2177,8 @@ body.modal-open .page-content {
     align-items: center;
     justify-content: center;
     min-height: 64px;
-    word-break: break-word;
+    word-break: normal;
+    overflow-wrap: break-word;
     background-color: var(--surface);
     backface-visibility: hidden;
     perspective: 1000px;
@@ -2179,18 +2187,18 @@ body.modal-open .page-content {
     cursor: default;
 }
 
-.cell-text {
+#gameView .cell-text {
     line-height: 1.35;
 }
 
 /* Coluna de Títulos agora tem mais largura própria; a fonte volta
    perto do padrão das demais, só um pouco menor por precaução. */
-.attempt-row .cell:nth-child(6) .cell-text {
+#gameView .attempt-row .cell:nth-child(6) .cell-text {
     font-size: 11.5px;
 }
 
 /* ANIMAÇÕES DAS CÉLULAS */
-.cell.reveal {
+#gameView .cell.reveal {
     animation: flip 0.5s ease-in-out forwards;
 }
 
@@ -2201,11 +2209,11 @@ body.modal-open .page-content {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .cell.reveal { animation: none; }
-    .shake { animation: none; }
+    #gameView .cell.reveal,
+    #gameView .shake { animation: none; }
 }
 
-.shake {
+#gameView .shake {
     animation: shake 0.4s ease-in-out;
 }
 
@@ -2216,22 +2224,89 @@ body.modal-open .page-content {
 }
 
 /* CORES DOS RESULTADOS — tons profundos, sem parecer alerta de sistema */
-.cell.correct {
+#gameView .cell.correct {
     background-color: var(--ok);
     color: #e9efe9;
     border-color: var(--ok-line);
 }
 
-.cell.partial {
+#gameView .cell.partial {
     background-color: var(--mid);
     color: #f5efe2;
     border-color: var(--mid-line);
 }
 
-.cell.wrong {
+#gameView .cell.wrong {
     background-color: var(--bad);
     color: #f3e9e9;
     border-color: var(--bad-line);
+}
+
+/* No mobile, Jogador e Títulos ocupam a largura total; os demais atributos
+   preservam a ordem do HTML em duas colunas. */
+@media (max-width: 480px) {
+    #gameView .board-header {
+        display: none;
+    }
+
+    #gameView .board-body {
+        gap: 12px;
+    }
+
+    #gameView .attempt-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 7px;
+        padding: 8px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-m);
+    }
+
+    #gameView .attempt-row .cell {
+        min-width: 0;
+        min-height: 66px;
+        padding: 9px 8px;
+        flex-direction: column;
+        gap: 5px;
+        font-size: 13px;
+        line-height: 1.4;
+        word-break: normal;
+        overflow-wrap: break-word;
+    }
+
+    #gameView .attempt-row .cell::before {
+        color: rgba(255, 255, 255, 0.76);
+        font-size: 8px;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: 0.65px;
+    }
+
+    #gameView .attempt-row .cell:nth-child(1),
+    #gameView .attempt-row .cell:nth-child(6) {
+        grid-column: 1 / -1;
+    }
+
+    #gameView .attempt-row .cell:nth-child(1)::before { content: "JOGADOR"; }
+    #gameView .attempt-row .cell:nth-child(2)::before { content: "POSIÇÃO"; }
+    #gameView .attempt-row .cell:nth-child(3)::before { content: "NACIONALIDADE"; }
+    #gameView .attempt-row .cell:nth-child(4)::before { content: "ESTREIA"; }
+    #gameView .attempt-row .cell:nth-child(5)::before { content: "PÉ"; }
+    #gameView .attempt-row .cell:nth-child(6)::before { content: "TÍTULOS"; }
+    #gameView .attempt-row .cell:nth-child(7)::before { content: "GOLS"; }
+    #gameView .attempt-row .cell:nth-child(8)::before { content: "ASSISTÊNCIAS"; }
+
+    #gameView .attempt-row .cell:nth-child(1) .cell-text {
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    #gameView .attempt-row .cell:nth-child(6) .cell-text {
+        max-width: 100%;
+        font-size: 12px;
+        line-height: 1.45;
+        white-space: normal;
+    }
 }
 
 /* ==========================================================================
@@ -2324,69 +2399,6 @@ body.modal-open .page-content {
    ========================================================================== */
 @media (max-width: 480px) {
     .logo-box h1 { font-size: 28px; }
-
-    #gameView .board-header {
-        display: none;
-    }
-
-    #gameView .board-body {
-        gap: 12px;
-    }
-
-    #gameView .attempt-row {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 7px;
-        padding: 8px;
-        background: var(--surface);
-        border: 1px solid var(--line);
-        border-radius: var(--radius-m);
-    }
-
-    #gameView .attempt-row .cell {
-        min-width: 0;
-        min-height: 66px;
-        padding: 9px 8px;
-        flex-direction: column;
-        gap: 5px;
-        font-size: 13px;
-        line-height: 1.4;
-        word-break: normal;
-        overflow-wrap: break-word;
-    }
-
-    #gameView .attempt-row .cell::before {
-        color: rgba(255, 255, 255, 0.76);
-        font-size: 8px;
-        font-weight: 800;
-        line-height: 1;
-        letter-spacing: 0.65px;
-    }
-
-    #gameView .attempt-row .cell:nth-child(1),
-    #gameView .attempt-row .cell:nth-child(6) {
-        grid-column: 1 / -1;
-    }
-
-    #gameView .attempt-row .cell:nth-child(1)::before { content: "JOGADOR"; }
-    #gameView .attempt-row .cell:nth-child(2)::before { content: "POSIÇÃO"; }
-    #gameView .attempt-row .cell:nth-child(3)::before { content: "NACIONALIDADE"; }
-    #gameView .attempt-row .cell:nth-child(4)::before { content: "ESTREIA"; }
-    #gameView .attempt-row .cell:nth-child(5)::before { content: "PÉ"; }
-    #gameView .attempt-row .cell:nth-child(6)::before { content: "TÍTULOS"; }
-    #gameView .attempt-row .cell:nth-child(7)::before { content: "GOLS"; }
-    #gameView .attempt-row .cell:nth-child(8)::before { content: "ASSISTÊNCIAS"; }
-
-    #gameView .attempt-row .cell:nth-child(1) .cell-text {
-        font-size: 14px;
-        font-weight: 700;
-    }
-
-    #gameView .attempt-row .cell:nth-child(6) .cell-text {
-        max-width: 100%;
-        font-size: 12px;
-        line-height: 1.45;
-        white-space: normal;
-    }
 }
 
 /* ==========================================================================
