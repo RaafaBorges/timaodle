@@ -2914,3 +2914,78 @@ Candidatos naturais para a próxima etapa, sem nova versão iniciada:
 - polimento de conteúdo e expansão segura do Onze Inicial;
 - novas partidas históricas após validação documental;
 - melhorias incrementais de retenção e evolução de produto.
+
+
+## 22/08/2026 — Onze Inicial: validação histórica das formações 4-2-3-1
+
+**Status: EM ANDAMENTO**
+
+Auditado, sem alterar `partidas.json`:
+- identificadas e confrontadas com fontes históricas as quatro partidas atualmente
+  declaradas como 4-2-3-1: Boca Juniors (2012), Vasco da Gama (2012), Palmeiras (2011)
+  e Palmeiras (2017);
+- Boca Juniors 2012, Vasco da Gama 2012 e Palmeiras 2017 possuem escalações coerentes
+  com as fichas consultadas e distribuição ofensiva suficientemente documentada para
+  uma correção futura de coordenadas;
+- Palmeiras 2011 requer revisão manual antes de qualquer correção: a escalação
+  histórica traz Paulo André e Liedson como titulares, enquanto o JSON atual registra
+  Chicão e Danilo;
+- a classificação tática nominal varia entre fontes (4-2-3-1, 4-4-1-1, 4-3-3 ou
+  4-5-1), mas os papéis e corredores permitem representar as três partidas coerentes
+  no modelo 4-2-3-1 usado pelo campo;
+- nenhuma escalação, formação, coordenada, mecânica ou arquivo de produção foi
+  alterado nesta auditoria.
+
+Resultado provisório:
+- **3 partidas PRONTAS PARA CORREÇÃO** de coordenadas em etapa separada;
+- **1 partida com REVISÃO MANUAL RECOMENDADA** por divergência de titulares;
+- **0 partidas SEM EVIDÊNCIA SUFICIENTE**;
+- a validação histórica das quatro partidas permanece **EM ANDAMENTO** e não está
+  marcada como concluída.
+
+Testado:
+- suíte permanente completa, storage, histórico, sintaxe de `script.js` e
+  `storage-normalizers.js`, além de `git diff --check`, aprovados antes da atualização
+  documental.
+
+Próximo passo:
+- revisar manualmente a escalação de Palmeiras 2011 e, após aprovação explícita,
+  aplicar em tarefa separada as correções de titulares e coordenadas recomendadas.
+
+
+## 22/08/2026 — Onze Inicial: correção das distribuições 4-2-3-1 validadas
+
+Implementado:
+- corrigida a linha ofensiva de Boca Juniors 2012 para Emerson Sheik centralizado à
+  frente e Alex, Danilo e Jorge Henrique distribuídos em 20/50/80 logo atrás;
+- corrigida a linha ofensiva de Vasco da Gama 2012 para Alex como referência central e
+  Emerson Sheik, Danilo e Jorge Henrique distribuídos em 20/50/80;
+- corrigida a linha ofensiva de Palmeiras 2017 para Jô centralizado à frente e Clayson,
+  Rodriguinho e Ángel Romero distribuídos em 20/50/80;
+- as três formações permaneceram declaradas como 4-2-3-1;
+- IDs, titulares, posições abreviadas, goleiros, defesas, volantes e demais dados
+  permaneceram inalterados.
+
+Validado:
+- `partidas.json` continua com 9 partidas, IDs preservados e exatamente 11 titulares em
+  cada uma;
+- validação semântica contra a versão anterior confirmou exclusivamente 12 jogadores
+  autorizados e 17 valores escalares de `top`/`left` modificados;
+- cada uma das três partidas agora possui um atacante em 12/50 e uma linha de três em
+  30/20, 30/50 e 30/80;
+- Palmeiras 2011 permaneceu integralmente inalterada;
+- suíte permanente, storage, histórico, sintaxe, três JSONs, frontend contract, IDs,
+  CSS balanceado e `git diff --check` aprovados;
+- saves continuam compatíveis porque IDs e nomes dos titulares não mudaram; o progresso
+  salvo por `partidaId`, jogadores descobertos e histórico integrado não é invalidado por
+  coordenadas visuais.
+
+Estado:
+- Boca Juniors 2012, Vasco da Gama 2012 e Palmeiras 2017: **CORRIGIDAS**;
+- validação histórica completa permanece **EM ANDAMENTO**;
+- Palmeiras 2011 continua pendente porque exige corrigir os titulares Chicão/Paulo André
+  e Danilo/Liedson antes de ajustar sua distribuição.
+
+Próximo passo:
+- revisar e aprovar explicitamente a correção de titulares e coordenadas de Palmeiras
+  2011 em uma tarefa separada.

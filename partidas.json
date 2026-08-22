@@ -59,25 +59,25 @@
         "nome": "Danilo",
         "posicao_abrev": "MEI",
         "top": 30,
-        "left": 65
+        "left": 50
       },
       {
         "nome": "Alex",
         "posicao_abrev": "MEI",
         "top": 30,
-        "left": 35
+        "left": 20
       },
       {
         "nome": "Emerson Sheik",
         "posicao_abrev": "ATA",
         "top": 12,
-        "left": 65
+        "left": 50
       },
       {
         "nome": "Jorge Henrique",
         "posicao_abrev": "ATA",
-        "top": 12,
-        "left": 35
+        "top": 30,
+        "left": 80
       }
     ]
   },
@@ -141,25 +141,25 @@
         "nome": "Danilo",
         "posicao_abrev": "MEI",
         "top": 30,
-        "left": 65
+        "left": 50
       },
       {
         "nome": "Alex",
         "posicao_abrev": "MEI",
-        "top": 30,
-        "left": 35
+        "top": 12,
+        "left": 50
       },
       {
         "nome": "Emerson Sheik",
         "posicao_abrev": "ATA",
-        "top": 12,
-        "left": 65
+        "top": 30,
+        "left": 20
       },
       {
         "nome": "Jorge Henrique",
         "posicao_abrev": "ATA",
-        "top": 12,
-        "left": 35
+        "top": 30,
+        "left": 80
       }
     ]
   },
@@ -633,25 +633,25 @@
         "nome": "Rodriguinho",
         "posicao_abrev": "MEI",
         "top": 30,
-        "left": 65
+        "left": 50
       },
       {
         "nome": "Clayson",
         "posicao_abrev": "MEI",
         "top": 30,
-        "left": 35
+        "left": 20
       },
       {
         "nome": "Ángel Romero",
         "posicao_abrev": "ATA",
-        "top": 12,
-        "left": 65
+        "top": 30,
+        "left": 80
       },
       {
         "nome": "Jô",
         "posicao_abrev": "ATA",
         "top": 12,
-        "left": 35
+        "left": 50
       }
     ]
   },
