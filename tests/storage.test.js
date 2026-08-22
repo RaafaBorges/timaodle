@@ -90,6 +90,59 @@ const currentLineup = storage.normalizeLineup({
 assert.equal(currentLineup.concluido, true);
 assert.equal(currentLineup.etapa, "concluido");
 
+// Migração específica e idempotente da escalação corrigida de Palmeiras 2011.
+const nomesPalmeiras = ["Paulo André", "Liedson", "Alex", "Willian", "Jorge Henrique", "Chicão", "Danilo", "Outro"];
+const opcoesPalmeiras = {
+    matchIds: ["palmeiras-2011", "outra-partida"],
+    playerNames: nomesPalmeiras,
+    lineupNames: ["Paulo André", "Liedson", "Alex", "Willian", "Jorge Henrique"],
+    hiddenNames: ["Paulo André", "Liedson", "Alex"],
+    realScore: { mandante: 0, visitante: 0 }
+};
+const savePalmeiras = (extra = {}) => ({
+    data: date, partidaId: "palmeiras-2011", etapa: "escalacao",
+    palpiteMandante: 1, palpiteVisitante: 0, nomesResolvidos: [],
+    nomesForaDaLista: [], errosEscalacao: 2, exactScore: false,
+    concluido: false, ...extra
+});
+
+const palmeirasSemProgresso = storage.normalizeLineup(savePalmeiras(), opcoesPalmeiras);
+assert.deepEqual(palmeirasSemProgresso.nomesResolvidos, []); // save sem progresso
+assert.deepEqual(storage.normalizeLineup(savePalmeiras(), opcoesPalmeiras).nomesResolvidos, []); // Chicão oculto e não resolvido
+assert.deepEqual(storage.normalizeLineup(savePalmeiras({ nomesResolvidos: ["Chicão"] }), opcoesPalmeiras).nomesResolvidos, ["Paulo André"]);
+assert.deepEqual(storage.normalizeLineup(savePalmeiras({ nomesResolvidos: ["Danilo"] }), opcoesPalmeiras).nomesResolvidos, ["Liedson"]);
+assert.deepEqual(storage.normalizeLineup(savePalmeiras({ nomesResolvidos: ["Chicão", "Danilo"] }), opcoesPalmeiras).nomesResolvidos, ["Paulo André", "Liedson"]);
+
+const substitutoAntesIncorreto = storage.normalizeLineup(savePalmeiras({ nomesForaDaLista: ["Paulo André", "Outro"] }), opcoesPalmeiras);
+assert.deepEqual(substitutoAntesIncorreto.nomesResolvidos, ["Paulo André"]);
+assert.deepEqual(substitutoAntesIncorreto.nomesForaDaLista, ["Outro"]);
+
+const palmeirasConcluido = storage.normalizeLineup(savePalmeiras({
+    etapa: "concluido", palpiteMandante: 0, palpiteVisitante: 0,
+    nomesResolvidos: ["Chicão", "Danilo", "Alex", "Chicão"],
+    nomesForaDaLista: ["Liedson", "Outro"], errosEscalacao: 4,
+    exactScore: false, concluido: true
+}), opcoesPalmeiras);
+assert.equal(palmeirasConcluido.concluido, true);
+assert.equal(palmeirasConcluido.etapa, "concluido");
+assert.equal(palmeirasConcluido.errosEscalacao, 4);
+assert.equal(palmeirasConcluido.exactScore, true);
+assert.deepEqual(palmeirasConcluido.nomesResolvidos, ["Paulo André", "Liedson", "Alex"]);
+assert.deepEqual(palmeirasConcluido.nomesForaDaLista, ["Outro"]);
+
+const palmeirasParcial = storage.normalizeLineup(savePalmeiras({ nomesResolvidos: ["Chicão"] }), opcoesPalmeiras);
+assert.equal(palmeirasParcial.concluido, false);
+assert.deepEqual(storage.normalizeLineup(palmeirasConcluido, opcoesPalmeiras), palmeirasConcluido); // duas execuções
+
+const outraPartida = storage.normalizeLineup({ ...savePalmeiras({ nomesResolvidos: ["Chicão"] }), partidaId: "outra-partida" }, {
+    ...opcoesPalmeiras, hiddenNames: ["Chicão", "Liedson", "Alex"], lineupNames: ["Chicão", "Liedson", "Alex"]
+});
+assert.deepEqual(outraPartida.nomesResolvidos, ["Chicão"]);
+const legadoSemId = storage.normalizeLineup({ ...savePalmeiras({ nomesResolvidos: ["Chicão"] }), partidaId: null }, {
+    ...opcoesPalmeiras, hiddenNames: ["Chicão", "Liedson", "Alex"]
+});
+assert.deepEqual(legadoSemId.nomesResolvidos, ["Chicão"]);
+
 // R: partidaId conhecido como inválido descarta somente esse save.
 assert.equal(storage.normalizeLineup({ data: date, partidaId: "inexistente" }, { matchIds: ["partida-valida"] }), null); // R
 

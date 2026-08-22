@@ -3273,6 +3273,10 @@ function carregarEstadoEscalacao() {
     const normalizado = NormalizadoresStorage.normalizeLineup(salvo, {
         matchIds: PARTIDAS_ESCALACAO.length ? PARTIDAS_ESCALACAO.map(partida => partida.id) : null,
         playerNames: jogadores.length ? jogadores.map(jogador => jogador.nome) : null,
+        lineupNames: dadosEscalacao
+            ? [...dadosEscalacao.jogadores_visiveis, ...dadosEscalacao.jogadores_ocultos]
+                .map(jogador => jogador.nome || jogador.nome_correto)
+            : null,
         hiddenNames: dadosEscalacao?.jogadores_ocultos?.map(slot => slot.nome_correto) || null,
         realScore: dadosEscalacao?.placar_real || null
     });

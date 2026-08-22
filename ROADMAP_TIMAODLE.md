@@ -2545,7 +2545,7 @@ Fases:
 - [x] Fase E — auditoria final aprovada e fechamento oficial da v2.9.
 
 Pendência histórica não bloqueante:
-- [ ] validação histórica das quatro partidas/formações 4-2-3-1 do Onze Inicial.
+- [x] validação histórica das quatro partidas/formações 4-2-3-1 do Onze Inicial.
 
 Estado inicial confirmado pelo código e pelos dados em 22/08/2026:
 - `jogadores.json`: 156 jogadores, 145 completos e 11 com ao menos um campo ausente;
@@ -3055,3 +3055,45 @@ Estado:
 Próximo passo:
 - corrigir em tarefa separada os titulares e a distribuição de Palmeiras 2011, agora
   que Paulo André e Liedson estão disponíveis no banco.
+
+
+## 22/08/2026 — Onze Inicial: conclusão da validação histórica 4-2-3-1
+
+**Status: CONCLUÍDA**
+
+Implementado:
+- Palmeiras 2011 corrigida com Paulo André no lugar de Chicão e Liedson no lugar de
+  Danilo, preservando os mesmos slots da lista de titulares;
+- Paulo André manteve a função `ZAG` e as coordenadas 72/60; Wallace permaneceu `VOL`
+  no contexto histórico da partida;
+- bloco ofensivo ajustado para Liedson em 12/50 e Jorge Henrique, Alex e Willian em
+  30/20, 30/50 e 30/80;
+- formação `4-2-3-1` e `local_tag: "NEUTRO"` preservados;
+- migração pequena e idempotente adicionada antes da normalização dos nomes do save de
+  `palmeiras-2011`, convertendo Chicão em Paulo André e Danilo em Liedson somente nos
+  jogadores resolvidos;
+- substitutos antes registrados como palpites incorretos são removidos dessa lista e
+  promovidos quando correspondem a um slot oculto atual; duplicidades são eliminadas e
+  a conclusão é recalculada após a migração;
+- erros, placar, `exactScore`, data e `partidaId` permanecem preservados; o histórico
+  integrado antigo não é reescrito retroativamente.
+
+Validado:
+- Palmeiras 2011 possui exatamente 11 titulares únicos, todos presentes no banco e no
+  manifesto, com posições abreviadas válidas e coordenadas entre 0 e 100;
+- Paulo André e Liedson presentes; Chicão e Danilo ausentes; goleiro, laterais, demais
+  defensores e volantes preservados;
+- migração coberta por saves sem progresso, parciais e concluídos, substituições
+  individuais e conjuntas, palpite incorreto do substituto, execução duplicada, partida
+  diferente e save legado sem `partidaId`;
+- Boca 2012, Vasco 2012, Palmeiras 2011 e Palmeiras 2017 possuem 11 titulares e a
+  distribuição validada de atacante central em 12/50 mais linha de três em 30/20,
+  30/50 e 30/80.
+
+Pendência não bloqueante:
+- a semântica de `local_tag: "NEUTRO"` em Palmeiras 2011 permanece como observação
+  separada, sem mudança de dado nesta etapa.
+
+Próximo passo:
+- realizar teste visual da escalação de Palmeiras 2011 quando ela for selecionada em
+  navegador real e tratar `local_tag` somente após formalizar sua semântica no projeto.

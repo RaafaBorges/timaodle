@@ -272,7 +272,7 @@
         "left": 82
       },
       {
-        "nome": "Chicão",
+        "nome": "Paulo André",
         "posicao_abrev": "ZAG",
         "top": 72,
         "left": 60
@@ -302,28 +302,28 @@
         "left": 35
       },
       {
-        "nome": "Danilo",
-        "posicao_abrev": "MEI",
-        "top": 30,
-        "left": 65
+        "nome": "Liedson",
+        "posicao_abrev": "ATA",
+        "top": 12,
+        "left": 50
       },
       {
         "nome": "Alex",
         "posicao_abrev": "MEI",
         "top": 30,
-        "left": 35
+        "left": 50
       },
       {
         "nome": "Willian",
         "posicao_abrev": "ATA",
-        "top": 12,
-        "left": 65
+        "top": 30,
+        "left": 80
       },
       {
         "nome": "Jorge Henrique",
         "posicao_abrev": "ATA",
-        "top": 12,
-        "left": 35
+        "top": 30,
+        "left": 20
       }
     ]
   },

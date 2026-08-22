@@ -166,8 +166,34 @@
         if (partidaId === undefined) return null;
 
         const ocultos = stringSet(opcoes.hiddenNames);
-        const resolvidos = nameList(valor.nomesResolvidos, ocultos, 3);
-        const fora = nameList(valor.nomesForaDaLista, opcoes.playerNames, 1000);
+        let nomesResolvidos = Array.isArray(valor.nomesResolvidos) ? [...valor.nomesResolvidos] : [];
+        let nomesForaDaLista = Array.isArray(valor.nomesForaDaLista) ? [...valor.nomesForaDaLista] : [];
+        let migrouEscalacao = false;
+
+        // Migração pontual da escalação corrigida de Palmeiras 2011. Ela ocorre antes
+        // do filtro pelos ocultos atuais para preservar o progresso do mesmo slot.
+        if (partidaId === "palmeiras-2011") {
+            const substituicoes = new Map([["Chicão", "Paulo André"], ["Danilo", "Liedson"]]);
+            nomesResolvidos = nomesResolvidos.map(nome => {
+                const substituto = substituicoes.get(nome);
+                if (substituto) migrouEscalacao = true;
+                return substituto || nome;
+            });
+
+            const titulares = stringSet(opcoes.lineupNames);
+            for (const substituto of substituicoes.values()) {
+                if (!nomesForaDaLista.includes(substituto)) continue;
+                nomesForaDaLista = nomesForaDaLista.filter(nome => nome !== substituto);
+                if (ocultos?.has(substituto)) nomesResolvidos.push(substituto);
+                migrouEscalacao = true;
+            }
+            if (titulares) {
+                nomesForaDaLista = nomesForaDaLista.filter(nome => !titulares.has(nome));
+            }
+        }
+
+        const resolvidos = nameList(nomesResolvidos, ocultos, 3);
+        const fora = nameList(nomesForaDaLista, opcoes.playerNames, 1000);
         const errosEscalacao = intInRange(valor.errosEscalacao, 0, 100000);
         const placarM = Number.isInteger(valor.palpiteMandante) && valor.palpiteMandante >= 0 && valor.palpiteMandante <= 20
             ? valor.palpiteMandante : null;
@@ -175,7 +201,8 @@
             ? valor.palpiteVisitante : null;
         const temPlacar = placarM !== null && placarV !== null;
         const total = ocultos ? Math.min(3, ocultos.size) : 3;
-        const concluido = valor.concluido === true && temPlacar && resolvidos.length === total;
+        const concluido = (valor.concluido === true || migrouEscalacao)
+            && temPlacar && resolvidos.length === total;
         const etapa = !temPlacar ? "placar" : concluido ? "concluido" : "escalacao";
         let exactScore = typeof valor.exactScore === "boolean" ? valor.exactScore : null;
         if (temPlacar && isObject(opcoes.realScore)
