@@ -520,6 +520,13 @@
                 </div>
                 <div id="historyCalendarGrid" class="history-calendar-grid" role="grid"
                     aria-labelledby="historyMonthTitle"></div>
+                <div class="history-calendar-legend" aria-label="Legenda do calendário">
+                    <span><i class="is-no-record" aria-hidden="true"></i>Sem registro</span>
+                    <span><i class="is-recorded" aria-hidden="true">0/4</i>Registro 0/4</span>
+                    <span><i class="is-started" aria-hidden="true">•</i>Iniciado</span>
+                    <span><i class="is-partial" aria-hidden="true">2/4</i>Parcial</span>
+                    <span><i class="is-complete" aria-hidden="true">✓</i>4/4</span>
+                </div>
                 <section id="historyDaySummary" class="history-day-summary" aria-live="polite"
                     aria-labelledby="historySelectedDateTitle">
                     <p id="historySummaryEmpty" class="history-summary-empty">
@@ -531,6 +538,7 @@
                         <span>Não há progresso registrado para esta data.</span>
                     </div>
                     <div id="historyDayDetails" class="history-day-details hidden">
+                        <div id="historyOverallProgress" class="history-overall-progress">0/4 DESAFIOS</div>
                         <div class="history-mode-summary-list">
                             <div class="history-mode-summary" data-history-mode="classic">
                                 <span>CLÁSSICO</span>
@@ -550,7 +558,6 @@
                                 <small id="historyLineupExactScore" class="history-exact-score hidden">PLACAR EXATO</small>
                             </div>
                         </div>
-                        <div id="historyOverallProgress" class="history-overall-progress">0/4 DESAFIOS</div>
                         <p id="historyHistoricalStreak" class="history-historical-streak hidden">
                             <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M13.4 2.8c.5 3-1.2 4.4-2.5 6.1-1.1 1.4-1.8 2.8-1.2 4.6.4-1.2 1.2-2 2.2-2.8-.1 2.1 1.8 3.1 1.8 5.3a4.2 4.2 0 0 1-8.4 0c0-4.6 3-7.2 8.1-11.2Z"/></svg>
                             <span id="historyHistoricalStreakText">Sequência até este dia: 1 dia</span>

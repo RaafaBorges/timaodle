@@ -237,6 +237,9 @@ function assertFinitePercentages(value, key = "root") {
 test("estatísticas: histórico vazio", () => {
     const stats = historyApi(normalizedHistory({})).obterEstatisticasIntegradas("2026-08-21");
     assert.equal(stats.geral.registeredDays, 0);
+    assert.equal(stats.geral.playedDays, 0);
+    assert.equal(stats.geral.currentStreak, 0);
+    assert.equal(stats.geral.bestStreak, 0);
     assert.equal(stats.geral.completeDayRate, 0);
     assertFinitePercentages(stats);
 });
@@ -262,6 +265,7 @@ test("estatísticas: vários dias, vitórias, derrotas e distribuições", () =>
     });
     const stats = historyApi(history).obterEstatisticasIntegradas("2026-08-21");
     assert.equal(stats.geral.registeredDays, 3);
+    assert.equal(stats.geral.playedDays, 3);
     assert.equal(stats.geral.completeDays, 2);
     assert.equal(stats.geral.completedModes, 8);
     assert.equal(stats.photo.wins, 1);
@@ -269,6 +273,12 @@ test("estatísticas: vários dias, vitórias, derrotas e distribuições", () =>
     assert.equal(stats.photo.winRate, 50);
     assert.equal(stats.classic.distribution[1], 1);
     assert.equal(stats.classic.distribution["4+"], 1);
+    assert.deepEqual(Object.keys(stats.classic.distribution), ["1", "2", "3", "4+"]);
+    assert.deepEqual(Object.keys(stats.photo.distribution), ["1", "2", "3", "4", "5", "6"]);
+    assert.deepEqual(Object.keys(stats.moreLess.distribution), Array.from({ length: 11 }, (_, index) => String(index)));
+    assert.equal(Object.keys(stats.classic.distribution).length
+        + Object.keys(stats.photo.distribution).length
+        + Object.keys(stats.moreLess.distribution).length, 21);
     assert.equal(stats.moreLess.distribution[0], 1);
     assert.equal(stats.moreLess.distribution[10], 1);
     assert.equal(stats.moreLess.perfectResults, 1);
@@ -278,6 +288,10 @@ test("estatísticas: vários dias, vitórias, derrotas e distribuições", () =>
     assert.equal(stats.lineup.exactScoreRate, 50);
     assert.equal(stats.geral.wins, 6, "derrotas contam como conclusão, não como vitória");
     assert.equal(stats.geral.currentStreak, historyApi(history).obterStreakGeral("2026-08-21").current);
+    assert.equal(stats.geral.bestStreak, historyApi(history).obterStreakGeral("2026-08-21").best);
+    assert.equal(stats.geral.completeDayRate, 66.7);
+    assert.equal(stats.moreLess.bestResult, 10);
+    assert.equal(stats.moreLess.worstResult, 0, "zero real não pode virar ausência de amostra");
     assertFinitePercentages(stats);
 });
 test("estatísticas: dados malformados normalizados não geram NaN/Infinity", () => {

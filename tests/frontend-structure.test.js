@@ -136,6 +136,27 @@ test("Histórico preserva modal, calendário e estados acessíveis", () => {
     assert.match(cssRule(".history-day-button:focus-visible"), /outline:/);
 });
 
+test("Calendário histórico explica estados visuais sem alterar sua semântica", () => {
+    const legend = html.match(/<div class="history-calendar-legend"[\s\S]*?<\/div>/)?.[0] || "";
+    assert.match(legend, /aria-label="Legenda do calendário"/);
+    for (const [state, label] of [
+        ["no-record", "Sem registro"], ["recorded", "Registro 0/4"],
+        ["started", "Iniciado"], ["partial", "Parcial"], ["complete", "4/4"]
+    ]) {
+        assert.ok(legend.includes(`class="is-${state}"`), state);
+        assert.ok(legend.includes(label), label);
+    }
+    assert.ok(!legend.includes("future"));
+    assert.ok(!legend.includes("before-tracking"));
+    assert.equal((legend.match(/aria-hidden="true"/g) || []).length, 5);
+    assert.match(cssRule(".history-day-button"), /min-height:\s*44px/);
+    assert.match(cssRule(".history-weekdays > span"), /font-size:\s*10px/);
+    assert.match(cssRule(".history-day-cell.is-no-record .history-day-button"), /border-style:\s*dashed/);
+    assert.match(css, /\.history-day-cell\.is-partial \.history-day-button\s*\{[^}]*border-color:/);
+    assert.match(cssRule(".history-day-cell.is-today .history-day-button::before"), /background:\s*var\(--gold\)/);
+    assert.match(cssRule(".history-day-cell.is-selected .history-day-button"), /border-color:\s*var\(--ink\)/);
+});
+
 test("Resumo histórico preserva quatro modos, progresso e estado sem registro", () => {
     for (const id of [
         "historyDaySummary", "historySelectedDateTitle", "historyNoRecord", "historyDayDetails",
@@ -152,6 +173,7 @@ test("Resumo histórico preserva quatro modos, progresso e estado sem registro",
     assert.ok(script.includes("historyPhotoSummary.textContent = resumo.photo.statusText"));
     assert.ok(script.includes("historyMoreLessSummary.textContent = resumo.moreLess.statusText"));
     assert.ok(script.includes("historyLineupSummary.textContent = resumo.lineup.statusText"));
+    assert.ok(script.includes('historyLineupExactScore?.classList.toggle("hidden", !resumo.lineup.exactScore)'));
     assert.ok(script.includes('historyOverallProgress.classList.toggle("is-complete", resumo.complete)'));
     assert.ok(script.includes("function obterSequenciaHistoricaDoDia(data, historico"));
     assert.ok(script.includes('historyHistoricalStreak?.classList.toggle("hidden", !mostrarSequencia)'));
@@ -162,6 +184,26 @@ test("Resumo histórico preserva quatro modos, progresso e estado sem registro",
     ]) assert.ok(css.includes(selector), selector);
 });
 
+test("Detalhe diário prioriza data e progresso sem criar cards por modo", () => {
+    const details = html.match(/<div id="historyDayDetails"[\s\S]*?<p id="historyHistoricalStreak"/)?.[0] || "";
+    const progressIndex = details.indexOf('id="historyOverallProgress"');
+    const classicIndex = details.indexOf('data-history-mode="classic"');
+    const photoIndex = details.indexOf('data-history-mode="photo"');
+    const moreLessIndex = details.indexOf('data-history-mode="moreLess"');
+    const lineupIndex = details.indexOf('data-history-mode="lineup"');
+    assert.ok(progressIndex >= 0 && progressIndex < classicIndex);
+    assert.ok(classicIndex < photoIndex && photoIndex < moreLessIndex && moreLessIndex < lineupIndex);
+    assert.ok(script.includes("historySelectedDateTitle.textContent = formatarDataHistorico(dia.date);"));
+    assert.match(cssRule(".history-day-summary"), /background:\s*transparent/);
+    assert.doesNotMatch(cssRule(".history-day-summary"), /border-left:/);
+    assert.match(cssRule(".history-mode-summary"), /border-bottom:/);
+    assert.match(cssRule(".history-mode-summary"), /background:\s*transparent/);
+    assert.doesNotMatch(cssRule(".history-mode-summary"), /border-radius:/);
+    assert.match(cssRule(".history-overall-progress"), /font-size:\s*clamp\(25px/);
+    assert.match(cssRule(".history-exact-score"), /border:\s*0/);
+    assert.match(cssRule(".history-historical-streak"), /background:\s*transparent/);
+});
+
 test("Estatísticas e Histórico ampliam somente em tablet e desktop", () => {
     assert.equal((css.match(/@media\s*\(min-width:\s*700px\)/g) || []).length, 1);
     const statsDesktop = cssRule("#integratedStatsModal .integrated-stats-modal-content");
@@ -170,10 +212,57 @@ test("Estatísticas e Histórico ampliam somente em tablet e desktop", () => {
     assert.match(statsDesktop, /max-width:\s*820px/);
     assert.match(historyDesktop, /width:\s*min\(720px,\s*calc\(100vw - 48px\)\)/);
     assert.match(historyDesktop, /max-width:\s*720px/);
-    assert.match(cssRule("#historyModal .history-month-navigation,\n    #historyModal .history-weekdays,\n    #historyModal .history-calendar-grid"), /max-width:\s*620px/);
+    assert.match(cssRule("#historyModal .history-month-navigation,\n    #historyModal .history-weekdays,\n    #historyModal .history-calendar-grid,\n    #historyModal .history-calendar-legend"), /max-width:\s*620px/);
     assert.match(cssRule(".integrated-mode-grid"), /repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
-    assert.match(cssRule(".integrated-stats-general"), /repeat\(4,\s*minmax\(0,\s*1fr\)\)/);
+    assert.match(cssRule(".integrated-stats-primary"), /repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
     assert.match(cssRule(".history-modal-content"), /width:\s*min\(500px/);
+});
+
+test("Estatísticas gerais preservam dados e separam hierarquia sem caixas redundantes", () => {
+    for (const className of [
+        "integrated-stats-primary", "integrated-streak-summary", "integrated-streak-current",
+        "integrated-streak-record", "integrated-completion-summary", "integrated-completion-values",
+        "integrated-stats-secondary", "integrated-stats-registered"
+    ]) assert.ok(script.includes(`class="${className}"`), className);
+    for (const expression of [
+        "geral.currentStreak", "geral.bestStreak", "geral.completeDays", "geral.completeDayRate",
+        "geral.playedDays", "geral.completedModes", "geral.wins", "geral.registeredDays"
+    ]) assert.ok(script.includes(`\${${expression}}`), expression);
+    assert.ok(script.includes("if (geral.playedDays === 0)"));
+    assert.ok(script.includes("Suas estatísticas começarão a aparecer conforme você joga"));
+    assert.ok(!script.includes('class="integrated-stat-box"'));
+    assert.match(cssRule(".integrated-stat-label"), /font-size:\s*11px/);
+    assert.match(cssRule(".integrated-stats-secondary"), /repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
+});
+
+test("Estatísticas por modo usam detalhes nativos fechados e preservam ordem e dados", () => {
+    const statsRender = script.slice(
+        script.indexOf("function renderizarEstatisticasIntegradas()"),
+        script.indexOf("const MESES_HISTORICO")
+    );
+    const modeTitles = ["CLÁSSICO", "FOTO", "MAIS OU MENOS", "ONZE INICIAL"];
+    let previousIndex = -1;
+    for (const title of modeTitles) {
+        const index = statsRender.indexOf(`<h3>${title}</h3>`);
+        assert.ok(index > previousIndex, title);
+        previousIndex = index;
+    }
+    assert.equal((statsRender.match(/<details class="integrated-mode-details">/g) || []).length, 4);
+    assert.equal((statsRender.match(/<summary>Ver detalhes<\/summary>/g) || []).length, 4);
+    assert.ok(!statsRender.includes('<details class="integrated-mode-details" open>'));
+    assert.equal((statsRender.match(/estadoVazioEstatisticaModo\(\)/g) || []).length, 4);
+    for (const metric of [
+        "classic.averageAttemptsWins", "photo.winRate", "photo.averageAttemptsWins",
+        "moreLess.winRate", "moreLess.averageHits", "lineup.averageErrors"
+    ]) assert.ok(statsRender.includes(metric), metric);
+    for (const distribution of ["classic.distribution", "photo.distribution", "moreLess.distribution"]) {
+        assert.ok(statsRender.includes(`formatarDistribuicao(${distribution})`), distribution);
+    }
+    assert.ok(script.includes('summary:not([tabindex="-1"])'));
+    assert.match(cssRule(".integrated-mode-details summary"), /min-height:\s*44px/);
+    assert.match(css, /\.integrated-mode-details summary:focus-visible\s*\{[^}]*outline:/);
+    assert.match(cssRule(".distribution-chip"), /border-bottom:/);
+    assert.doesNotMatch(cssRule(".distribution-chip"), /background:/);
 });
 
 test("Como Jogar preserva largura e grid responsivos próprios", () => {

@@ -3101,7 +3101,7 @@ Próximo passo:
 
 ## v3.0 — UX & VISUAL POLISH
 
-**Status: EM ANDAMENTO — FASE A CONCLUÍDA / FASE B CONCLUÍDA / FASE C CONCLUÍDA / FASE D CONCLUÍDA / FASE E NÃO INICIADA**
+**Status: EM ANDAMENTO — FASE A CONCLUÍDA / FASE B CONCLUÍDA / FASE C CONCLUÍDA / FASE D CONCLUÍDA / FASE E CONCLUÍDA / FASE F NÃO INICIADA**
 
 Objetivo:
 - refinar hierarquia, clareza, simplicidade, consistência e conforto responsivo sem
@@ -3160,7 +3160,7 @@ Estado das fases:
   não concluídos;
 - [x] **Fase D — CONCLUÍDA — modos:** Clássico, Foto, Mais ou Menos e Onze Inicial em pequenas
   entregas independentes;
-- [ ] **Fase E — NÃO INICIADA — Histórico e Estatísticas:** divulgação progressiva e níveis de métricas,
+- [x] **Fase E — CONCLUÍDA — Histórico e Estatísticas:** E.1, E.2, E.3, E.4 e E.5 concluídas; validação manual final aprovada; divulgação progressiva e níveis de métricas,
   preservando todos os dados;
 - [ ] **Fase F — PLANEJADA — validação final:** navegador real nos viewports definidos, teclado,
   reduced motion, overflow, contraste e regressão integral.
@@ -3239,7 +3239,7 @@ Próximo passo:
 
 ## 22/08/2026 — v3.0 Fase A: linguagem visual e navegação
 
-**Status: IMPLEMENTADA / AGUARDANDO VALIDAÇÃO MANUAL**
+**Status: CONCLUÍDA — VALIDAÇÃO MANUAL APROVADA / E.2 PRÓXIMA**
 
 Implementado:
 - os quatro controles Voltar agora usam `← VOLTAR` no desktop e somente `←` no mobile,
@@ -4775,3 +4775,590 @@ Estado final:
 
 Próximo passo:
 - v3.0 — Fase E: Histórico e Estatísticas, somente em tarefa própria.
+
+## 22/08/2026 — v3.0 Fase E: auditoria e especificação de Histórico e Estatísticas
+
+**Status: AUDITORIA / ESPECIFICAÇÃO EM ANDAMENTO — IMPLEMENTAÇÃO NÃO INICIADA**
+
+### Propósito das duas áreas
+
+- **Suas Estatísticas — “Como estou indo?”:** deve priorizar desempenho acumulado,
+  evolução e comparação pessoal; não deve reproduzir o relato cronológico de cada dia.
+- **Histórico — “O que fiz nos dias anteriores?”:** deve priorizar localização temporal,
+  estado de cada dia e consulta do detalhe; não deve competir com Estatísticas como painel
+  agregado.
+- A separação conceitual existe no código e nos pontos de entrada da Home, mas a densidade e
+  o peso visual atuais aproximam as duas experiências de painéis de dados extensos.
+
+### Estrutura real auditada — Suas Estatísticas
+
+- modal acessível `integratedStatsModal`, com título associado, botão fechar de 44 px,
+  Escape, backdrop, focus trap, retorno ao acionador e conteúdo com scroll interno;
+- largura aproximada de 680 px, ampliada para 820 px a partir de 700 px; no desktop há
+  quatro métricas gerais por linha e grade 2×2 de modos; no mobile há duas métricas gerais
+  por linha e um modo por linha;
+- estado vazio único quando `playedDays === 0`, com mensagem correta e sem números sem
+  contexto;
+- oito métricas gerais exibidas com o mesmo peso: sequência atual, recorde, dias 4/4,
+  dias jogados, dias registrados, modos concluídos, vitórias e percentual de dias completos;
+- Clássico: seis métricas — iniciadas, concluídas, vitórias, tentativas acumuladas,
+  média por vitória e melhor resultado — mais distribuição em quatro faixas (`1`, `2`,
+  `3`, `4+`);
+- Foto: oito métricas — iniciadas, concluídas, vitórias, derrotas, taxa de vitória,
+  média geral, média por vitória e melhor vitória — mais distribuição de `1` a `6`;
+- Mais ou Menos: dez métricas — iniciadas, concluídas, vitórias, derrotas, taxa de vitória,
+  média de acertos, melhor, pior, resultados 10/10 e resultados 7+ — mais distribuição de
+  `0` a `10`;
+- Onze Inicial: oito métricas — iniciadas, concluídas, erros totais, média de erros,
+  menor número de erros, conclusões com zero erros, placares exatos e taxa de placar;
+- as três distribuições somam 21 chips, todos com peso semelhante e labels de 8 px; os
+  demais rótulos usam majoritariamente 9 px.
+
+### Classificação proposta das métricas
+
+- **Principais gerais:** sequência atual, recorde, dias 4/4 e taxa de dias completos;
+- **Secundárias gerais:** dias jogados, modos concluídos e vitórias;
+- **Detalhada geral:** dias registrados, útil para explicar a base histórica, mas pouco
+  representativa de desempenho isoladamente;
+- **Principais por modo:** concluídas e a métrica específica de desempenho — média de
+  tentativas no Clássico, taxa de vitória na Foto, média de acertos no Mais ou Menos e
+  média de erros no Onze Inicial;
+- **Secundárias por modo:** vitórias/derrotas, melhor resultado, resultados 10/10 ou 7+,
+  zero erros e placares exatos;
+- **Detalhadas:** iniciadas, tentativas/erros acumulados, pior resultado, médias auxiliares
+  e as distribuições completas;
+- **Redundâncias contextuais:** no Clássico, concluídas e vitórias são equivalentes pela
+  mecânica atual; iniciadas/concluídas aparecem em todos os modos; `Dias jogados`, `Dias
+  registrados`, `Modos concluídos` e `Vitórias` são números legítimos, mas simultaneamente
+  expostos exigem interpretação e não devem compartilhar prioridade;
+- nenhuma métrica deve ser removida na Fase E; o direcionamento é preservar os cálculos e
+  aplicar divulgação progressiva, títulos explicativos e prioridade visual.
+
+### Streak e cálculos
+
+- sequência atual e recorde derivam apenas de dias completos 4/4, respeitando
+  `trackingStartedAt`, datas civis e a data de referência;
+- `lastCompleteDate` também é calculado pela fonte integrada, mas não é renderizado no modal;
+  deve ser avaliado como contexto detalhado, sem receber automaticamente o mesmo peso do
+  streak atual e do recorde;
+- a sequência atual permanece ativa quando o dia corrente ainda não está completo, desde
+  que o dia anterior pertença à sequência; a regra está consolidada e não deve mudar;
+- taxa de dias completos usa dias jogados como denominador, evitando penalizar registros
+  vazios; taxas por modo usam conclusões ou avaliações válidas conforme a mecânica;
+- médias e melhores resultados ignoram valores inválidos e preservam zero como estado sem
+  amostra; na apresentação futura, zero sem amostra deve ser diferenciado de resultado
+  real igual a zero, sobretudo em Mais ou Menos e Onze Inicial;
+- `Dias registrados` conta entradas válidas no histórico, mesmo sem modo iniciado, enquanto
+  `Dias jogados` exige ao menos um modo iniciado; essa diferença precisa de explicação ou
+  menor destaque para não parecer inconsistência.
+
+### Estrutura real auditada — Histórico
+
+- modal acessível `historyModal`, com título associado, fechar de 44 px, Escape, backdrop,
+  focus trap, retorno ao acionador e scroll interno;
+- calendário mensal de sete colunas, cabeçalho de dias da semana, mês anunciado via região
+  viva e navegação anterior/próximo limitada entre `trackingStartedAt` e o mês atual;
+- largura aproximada de 500 px, ampliada para 720 px a partir de 700 px; calendário limitado
+  a cerca de 620 px no desktop e composição compacta no mobile;
+- estados calculados: futuro, anterior ao início do rastreamento, sem registro, registrado
+  sem progresso, iniciado, parcial e completo 4/4; hoje e selecionado são marcadores
+  independentes;
+- indicadores textuais no dia: `0/4`, `• 0/4`, `X/4` e `✓ 4/4`; o dia atual recebe `HOJE`
+  e seleção recebe borda/sombra próprias;
+- dias futuros e anteriores ao rastreamento são desabilitados; dias navegáveis usam roving
+  tabindex, setas, Home/End, Page Up/Page Down, Enter e Espaço;
+- cada botão recebe rótulo acessível com data, hoje, indisponibilidade ou progresso; a grade
+  usa papéis `grid`/`gridcell`, `aria-selected`, `aria-pressed` e `aria-current`;
+- o detalhe do dia apresenta data, quatro linhas fixas de modo, status e métricas próprias,
+  progresso geral `X/4 DESAFIOS`, pill de placar exato e streak histórico quando o dia
+  completo pertence a uma sequência;
+- o streak histórico informa a sequência acumulada até a data selecionada, não o tamanho
+  posterior total da mesma sequência; a semântica do texto está coerente.
+
+### Linguagem visual, responsividade e acessibilidade
+
+- preto, branco e dourado estão preservados; verde/vermelho aparecem discretamente nos
+  resultados por modo; o fogo do streak já é SVG monocromático com `currentColor`;
+- há excesso moderado de superfícies, bordas, pequenas caixas e pills nos dois modais,
+  especialmente nas métricas por modo e no resumo diário;
+- Estatísticas tem hierarquia insuficiente porque números gerais, métricas por modo e chips
+  recebem tratamento muito próximo; a leitura inicial não responde rapidamente “como
+  estou indo?”;
+- Histórico não possui legenda visual explícita para os estados do calendário; texto nos
+  próprios dias e rótulos acessíveis reduzem o risco, mas a distinção entre registrado,
+  iniciado e parcial exige descoberta;
+- a seleção do dia é clara, porém calendário, detalhe de quatro modos, progresso e streak
+  permanecem simultaneamente no mesmo fluxo, aumentando altura e carga cognitiva;
+- os botões de mês e fechar atendem 44 px; os dias usam mínimo de 40 px e merecem revisão
+  mobile para conforto de toque sem comprometer a grade de sete colunas;
+- labels de 8–9 px nas Estatísticas são o principal risco de legibilidade; larguras
+  intermediárias também precisam evitar cards ou chips comprimidos;
+- não foram encontrados, na inspeção estática, problemas de IDs duplicados, foco sem retorno,
+  fechamento inacessível ou navegação exclusivamente dependente de cor.
+
+### Integração com Home, persistência e estado 4/4
+
+- Estatísticas e Histórico permanecem ações secundárias da jornada pessoal na Home, sem
+  competir com os quatro modos após a Fase B;
+- ambos derivam de `timaodle_history_v1`; os saves normalizados dos quatro modos continuam
+  sendo a autoridade para sincronizar o dia corrente;
+- histórico passado usa resumos seguros e não depende de reabrir o save detalhado antigo;
+- conclusão geral, streak e dia completo dependem dos quatro modos concluídos; a lógica 4/4
+  é compartilhada e não deve ser reinterpretada visualmente na Fase E;
+- o volume atual é linear no número de dias registrados para estatísticas e nos dias do mês
+  para calendário; não há risco imediato de performance, mas a implementação não deve
+  adicionar recomputações ou listeners por expansão sem necessidade.
+
+### Problemas e prioridades
+
+- **P0:** nenhum problema conhecido;
+- **P1:** hierarquia insuficiente em Estatísticas, com oito métricas gerais e até dez por
+  modo apresentadas quase no mesmo nível;
+- **P1:** ausência de divulgação progressiva para 21 chips e métricas detalhadas, gerando
+  modal longo e baixa capacidade de leitura rápida;
+- **P1:** Histórico combina calendário e detalhe extenso sem uma camada intermediária clara,
+  sobretudo no mobile;
+- **P2:** terminologia `dias jogados` versus `dias registrados`, além de iniciadas,
+  concluídas e vitórias, pode parecer redundante sem contexto;
+- **P2:** estados `registrado`, `iniciado` e `parcial` do calendário não possuem legenda
+  visível e dependem de indicadores compactos;
+- **P2:** labels de 8–9 px e dias de 40 px merecem correção responsiva e de toque;
+- **P2:** zero real e ausência de amostra compartilham a mesma representação numérica em
+  algumas métricas;
+- **P3:** excesso de bordas, caixas e pills reduz a hierarquia e aproxima a interface de um
+  dashboard genérico;
+- **P3:** microespaçamentos e densidade das distribuições podem ser refinados depois que a
+  arquitetura de informação estiver validada.
+
+### Decisões e riscos para a implementação
+
+- preservar integralmente `timaodle_history_v1`, normalizadores, saves individuais,
+  `trackingStartedAt`, datas civis, streak, cálculos, seeds e lógica 4/4;
+- preservar todas as métricas atuais; ocultar inicialmente não significa excluir dados;
+- não criar gráfico complexo, biblioteca, dependência ou dashboard paralelo;
+- não misturar Estatísticas e Histórico em um único modal;
+- manter a arquitetura compartilhada de dialog, Escape, backdrop, focus trap e retorno;
+- qualquer disclosure deve ser botão real, possuir estado anunciado, funcionar por teclado
+  e não provocar perda de foco ou scroll inesperado;
+- distinguir ausência de amostra na camada de apresentação sem alterar valores persistidos
+  ou resultados históricos;
+- validar dados escassos, somente um modo jogado, histórico longo, meses sem registros,
+  4/4, hoje incompleto, mobile 360–480 px, tablet e desktop amplo;
+- não iniciar a Fase F nem aproveitar esta fase para refatorar `script.js`.
+
+### Decomposição proposta da Fase E
+
+- **E.1 — Estatísticas gerais e estado vazio:** definir hierarquia principal/secundária,
+  esclarecer termos, tratar ausência de amostra e validar streak/4/4 sem alterar cálculos;
+- **E.2 — Estatísticas por modo e divulgação progressiva:** resumir cada modo inicialmente,
+  preservar todas as métricas e distribuições em detalhe acessível sob demanda;
+- **E.3 — Calendário do Histórico:** esclarecer estados e legenda, ajustar hierarquia,
+  seleção, touch targets e comportamento responsivo preservando toda a navegação;
+- **E.4 — Detalhe do dia:** reduzir peso simultâneo das quatro linhas, progresso e streak,
+  mantendo todo status, placar exato e informação histórica disponível;
+- **E.5 — Validação integrada e encerramento:** revisar Home, ambos os modais, teclado,
+  foco, Escape, backdrop, retorno de foco, F5, saves, histórico longo, 4/4, mobile/tablet/
+  desktop, contraste, overflow e regressão completa antes do checkpoint.
+
+### Estado desta tarefa
+
+- somente esta especificação no roadmap foi alterada;
+- nenhuma implementação visual ou funcional da Fase E foi iniciada;
+- HTML, CSS, JavaScript, JSONs, testes, saves, storage, seeds, histórico e mecânicas
+  permaneceram intactos;
+- nenhum teste foi executado, pois esta tarefa foi exclusivamente de auditoria estática e
+  documentação;
+- nenhum commit e nenhum push foram realizados.
+
+Próximo passo:
+- revisar e aprovar esta especificação; depois iniciar apenas a E.1 em tarefa própria.
+
+## 22/08/2026 — v3.0 Fase E.1: Estatísticas gerais
+
+**Status: CONCLUÍDA — VALIDAÇÃO MANUAL APROVADA**
+
+Implementado:
+- as oito caixas gerais de mesmo peso foram substituídas por três níveis sem cards internos:
+  resumo principal, linha secundária e contexto histórico detalhado;
+- sequência atual tornou-se a primeira leitura e explicita que representa dias 4/4
+  consecutivos; recorde permanece ao lado, menor, permitindo comparação direta;
+- dias 4/4 e taxa 4/4 formam um único grupo conceitual, com a taxa descrita como percentual
+  dos dias jogados e dourado reservado aos números de conquista;
+- dias jogados, modos concluídos e vitórias permanecem disponíveis em uma linha secundária
+  neutra, abaixo do resumo principal;
+- dias registrados foi rebaixado para contexto textual e recebeu a explicação de que inclui
+  dias armazenados mesmo sem desafio iniciado;
+- `lastCompleteDate` continua calculado e não foi exibido, pois não acrescenta valor
+  suficiente à primeira leitura;
+- o estado vazio existente continua sendo usado quando nenhum dia foi jogado, evitando uma
+  parede de zeros;
+- em amostra pequena, os zeros das métricas gerais permanecem porque representam resultados
+  reais — por exemplo, nenhum 4/4 ou streak zero — e não ausência de média;
+- nenhuma conversão baseada em valor truthy foi introduzida; zero real continua protegido;
+- superfícies individuais, oito backgrounds e oito bordas do resumo foram removidos;
+  separadores leves preservam apenas os agrupamentos conceituais necessários;
+- labels principais passaram a 10–11 px, com número, label e contexto em níveis distintos;
+- desktop preserva modal de aproximadamente 820 px e duas colunas apenas no resumo principal;
+- mobile empilha os dois grupos principais, mantém três métricas secundárias compactas e
+  permite quebra natural da explicação de dias registrados;
+- ordem semântica do DOM acompanha a leitura visual: sequência, recorde, 4/4, taxa,
+  secundárias e contexto detalhado.
+
+Preservado deliberadamente:
+- cálculos, `timaodle_history_v1`, normalizadores, saves, storage, histórico, streak,
+  recorde, 4/4, percentuais, médias, seeds e migrações;
+- cards, conteúdo, métricas e 21 chips das estatísticas por modo, reservados para a E.2;
+- header, largura, scroll interno, dialog, foco inicial, focus trap, Escape, backdrop,
+  retorno de foco e acionador da Home;
+- Histórico, Home, overlay final e todos os quatro modos.
+
+Testado:
+- suíte completa aprovada: storage A–X, 39 cenários de regras e 180 datas MM, 118 cenários
+  de calendário, 13 de resultado final, cinco de movimento reduzido e 41 estruturais com
+  168 IDs únicos;
+- testes permanentes ampliados para histórico vazio, dias jogados, streak, recorde, 4/4,
+  taxa, modos concluídos, vitórias e preservação de zero real;
+- storage e histórico aprovados também isoladamente;
+- sintaxe de `script.js` e `storage-normalizers.js` aprovada;
+- `git diff --check` aprovado, apenas com avisos de normalização LF/CRLF;
+- três JSONs fora do diff, CSS balanceado, IDs únicos, cálculos/storage inalterados e
+  Histórico sem alterações.
+
+Checklist manual pendente:
+- validar 412×600 e 412×915 como prioridades; complementar com 360×800, 390×844, 430×932
+  e 480×900;
+- validar 1366×768, 1440×900 e 1920×1080;
+- conferir histórico vazio, um dia/um modo, nenhum 4/4, streak zero e dados acumulados;
+- conferir leitura, scroll, ausência de overflow, fechamento, backdrop, Escape, Tab,
+  Shift+Tab e retorno de foco.
+
+Pendências:
+- nenhuma pendência conhecida da E.1 após a aprovação manual;
+- E.2 é a próxima etapa e permanece não iniciada.
+
+Próximo passo:
+- iniciar E.2 somente em tarefa própria.
+
+## 22/08/2026 — v3.0 Fase E.2: Estatísticas por modo e distribuições
+
+**Status: CONCLUÍDA — VALIDAÇÃO MANUAL APROVADA**
+
+Implementado:
+- cada modo agora apresenta nome, duas ou três métricas principais, uma linha secundária e
+  detalhes nativos fechados por padrão;
+- Clássico prioriza conclusões e média de tentativas; iniciados e melhor resultado ficam
+  secundários; vitórias, tentativas acumuladas e distribuição ficam nos detalhes;
+- Foto prioriza vitórias, taxa de vitória e média por vitória; conclusões, derrotas e melhor
+  vitória ficam secundárias; iniciados, média geral e distribuição ficam nos detalhes;
+- Mais ou Menos prioriza vitórias, taxa de vitória e média de acertos; conclusões, melhor e
+  resultados 7+ ficam secundários; iniciados, derrotas, pior, 10/10 e distribuição ficam
+  nos detalhes;
+- Onze Inicial prioriza conclusões e média de erros; menor número de erros e placares exatos
+  ficam secundários; iniciados, erros acumulados, conclusões sem erros e taxa de placar exato
+  ficam nos detalhes;
+- `<details>`/`<summary>` foi adotado por oferecer expansão nativa, teclado e estado sem
+  JavaScript ou persistência; os quatro detalhes são reconstruídos fechados ao reabrir;
+- as distribuições continuam dentro do respectivo modo e preservam exatamente quatro faixas
+  do Clássico, seis da Foto e onze do Mais ou Menos, totalizando os mesmos 21 valores;
+- chips deixaram de parecer botões: perderam background, borda completa e raio, passando a
+  pares compactos categoria/valor separados por linha;
+- modos nunca iniciados exibem um estado vazio compacto em vez de coleção de zeros;
+- ausência de amostra usa `—` apenas em médias, melhores resultados e taxas que exigem
+  conclusão/avaliação; zeros reais de vitórias, derrotas, acertos e erros são preservados;
+- labels essenciais passaram a pelo menos 10 px e os resumos possuem alvo de 44 px, foco
+  visível e indicador tipográfico monocromático `+`/`−`;
+- o focus trap compartilhado passou a reconhecer `summary` como elemento focável, mantendo
+  a navegação completa dentro do dialog sem ARIA redundante;
+- desktop mantém grade 2×2 e modal de aproximadamente 820 px; mobile mantém um modo por
+  linha, agora escaneável sem abrir dezenas de métricas;
+- nenhuma animação de accordion, scroll interno por modo, gráfico, ícone ou dependência foi
+  adicionada.
+
+Preservado deliberadamente:
+- todos os cálculos, categorias, contagens, ordem, médias, taxas, acumulados, regras de
+  vitória, storage, normalizadores, saves, histórico e streak;
+- ordem Clássico, Foto, Mais ou Menos e Onze Inicial;
+- estrutura geral aprovada da E.1, incluindo sequência, recorde, 4/4, taxa, secundárias,
+  dias registrados e estado vazio;
+- Histórico, Home, overlay final, modos, dialog, header, Escape, backdrop, scroll interno e
+  retorno de foco;
+- três JSONs, seeds e migrações.
+
+Testado:
+- suíte completa aprovada: storage A–X, 39 cenários de regras/180 datas MM, 118 cenários de
+  calendário, 13 de resultado final, cinco de movimento reduzido e 42 estruturais com 168
+  IDs únicos;
+- contratos permanentes cobrem quatro modos e sua ordem, quatro detalhes fechados, estado
+  vazio por modo, foco, métricas centrais, 21 categorias e zero real;
+- storage e histórico aprovados também isoladamente;
+- sintaxe de `script.js` e `storage-normalizers.js` aprovada;
+- `git diff --check` aprovado, somente com avisos LF/CRLF;
+- CSS balanceado, JSONs fora do diff, cálculos/storage intactos e Histórico sem alterações.
+
+Checklist manual pendente:
+- validar detalhes fechados e abertos, alternância por clique, Enter e Espaço, foco visível,
+  Tab/Shift+Tab, Escape e retorno de foco;
+- validar modo sem dados, 0 vitórias com partidas, média ausente e zero real no Mais ou Menos
+  e Onze Inicial;
+- validar 412×600 e 412×915 como prioridades; complementar com 360×800, 390×844, 430×932 e
+  480×900;
+- validar 1366×768, 1440×900 e 1920×1080, inclusive distribuições abertas e ausência de
+  overflow horizontal.
+
+Pendências:
+- validação manual da E.2;
+- E.3 não iniciada.
+
+Próximo passo:
+- validar manualmente a E.2; iniciar E.3 somente após aprovação em tarefa própria.
+
+## 22/08/2026 — v3.0 Fase E.3: Histórico e calendário
+
+**Status: CONCLUÍDA — VALIDAÇÃO MANUAL APROVADA**
+
+Implementado:
+- legenda visual compacta adicionada logo abaixo da grade, sem card ou superfície própria;
+- a legenda representa somente cinco estados relevantes: sem registro, registro real 0/4,
+  iniciado 0/4, parcial e completo 4/4;
+- futuro e período anterior ao início do histórico foram deliberadamente excluídos da
+  legenda porque permanecem desabilitados, esmaecidos e indisponíveis;
+- marcadores da legenda reutilizam a linguagem das células e são decorativos para tecnologia
+  assistiva; os rótulos completos das células continuam sendo a fonte acessível do estado;
+- sem registro usa fundo transparente e borda tracejada; registro 0/4 mantém superfície
+  neutra e indicador `0/4`; iniciado acrescenta marca lateral dourada e `• 0/4`;
+- parcial usa indicador `1/4`–`3/4` dourado e borda dourada moderada; completo preserva
+  `✓ 4/4`, fundo dourado suave e borda dourada;
+- hoje passou a usar marcador e texto dourados; selecionado mantém borda dupla branca,
+  permitindo distinguir hoje não selecionado, hoje selecionado e outro dia selecionado;
+- navegação mensal perdeu superfície circular permanente nas setas; mês/ano ganhou prioridade
+  enquanto as setas neutras mantêm 44×44, hover/foco dourado e disabled real;
+- weekdays usam 10 px fixos, sem backgrounds individuais;
+- células interativas passaram a mínimo de 44 px, mantendo número e progresso em pelo menos
+  9–10 px e sete colunas sem scroll horizontal;
+- em até 380 px, o padding lateral interno cai para 10 px e o gap para 2 px; em 360 px isso
+  fornece aproximadamente 44 px por coluna dentro da largura útil, sem pseudo-elementos
+  sobrepostos ou compressão de texto;
+- legenda possui quebra natural em múltiplas linhas e permanece dentro dos mesmos 620 px do
+  calendário no desktop;
+- espaço entre calendário/legenda e detalhe foi reduzido apenas de 16 para 14 px;
+- nenhuma nova cor, badge, emoji, animação, seletor de mês ou superfície externa foi criada.
+
+Preservado deliberadamente:
+- `trackingStartedAt`, datas civis, segunda-feira, sete estados internos, limites, seleção,
+  troca de mês, foco, roving tabindex e todas as teclas existentes;
+- futuro e before-tracking desabilitados, dias sem registro selecionáveis, hoje e seleção
+  independentes, atualização imediata do resumo e renderização mensal atual;
+- conteúdo e estrutura do detalhe diário, quatro modos, ausência de registro, progresso,
+  streak histórico e anti-spoiler, reservados para a E.4;
+- Estatísticas E.1/E.2, Home, Fases B/C/D, storage, normalizadores, saves, histórico, JSONs,
+  seeds e mecânicas;
+- dialog, aria-modal, título associado, grid rotulada, aria-current, aria-selected,
+  aria-pressed, focus trap, Escape, backdrop e retorno de foco;
+- largura aproximada de 720 px no desktop e scroll interno em viewport baixo.
+
+Testado:
+- suíte completa aprovada: storage A–X, 39 cenários de regras/180 datas MM, 118 cenários de
+  calendário, 13 de resultado final, cinco de movimento reduzido e 43 estruturais com 168
+  IDs únicos;
+- contratos permanentes cobrem sete colunas, semana iniciada na segunda, sete estados,
+  legenda de cinco estados, futuro/before-tracking fora da legenda, 44 px, weekdays, hoje e
+  selecionado independentes;
+- suíte histórica existente preserva limites, viradas de mês/ano, 0/4 versus sem registro,
+  disabled, seleção, roving tabindex, setas, Home/End, PageUp/PageDown, Enter e Espaço;
+- detalhe diário e anti-spoiler permanecem cobertos pelos contratos anteriores.
+
+Checklist manual pendente:
+- validar sem registro, registro 0/4, iniciado, 1/4–3/4 e 4/4, inclusive hoje/selecionado em
+  combinações diferentes;
+- validar setas habilitadas/desabilitadas, troca de mês, foco e seleção;
+- validar ArrowLeft/Right/Up/Down, Home/End, PageUp/PageDown, Enter, Espaço, Tab, Shift+Tab,
+  Escape, backdrop e retorno de foco;
+- validar prioritariamente 360×800, 412×600 e 412×915; complementar com 390×844, 430×932 e
+  480×900;
+- validar 1366×768, 1440×900 e 1920×1080, legenda, scroll e ausência de overflow.
+
+Pendências:
+- validação manual da E.2 e da E.3;
+- E.4 não iniciada.
+
+Próximo passo:
+- validar manualmente a E.3; iniciar E.4 somente após aprovação em tarefa própria.
+
+## 22/08/2026 — v3.0 Fase E.4: detalhe diário do Histórico
+
+**Status: CONCLUÍDA — VALIDAÇÃO MANUAL APROVADA**
+
+Implementado:
+- data selecionada passou a incluir dia, mês e ano e permanece como heading do resumo;
+- progresso geral foi movido para imediatamente abaixo da data e antes dos quatro modos,
+  tornando `0/4`–`4/4 DESAFIOS` a principal métrica do dia;
+- 4/4 mantém dourado de conquista; 0/4–3/4 permanecem brancos, sem sugerir conclusão;
+- ordem Clássico, Foto, Mais ou Menos e Onze Inicial foi preservada em quatro linhas
+  compactas com nome, estado textual e métrica específica já existente;
+- cada linha perdeu background, borda completa e raio; um divisor inferior discreto separa
+  os modos sem criar quatro cards dentro do detalhe;
+- nomes dos modos usam 10 px e estados/métricas usam 11–13 px, mantendo hierarquia e
+  legibilidade sem recorrer a labels essenciais minúsculas;
+- andamento recebe marca lateral e texto dourados; vitória/derrota continuam reforçadas por
+  verde/vermelho discretos, sempre acompanhados por texto; conclusão neutra recebe somente
+  fundo dourado de 4%;
+- `PLACAR EXATO` continua visível exclusivamente quando `exactScore === true`, agora como
+  contexto textual dourado sem pill ou borda;
+- sequência histórica foi reduzida de pill com fundo/borda para linha contextual neutra com
+  o mesmo SVG monocromático e texto; progresso do dia permanece visualmente dominante;
+- o resumo deixou de ser um card interno: fundo, borda completa, borda lateral dourada e
+  raio foram removidos; uma linha superior conecta visualmente detalhe e calendário;
+- sem registro preserva exatamente `SEM REGISTRO DISPONÍVEL` e sua explicação segura;
+- registro real 0/4 continua exibindo progresso e as quatro linhas, distinguindo-se da
+  ausência de registro;
+- layout vertical, largura do modal, scroll interno e atualização imediata por seleção foram
+  mantidos no desktop e mobile.
+
+Preservado deliberadamente:
+- `obterResumoHistoricoDia()`, `obterSequenciaHistoricaDoDia()`, allowlist, anti-spoiler,
+  estados, resultados, métricas, exactScore, streak e sequência truncada até o dia escolhido;
+- Clássico com tentativas, Foto com resultado e X/6, Mais ou Menos com resultado/acertos e
+  Onze Inicial com 3/3 e erros;
+- dias parciais, 0/4 ou sem registro sem streak histórico;
+- aria-live somente no resumo selecionado; deslocamento de foco sem seleção não altera nem
+  anuncia o detalhe;
+- calendário E.3 completo — legenda, células, estados, hoje, seleção, navegação, 44 px,
+  teclado, limites e renderização mensal;
+- Estatísticas E.1/E.2, Home, Fases B/C/D, dialog, focus trap, Escape, backdrop e retorno;
+- storage, normalizadores, saves, histórico, trackingStartedAt, JSONs, seeds e mecânicas.
+
+Testado:
+- suíte completa aprovada: storage A–X, 39 cenários de regras/180 datas MM, 118 cenários de
+  calendário, 13 de resultado final, cinco de movimento reduzido e 44 estruturais com 168
+  IDs únicos;
+- estrutura permanente confirma data/progresso antes dos modos, ordem dos quatro modos,
+  linhas sem cards, exactScore condicional e streak secundário;
+- suíte histórica preserva sem registro, 0/4 real, andamento, vitória, derrota, conclusão,
+  métricas por modo, exactScore, streak somente em 4/4 e sequência intermediária truncada;
+- allowlist anti-spoiler continua bloqueando jogadores, resposta da Foto, sequência MM,
+  valores de jogos, ocultos, confronto, placar e palpite.
+
+Checklist manual pendente:
+- selecionar sem registro, registro 0/4, andamento, 1/4–3/4 e 4/4;
+- validar vitória/derrota/conclusão, singular/plural de tentativas, acertos, 3/3, zero e
+  múltiplos erros, placar exato presente/ausente e streak em sequência intermediária;
+- confirmar clique, Enter, Espaço, navegação apenas por foco sem anúncio indevido, Tab,
+  Shift+Tab, Escape, backdrop e retorno de foco;
+- validar 412×600 e 412×915 como prioridades; complementar com 360×800, 390×844, 430×932 e
+  480×900;
+- validar 1366×768, 1440×900 e 1920×1080, densidade, scroll e ausência de overflow.
+
+Pendências:
+- validação manual das E.2, E.3 e E.4;
+- E.5 não iniciada.
+
+Próximo passo:
+- validar manualmente a E.4; iniciar E.5 somente após aprovação em tarefa própria.
+
+## 22/08/2026 — v3.0 Fase E.5: validação integrada e preparação para fechamento
+
+**Status: CONCLUÍDA — VALIDAÇÃO MANUAL FINAL APROVADA**
+
+Estado consolidado:
+- E.1, E.2, E.3 e E.4 concluídas e aprovadas manualmente;
+- E.5 executada em validação automatizada e auditoria estática do diff;
+- Fase E permanece em andamento até a validação manual final;
+- Fase F não iniciada.
+
+Validação integrada:
+- Estatísticas gerais preservam sequência, recorde, 4/4 e taxa como primárias; dias jogados,
+  modos concluídos e vitórias como secundárias; dias registrados como contexto; estado vazio
+  evita parede de zeros e zeros reais permanecem distintos de ausência de amostra;
+- Estatísticas por modo preservam ordem, métricas específicas, estado compacto sem dados e
+  quatro `<details>` nativos fechados por padrão, sem persistência ou listeners adicionais;
+- distribuições mantêm quatro categorias do Clássico, seis da Foto e onze do Mais ou Menos,
+  totalizando 21 valores associados aos respectivos modos e disponíveis somente nos detalhes;
+- calendário preserva sete colunas, segunda-feira inicial, sete estados internos, legenda de
+  cinco estados relevantes, hoje/seleção independentes, limites, 44 px e solução sem overflow
+  em 360 px por redução de padding/gap;
+- detalhe diário preserva data completa, progresso 0/4–4/4, quatro modos em ordem, estados,
+  métricas, exactScore condicional, sem registro seguro, 0/4 real e streak truncado até a
+  data selecionada;
+- terminologia permanece coerente com cada mecânica: sequência, recorde, concluído, vitória,
+  derrota, tentativas, acertos e erros; dias registrados possui explicação explícita em
+  contraste com dias jogados;
+- preto, branco, cinzas e dourado controlado permanecem dominantes; verde/vermelho aparecem
+  somente como reforço semântico textual; nenhum emoji, gráfico, pill decorativa ou card
+  interno excessivo foi reintroduzido;
+- larguras de aproximadamente 820 px para Estatísticas e 720 px para Histórico foram
+  preservadas, com 2×2 por modo no desktop e uma coluna no mobile;
+- dialogs, títulos associados, Tab/Shift+Tab, Enter, Espaço, Escape, focus-visible, focus
+  trap, retorno de foco, summary nativo, roving tabindex, aria-current, aria-selected e
+  aria-live seletivo permanecem cobertos;
+- teclado do calendário preserva setas, Home/End, PageUp/PageDown, Enter, Espaço, foco
+  separado de seleção, limites e cruzamentos de mês/ano;
+- Home continua com os acionadores Estatísticas e Histórico; contratos das Fases B, C e D,
+  overlay final e quatro modos permanecem aprovados pela suíte estrutural e funcional;
+- Estatísticas continua percorrendo apenas entradas históricas válidas; calendário renderiza
+  somente o mês exibido; details não cria listeners nem estado; nenhum risco concreto de
+  performance foi encontrado.
+
+Auditoria de dados e diff:
+- `storage-normalizers.js`, jogadores, partidas e manifesto de fotos permanecem fora do diff;
+- `obterEstatisticasIntegradas()`, regras de streak, `obterResumoHistoricoDia()`,
+  `obterSequenciaHistoricaDoDia()`, `obterEstadoDiaHistorico()`, geração/navegação do
+  calendário, `trackingStartedAt`, saves, seeds e migrações não foram alterados;
+- as únicas mudanças JavaScript de apresentação são o renderer das Estatísticas, helper para
+  ausência de amostra, inclusão de `summary` no focus trap e ano na data selecionada;
+- nenhum ID novo foi necessário; os 168 IDs continuam únicos;
+- classes e seletores introduzidos pela Fase E possuem uso em markup dinâmico, HTML ou testes;
+  nenhum resíduo órfão, branch morto ou markup redundante foi removido nesta E.5;
+- anti-spoiler continua bloqueando jogadores secretos, resposta da Foto, sequência MM,
+  valores de jogos, ocultos, confronto, placar e palpite.
+
+Problemas conhecidos:
+- P0: nenhum;
+- P1: nenhum;
+- P2: nenhum;
+- P3: nenhum pendente;
+- smoke responsivo automatizado: SKIP porque Chrome/Edge headless permanece indisponível
+  neste ambiente pelo processo GPU; não contabilizado como falha da Fase E.
+
+Testado:
+- suíte completa aprovada: storage A–X, 39 cenários de regras/180 datas MM, 118 cenários de
+  histórico, 13 de resultado final, cinco de movimento reduzido e 44 estruturais com 168 IDs;
+- storage e histórico executados também isoladamente;
+- sintaxe de `script.js` e `storage-normalizers.js` aprovada;
+- `git diff --check` aprovado, somente com avisos de normalização LF/CRLF;
+- CSS balanceado, três JSONs fora do diff, storage/seeds intactos e histórico compatível.
+
+Checklist manual final:
+- prioridade: 412×600, 412×915 e 1440×900; complementar com 360×800, 390×844, 430×932,
+  480×900, 1366×768 e 1920×1080;
+- Estatísticas: estado vazio, dados acumulados, quatro modos, details fechados/abertos,
+  distribuições, zero real, teclado, scroll e overflow;
+- Histórico: sem registro, registro 0/4, iniciado, parcial, 4/4, hoje/seleção, legenda,
+  detalhe, exactScore, streak e teclado completo;
+- Geral: fechar, backdrop, Escape, focus trap, retorno de foco e ausência de overflow.
+
+Pendências:
+- validação manual final da Fase E;
+- Fase F não iniciada.
+
+Próximo passo:
+- executar a validação manual final da Fase E; somente após aprovação, encerrá-la em tarefa
+  própria antes de iniciar a Fase F.
+
+## 22/08/2026 — v3.0 Fase E: encerramento oficial
+
+**Status: CONCLUÍDA — VALIDAÇÃO MANUAL FINAL APROVADA**
+
+Estado final:
+- E.1, E.2, E.3, E.4 e E.5 concluídas;
+- Estatísticas gerais, Estatísticas por modo e distribuições, calendário e detalhe diário
+  aprovados manualmente em validação integrada;
+- Fase E concluída sem problemas P0, P1, P2 ou P3 conhecidos;
+- Fase F não iniciada.
+
+Preservado:
+- cálculos, storage, saves, seeds, histórico, normalizadores, JSONs, Home, overlays, modos e
+  mecânicas;
+- regras de streak, 4/4, datas civis, calendário, anti-spoiler e compatibilidade histórica.
+
+Próximo passo:
+- v3.0 — Fase F: validação final, somente em tarefa própria.

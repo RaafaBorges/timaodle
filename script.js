@@ -1083,6 +1083,14 @@ function itemEstatistica(valor, rotulo) {
     return `<div><strong>${valor}</strong><span>${rotulo}</span></div>`;
 }
 
+function valorEstatisticaComAmostra(valor, temAmostra, sufixo = "") {
+    return temAmostra ? `${valor}${sufixo}` : "—";
+}
+
+function estadoVazioEstatisticaModo() {
+    return '<p class="integrated-mode-empty">Jogue este modo para construir suas estatísticas.</p>';
+}
+
 function formatarDistribuicao(distribuicao) {
     return Object.entries(distribuicao)
         .map(([faixa, total]) => `
@@ -1106,79 +1114,140 @@ function renderizarEstatisticasIntegradas() {
 
     integratedStatsContent.innerHTML = `
         <section class="integrated-stats-general" aria-label="Estatísticas gerais">
-            <div class="integrated-stat-box"><strong>${geral.currentStreak}</strong><span>Sequência</span></div>
-            <div class="integrated-stat-box"><strong>${geral.bestStreak}</strong><span>Recorde</span></div>
-            <div class="integrated-stat-box"><strong>${geral.completeDays}</strong><span>Dias 4/4</span></div>
-            <div class="integrated-stat-box"><strong>${geral.playedDays}</strong><span>Dias jogados</span></div>
-            <div class="integrated-stat-box"><strong>${geral.registeredDays}</strong><span>Dias registrados</span></div>
-            <div class="integrated-stat-box"><strong>${geral.completedModes}</strong><span>Modos concluídos</span></div>
-            <div class="integrated-stat-box"><strong>${geral.wins}</strong><span>Vitórias</span></div>
-            <div class="integrated-stat-box"><strong>${geral.completeDayRate}%</strong><span>Dias completos</span></div>
+            <div class="integrated-stats-primary">
+                <div class="integrated-streak-summary">
+                    <div class="integrated-streak-current">
+                        <span class="integrated-stat-label">Sequência atual</span>
+                        <strong>${geral.currentStreak}</strong>
+                        <span class="integrated-stat-context">dias 4/4 consecutivos</span>
+                    </div>
+                    <div class="integrated-streak-record">
+                        <span>Recorde</span>
+                        <strong>${geral.bestStreak}</strong>
+                        <small>dias</small>
+                    </div>
+                </div>
+                <div class="integrated-completion-summary">
+                    <span class="integrated-stat-label">Desempenho completo</span>
+                    <div class="integrated-completion-values">
+                        <div>
+                            <strong>${geral.completeDays}</strong>
+                            <span>dias 4/4</span>
+                        </div>
+                        <div>
+                            <strong>${geral.completeDayRate}%</strong>
+                            <span>dos dias jogados</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <dl class="integrated-stats-secondary">
+                <div><dt>Dias jogados</dt><dd>${geral.playedDays}</dd></div>
+                <div><dt>Modos concluídos</dt><dd>${geral.completedModes}</dd></div>
+                <div><dt>Vitórias</dt><dd>${geral.wins}</dd></div>
+            </dl>
+            <p class="integrated-stats-registered">
+                <span>Dias registrados no histórico</span>
+                <strong>${geral.registeredDays}</strong>
+                <small>Inclui dias armazenados mesmo sem desafio iniciado.</small>
+            </p>
         </section>
         <div class="integrated-mode-grid">
             <section class="integrated-mode-card">
                 <h3>CLÁSSICO</h3>
-                <div class="integrated-mode-stats">
-                    ${itemEstatistica(classic.started, "Iniciadas")}
-                    ${itemEstatistica(classic.completed, "Concluídas")}
-                    ${itemEstatistica(classic.wins, "Vitórias")}
-                    ${itemEstatistica(classic.completedAttempts, "Tentativas")}
-                    ${itemEstatistica(classic.averageAttemptsWins, "Média/vitória")}
-                    ${itemEstatistica(classic.bestAttempts, "Melhor")}
-                </div>
-                <div class="integrated-distribution">
-                    <span class="distribution-title">Tentativas</span>
-                    <div class="distribution-grid">${formatarDistribuicao(classic.distribution)}</div>
-                </div>
+                ${classic.started === 0 ? estadoVazioEstatisticaModo() : `
+                    <div class="integrated-mode-primary">
+                        ${itemEstatistica(classic.completed, "Concluídos")}
+                        ${itemEstatistica(valorEstatisticaComAmostra(classic.averageAttemptsWins, classic.completedAttempts > 0), "Média de tentativas")}
+                    </div>
+                    <p class="integrated-mode-secondary">
+                        <span><strong>${classic.started}</strong> iniciados</span>
+                        <span><strong>${valorEstatisticaComAmostra(classic.bestAttempts, classic.completedAttempts > 0)}</strong> melhor resultado</span>
+                    </p>
+                    <details class="integrated-mode-details">
+                        <summary>Ver detalhes</summary>
+                        <div class="integrated-mode-stats">
+                            ${itemEstatistica(classic.wins, "Vitórias")}
+                            ${itemEstatistica(classic.completedAttempts, "Tentativas acumuladas")}
+                        </div>
+                        <div class="integrated-distribution">
+                            <span class="distribution-title">Distribuição de tentativas</span>
+                            <div class="distribution-grid">${formatarDistribuicao(classic.distribution)}</div>
+                        </div>
+                    </details>`}
             </section>
             <section class="integrated-mode-card">
                 <h3>FOTO</h3>
-                <div class="integrated-mode-stats">
-                    ${itemEstatistica(photo.started, "Iniciadas")}
-                    ${itemEstatistica(photo.completed, "Concluídas")}
-                    ${itemEstatistica(photo.wins, "Vitórias")}
-                    ${itemEstatistica(photo.losses, "Derrotas")}
-                    ${itemEstatistica(`${photo.winRate}%`, "Taxa de vitória")}
-                    ${itemEstatistica(photo.averageAttemptsCompleted, "Média geral")}
-                    ${itemEstatistica(photo.averageAttemptsWins, "Média/vitória")}
-                    ${itemEstatistica(photo.bestWin, "Melhor vitória")}
-                </div>
-                <div class="integrated-distribution">
-                    <span class="distribution-title">Tentativas</span>
-                    <div class="distribution-grid">${formatarDistribuicao(photo.distribution)}</div>
-                </div>
+                ${photo.started === 0 ? estadoVazioEstatisticaModo() : `
+                    <div class="integrated-mode-primary">
+                        ${itemEstatistica(photo.wins, "Vitórias")}
+                        ${itemEstatistica(valorEstatisticaComAmostra(photo.winRate, photo.completed > 0, "%"), "Taxa de vitória")}
+                        ${itemEstatistica(valorEstatisticaComAmostra(photo.averageAttemptsWins, photo.wins > 0), "Média por vitória")}
+                    </div>
+                    <p class="integrated-mode-secondary">
+                        <span><strong>${photo.completed}</strong> concluídos</span>
+                        <span><strong>${photo.losses}</strong> derrotas</span>
+                        <span><strong>${valorEstatisticaComAmostra(photo.bestWin, photo.wins > 0)}</strong> melhor vitória</span>
+                    </p>
+                    <details class="integrated-mode-details">
+                        <summary>Ver detalhes</summary>
+                        <div class="integrated-mode-stats">
+                            ${itemEstatistica(photo.started, "Iniciados")}
+                            ${itemEstatistica(valorEstatisticaComAmostra(photo.averageAttemptsCompleted, photo.completed > 0), "Média geral")}
+                        </div>
+                        <div class="integrated-distribution">
+                            <span class="distribution-title">Distribuição de tentativas</span>
+                            <div class="distribution-grid">${formatarDistribuicao(photo.distribution)}</div>
+                        </div>
+                    </details>`}
             </section>
             <section class="integrated-mode-card">
                 <h3>MAIS OU MENOS</h3>
-                <div class="integrated-mode-stats">
-                    ${itemEstatistica(moreLess.started, "Iniciadas")}
-                    ${itemEstatistica(moreLess.completed, "Concluídas")}
-                    ${itemEstatistica(moreLess.wins, "Vitórias")}
-                    ${itemEstatistica(moreLess.losses, "Derrotas")}
-                    ${itemEstatistica(`${moreLess.winRate}%`, "Taxa de vitória")}
-                    ${itemEstatistica(moreLess.averageHits, "Média de acertos")}
-                    ${itemEstatistica(moreLess.bestResult, "Melhor")}
-                    ${itemEstatistica(moreLess.worstResult, "Pior")}
-                    ${itemEstatistica(moreLess.perfectResults, "Resultados 10/10")}
-                    ${itemEstatistica(moreLess.sevenPlusResults, "Resultados 7+")}
-                </div>
-                <div class="integrated-distribution">
-                    <span class="distribution-title">Acertos</span>
-                    <div class="distribution-grid distribution-grid-wide">${formatarDistribuicao(moreLess.distribution)}</div>
-                </div>
+                ${moreLess.started === 0 ? estadoVazioEstatisticaModo() : `
+                    <div class="integrated-mode-primary">
+                        ${itemEstatistica(moreLess.wins, "Vitórias")}
+                        ${itemEstatistica(valorEstatisticaComAmostra(moreLess.winRate, moreLess.completed > 0, "%"), "Taxa de vitória")}
+                        ${itemEstatistica(valorEstatisticaComAmostra(moreLess.averageHits, moreLess.completed > 0), "Média de acertos")}
+                    </div>
+                    <p class="integrated-mode-secondary">
+                        <span><strong>${moreLess.completed}</strong> concluídos</span>
+                        <span><strong>${valorEstatisticaComAmostra(moreLess.bestResult, moreLess.completed > 0)}</strong> melhor</span>
+                        <span><strong>${moreLess.sevenPlusResults}</strong> resultados 7+</span>
+                    </p>
+                    <details class="integrated-mode-details">
+                        <summary>Ver detalhes</summary>
+                        <div class="integrated-mode-stats">
+                            ${itemEstatistica(moreLess.started, "Iniciados")}
+                            ${itemEstatistica(moreLess.losses, "Derrotas")}
+                            ${itemEstatistica(valorEstatisticaComAmostra(moreLess.worstResult, moreLess.completed > 0), "Pior resultado")}
+                            ${itemEstatistica(moreLess.perfectResults, "Resultados 10/10")}
+                        </div>
+                        <div class="integrated-distribution">
+                            <span class="distribution-title">Distribuição de acertos</span>
+                            <div class="distribution-grid distribution-grid-wide">${formatarDistribuicao(moreLess.distribution)}</div>
+                        </div>
+                    </details>`}
             </section>
             <section class="integrated-mode-card">
                 <h3>ONZE INICIAL</h3>
-                <div class="integrated-mode-stats">
-                    ${itemEstatistica(lineup.started, "Iniciadas")}
-                    ${itemEstatistica(lineup.completed, "Concluídas")}
-                    ${itemEstatistica(lineup.totalErrors, "Erros")}
-                    ${itemEstatistica(lineup.averageErrors, "Média de erros")}
-                    ${itemEstatistica(lineup.bestErrors, "Menor número")}
-                    ${itemEstatistica(lineup.zeroErrorCompletions, "Zero erros")}
-                    ${itemEstatistica(lineup.exactScores, "Placares exatos")}
-                    ${itemEstatistica(`${lineup.exactScoreRate}%`, "Taxa de placar")}
-                </div>
+                ${lineup.started === 0 ? estadoVazioEstatisticaModo() : `
+                    <div class="integrated-mode-primary">
+                        ${itemEstatistica(lineup.completed, "Concluídos")}
+                        ${itemEstatistica(valorEstatisticaComAmostra(lineup.averageErrors, lineup.completed > 0), "Média de erros")}
+                    </div>
+                    <p class="integrated-mode-secondary">
+                        <span><strong>${valorEstatisticaComAmostra(lineup.bestErrors, lineup.completed > 0)}</strong> menor número de erros</span>
+                        <span><strong>${lineup.exactScores}</strong> placares exatos</span>
+                    </p>
+                    <details class="integrated-mode-details">
+                        <summary>Ver detalhes</summary>
+                        <div class="integrated-mode-stats">
+                            ${itemEstatistica(lineup.started, "Iniciados")}
+                            ${itemEstatistica(lineup.totalErrors, "Erros acumulados")}
+                            ${itemEstatistica(lineup.zeroErrorCompletions, "Conclusões sem erros")}
+                            ${itemEstatistica(valorEstatisticaComAmostra(lineup.exactScoreRate, lineup.exactScoreEvaluated > 0, "%"), "Taxa de placar exato")}
+                        </div>
+                    </details>`}
             </section>
         </div>`;
 }
@@ -1254,7 +1323,7 @@ function renderizarResumoDiaHistorico(dia) {
     const resumo = obterResumoHistoricoDia(dia.date, estadoHistoricoUI.history);
     historySummaryEmpty?.classList.add("hidden");
     if (historySelectedDateTitle) {
-        historySelectedDateTitle.textContent = formatarDataHistorico(dia.date, false);
+        historySelectedDateTitle.textContent = formatarDataHistorico(dia.date);
         historySelectedDateTitle.classList.remove("hidden");
     }
 
@@ -1488,7 +1557,7 @@ const focoAnteriorPorModal = new WeakMap();
 function elementosFocaveisDoModal(modal) {
     if (!modal) return [];
     return Array.from(modal.querySelectorAll(
-        'button:not([disabled]):not([tabindex="-1"]), [href]:not([tabindex="-1"]), input:not([disabled]):not([tabindex="-1"]), select:not([disabled]):not([tabindex="-1"]), textarea:not([disabled]):not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])'
+        'button:not([disabled]):not([tabindex="-1"]), summary:not([tabindex="-1"]), [href]:not([tabindex="-1"]), input:not([disabled]):not([tabindex="-1"]), select:not([disabled]):not([tabindex="-1"]), textarea:not([disabled]):not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])'
     )).filter(elemento => elemento.getClientRects().length > 0);
 }
 
