@@ -2225,21 +2225,22 @@ Pendências futuras, sem bloqueio para a v2.7:
 - validação histórica das quatro partidas 4-2-3-1;
 - bases históricas residuais do CSS do Onze Inicial.
 
-## 🚧 v2.8 — EM ANDAMENTO: CALENDÁRIO / HISTÓRICO VISUAL
+## ✅ v2.8 — CONCLUÍDA: CALENDÁRIO / HISTÓRICO VISUAL
 
 Fases:
-- [x] Fase A — modelo, datas civis, limites e testes permanentes;
+- [x] Fase A — modelo do histórico, `trackingStartedAt`, datas civis e limites;
 - [x] Fase B — modal e calendário visual;
-- [x] Fase C — resumo detalhado e seguro do dia selecionado;
-- [x] Fase D — acessibilidade e navegação por teclado;
-- [x] Fase E — streak histórico, polimento e validação final automatizada;
+- [x] Fase C — resumo seguro e detalhado do dia;
+- [x] Fase D — acessibilidade avançada e navegação por teclado;
+- [x] Fase E — streak histórico e polimento final;
+- [x] Validação manual final em navegador real.
 
 Estado atual:
 - `timaodle_history_v1` continua sendo a única fonte diária;
 - metadata `trackingStartedAt` integrada ao mesmo objeto, sem nova chave de storage;
 - calendário visual, modal, resumo seguro e navegação avançada por teclado estão implementados;
-- Fase E implementada e aprovada na validação automatizada;
-- a v2.8 aguarda somente a validação manual final em navegador real antes do fechamento oficial.
+- Fases A–E concluídas e aprovadas nas validações automatizada e manual;
+- feature de Histórico encerrada oficialmente na v2.8.
 
 
 ## 21/08/2026 — v2.8 Fase A: modelo, limites e testes do histórico visual
@@ -2483,3 +2484,50 @@ Pendência final:
 
 Próximo passo:
 - executar a validação manual final e, se aprovada, fechar oficialmente a v2.8 sem adicionar features.
+
+
+## 21/08/2026 — Fechamento oficial da v2.8
+
+**v2.8 — CONCLUÍDA**
+
+Escopo encerrado:
+- Fase A — modelo do histórico, `trackingStartedAt`, datas civis e limites;
+- Fase B — modal e calendário visual;
+- Fase C — resumo seguro e detalhado do dia selecionado;
+- Fase D — acessibilidade avançada, roving tabindex e navegação por teclado;
+- Fase E — streak histórico, polimento final e preparação para fechamento;
+- `timaodle_history_v1` preservado como única fonte diária da feature.
+
+Validação manual final aprovada em navegador real:
+- abertura e fechamento do Histórico, Escape e retorno de foco;
+- navegação mensal e limites de `trackingStartedAt` e da data atual;
+- dias sem registro, parciais e completos 4/4;
+- streak histórico do dia selecionado;
+- ArrowLeft/Right, ArrowUp/Down, Home/End e PageUp/PageDown;
+- Enter/Espaço, Tab/Shift+Tab e cruzamento entre meses;
+- desktop e mobile, sem regressão visual relevante identificada.
+
+Validação técnica do fechamento:
+- suíte completa aprovada com storage A–X, 39 cenários de regras, 118 cenários do
+  histórico e 27 cenários estruturais;
+- 151 IDs verificados sem duplicidade;
+- `script.js` e `storage-normalizers.js` aprovados por `node --check`;
+- três JSONs válidos e inalterados;
+- CSS balanceado, contrato de frontend e `git diff --check` aprovados.
+
+Pendências futuras não bloqueantes:
+- validação com leitor de tela real;
+- smoke headless quando houver ambiente compatível;
+- validação histórica das partidas/formações 4-2-3-1;
+- bases históricas residuais do CSS do Onze Inicial já documentadas.
+
+Estado da arquitetura:
+- Vanilla JavaScript, HTML e CSS continuam adequados ao porte atual;
+- testes permanentes, normalizadores defensivos e contrato estrutural protegem os fluxos centrais;
+- nenhuma migração de framework ou grande refatoração é necessária neste momento.
+
+Candidatos naturais para uma versão futura, sem versão iniciada:
+- validação e eventual inclusão dos 20 jogadores restantes sem foto e com `jogos: null`;
+- validação histórica das formações 4-2-3-1;
+- validação acessível com leitor de tela real e smoke headless;
+- evolução incremental de funcionalidades somente após definição explícita do próximo escopo.
