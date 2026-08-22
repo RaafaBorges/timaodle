@@ -2231,13 +2231,14 @@ Fases:
 - [x] Fase A — modelo, datas civis, limites e testes permanentes;
 - [x] Fase B — modal e calendário visual;
 - [x] Fase C — resumo detalhado e seguro do dia selecionado;
-- [ ] Fase D — acessibilidade e navegação por teclado;
+- [x] Fase D — acessibilidade e navegação por teclado;
 - [ ] Fase E — streak histórico, polimento e validação final.
 
 Estado atual:
 - `timaodle_history_v1` continua sendo a única fonte diária;
 - metadata `trackingStartedAt` integrada ao mesmo objeto, sem nova chave de storage;
-- calendário visual, botão, modal, CSS e resumo ainda não foram implementados.
+- calendário visual, modal, resumo seguro e navegação avançada por teclado estão implementados;
+- Fase E permanece como próxima etapa para streak histórico, polimento e validação final.
 
 
 ## 21/08/2026 — v2.8 Fase A: modelo, limites e testes do histórico visual
@@ -2403,3 +2404,42 @@ Estado da versão:
 - Fase C continua concluída;
 - Fase D não foi iniciada;
 - próxima etapa funcional permanece a acessibilidade avançada do calendário.
+
+
+## 21/08/2026 — v2.8 Fase D: acessibilidade avançada do calendário
+
+Implementado:
+- roving tabindex na grade: exatamente um dia navegável participa da ordem de Tab;
+- dias futuros, anteriores ao `trackingStartedAt` e células vazias permanecem fora do foco;
+- foco e seleção são estados independentes; setas, Home/End e PageUp/PageDown movem somente
+  o foco, enquanto Enter, Espaço e clique confirmam a seleção;
+- setas horizontais avançam um dia e verticais sete dias, atravessando mês e ano quando permitido;
+- Home/End encontram o primeiro/último dia navegável da semana iniciada na segunda-feira;
+- PageUp/PageDown preservam o dia no mês adjacente ou limitam ao último dia/limite válido;
+- limites inferior e superior impedem foco antes do tracking ou depois de hoje;
+- foco inicial da grade prioriza seleção, hoje, último registro e primeiro dia permitido;
+- troca de mês pelos controles mantém o comportamento de seleção e prepara um foco válido;
+- o resumo da Fase C não é atualizado nem anunciado durante mero deslocamento de foco;
+- focus trap comum passou a ignorar corretamente botões com `tabindex="-1"`;
+- contrato estrutural documenta os novos invariantes de teclado e acessibilidade.
+
+Testado:
+- 32 novos cenários permanentes de navegação; suíte do histórico ampliada de 69 para 101 cenários;
+- setas, Home/End, PageUp/PageDown, viradas de mês/ano, fevereiro comum/bissexto,
+  limites de tracking/hoje, separação foco/seleção e preferência do foco inicial;
+- suíte completa, storage, regras dos modos, contrato estrutural, sintaxe, JSONs, IDs,
+  CSS balanceado e whitespace validados no encerramento;
+- validação manual com teclado e leitor de tela real permanece recomendada.
+
+Compatibilidade preservada:
+- conteúdo e allowlist do resumo da Fase C, histórico v1, `trackingStartedAt`, saves,
+  progresso, streak atual, estatísticas, compartilhamento, quatro modos e identidade visual;
+- `index.html`, `style.css` e os três JSONs permaneceram inalterados.
+
+Pendências:
+- validação manual em navegador real de Tab/Shift+Tab, setas, Enter, Espaço e anúncios;
+- validação com leitor de tela real;
+- Fase E ainda não iniciada.
+
+Próximo passo:
+- implementar a Fase E: streak histórico, polimento e validação final da v2.8.

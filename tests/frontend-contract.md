@@ -65,6 +65,14 @@ node tests/viewport-smoke.js
   permanecem combináveis com `is-today` e `is-selected`.
 - Futuro e pré-tracking usam botões realmente desabilitados; dias sem registro continuam selecionáveis.
 - Seleção e mês exibido existem apenas em memória e não alteram `timaodle_history_v1`.
+- A grade usa roving tabindex: somente a data navegável em foco participa da ordem de Tab;
+  dias futuros, pré-tracking e vazios nunca recebem foco.
+- Setas movem o foco por um ou sete dias, inclusive entre meses; Home/End respeitam a
+  semana iniciada na segunda e PageUp/PageDown preservam o dia quando possível.
+- Movimento de foco não altera seleção nem resumo. Enter, Espaço e clique confirmam a
+  seleção; todos os movimentos respeitam `trackingStartedAt` e hoje.
+- A troca de mês por teclado anuncia somente o título do novo mês; o resumo `aria-live`
+  continua estável até uma seleção explícita.
 - O resumo do dia usa uma allowlist derivada exclusivamente do registro normalizado selecionado.
 - Dias sem registro exibem somente mensagem neutra; registros `0/4` mantêm as quatro linhas
   para distinguir progresso existente de ausência de dados.

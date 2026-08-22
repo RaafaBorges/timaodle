@@ -43,9 +43,13 @@ function dayWithCompleted(count) {
 const calendar = compileFunctions([
     "calcularProgressoDoResumo", "componentesDataCivil", "criarDataCivilString",
     "compararDatasCivis", "diasNoMesCivil", "deslocamentoPrimeiraSemanaCivil",
-    "moverMesCivil", "compararMesesCivis", "obterLimitesMesesHistorico",
+    "moverMesCivil", "moverDataCivil", "dataNavegavelHistorico",
+    "limitarDataNavegavelHistorico", "obterDataFocoSemanaHistorico",
+    "obterDataFocoMesHistorico", "resolverNavegacaoTecladoHistorico",
+    "compararMesesCivis", "obterLimitesMesesHistorico",
     "limitarMesAoHistorico", "obterNavegacaoMesHistorico", "obterEstadoDiaHistorico",
-    "obterResumoHistoricoDia", "gerarGradeMensalHistorico"
+    "obterResumoHistoricoDia", "gerarGradeMensalHistorico", "obterDataFocoInicialHistorico",
+    "obterTabIndexDiaHistorico"
 ], {
     dataHistoricoValida: storage.validDate,
     getDataLocalString: () => TODAY,
@@ -242,6 +246,96 @@ test("pedido futuro é limitado ao mês atual", () => {
 });
 test("pedido anterior é limitado ao primeiro mês", () => {
     assert.deepEqual(calendar.limitarMesAoHistorico(2025, 1, navigationHistory, TODAY), { year: 2026, month: 6 });
+});
+
+// Navegação avançada e roving tabindex.
+const keyboardHistory = normalized({
+    "2026-06-20": emptyDay(),
+    "2026-07-10": dayWithCompleted(1)
+}, "2026-06-15");
+const navigate = (key, focus, selected = "2026-07-10", history = keyboardHistory, today = TODAY) => (
+    calendar.resolverNavegacaoTecladoHistorico(key, focus, selected, history, today)
+);
+
+test("data civil avança na virada do mês", () => assert.equal(calendar.moverDataCivil("2026-07-31", 1), "2026-08-01"));
+test("data civil retrocede na virada do ano", () => assert.equal(calendar.moverDataCivil("2026-01-01", -1), "2025-12-31"));
+test("ArrowLeft move um dia sem selecionar", () => {
+    assert.deepEqual(navigate("ArrowLeft", "2026-07-10"), {
+        handled: true, focusDate: "2026-07-09", selectedDate: "2026-07-10", selectionChanged: false
+    });
+});
+test("ArrowRight move um dia", () => assert.equal(navigate("ArrowRight", "2026-07-10").focusDate, "2026-07-11"));
+test("ArrowUp move sete dias", () => assert.equal(navigate("ArrowUp", "2026-07-10").focusDate, "2026-07-03"));
+test("ArrowDown move sete dias", () => assert.equal(navigate("ArrowDown", "2026-07-10").focusDate, "2026-07-17"));
+test("ArrowRight cruza para o mês seguinte", () => assert.equal(navigate("ArrowRight", "2026-07-31").focusDate, "2026-08-01"));
+test("ArrowLeft cruza para o mês anterior", () => assert.equal(navigate("ArrowLeft", "2026-07-01").focusDate, "2026-06-30"));
+test("ArrowRight cruza dezembro para janeiro", () => {
+    const history = normalized({}, "2026-01-01");
+    assert.equal(navigate("ArrowRight", "2026-12-31", "2026-12-01", history, "2027-01-15").focusDate, "2027-01-01");
+});
+test("Home vai para segunda-feira da semana", () => assert.equal(navigate("Home", "2026-07-16").focusDate, "2026-07-13"));
+test("End vai para domingo da semana", () => assert.equal(navigate("End", "2026-07-16").focusDate, "2026-07-19"));
+test("Home respeita trackingStartedAt no meio da semana", () => {
+    assert.equal(navigate("Home", "2026-06-17").focusDate, "2026-06-15");
+});
+test("End respeita hoje no meio da semana", () => assert.equal(navigate("End", TODAY).focusDate, TODAY));
+test("PageUp preserva o dia no mês anterior", () => assert.equal(navigate("PageUp", "2026-07-20").focusDate, "2026-06-20"));
+test("PageDown preserva o dia no mês seguinte", () => assert.equal(navigate("PageDown", "2026-07-10").focusDate, "2026-08-10"));
+test("PageDown limita 31 ao último dia do mês", () => {
+    const history = normalized({}, "2026-01-01");
+    assert.equal(navigate("PageDown", "2026-03-31", "2026-03-01", history, "2026-05-10").focusDate, "2026-04-30");
+});
+test("PageDown limita 31 a fevereiro comum", () => {
+    const history = normalized({}, "2025-01-01");
+    assert.equal(navigate("PageDown", "2025-01-31", null, history, "2025-03-10").focusDate, "2025-02-28");
+});
+test("PageDown preserva 29 em fevereiro bissexto", () => {
+    const history = normalized({}, "2028-01-01");
+    assert.equal(navigate("PageDown", "2028-01-30", null, history, "2028-03-10").focusDate, "2028-02-29");
+});
+test("PageDown cruza dezembro para janeiro", () => {
+    const history = normalized({}, "2026-01-01");
+    assert.equal(navigate("PageDown", "2026-12-15", null, history, "2027-02-01").focusDate, "2027-01-15");
+});
+test("PageUp não ultrapassa o primeiro mês permitido", () => {
+    assert.equal(navigate("PageUp", "2026-06-20").focusDate, "2026-06-20");
+});
+test("PageDown no mês atual limita ao dia de hoje", () => assert.equal(navigate("PageDown", "2026-07-31").focusDate, TODAY));
+test("seta não entra no período anterior ao tracking", () => assert.equal(navigate("ArrowLeft", "2026-06-15").focusDate, "2026-06-15"));
+test("seta não entra no futuro", () => assert.equal(navigate("ArrowRight", TODAY).focusDate, TODAY));
+test("Enter seleciona somente o dia em foco", () => {
+    assert.deepEqual(navigate("Enter", "2026-07-11"), {
+        handled: true, focusDate: "2026-07-11", selectedDate: "2026-07-11", selectionChanged: true
+    });
+});
+test("Espaço seleciona o dia em foco", () => assert.equal(navigate(" ", "2026-07-11").selectedDate, "2026-07-11"));
+test("tecla alheia não é tratada", () => assert.deepEqual(navigate("Tab", "2026-07-11"), { handled: false }));
+test("dia desabilitado não inicia navegação", () => assert.deepEqual(navigate("ArrowRight", "2026-06-14"), { handled: false }));
+test("foco inicial prioriza seleção navegável", () => {
+    const grade = calendar.gerarGradeMensalHistorico(2026, 7, keyboardHistory, TODAY);
+    assert.equal(calendar.obterDataFocoInicialHistorico(grade, "2026-07-08", TODAY), "2026-07-08");
+});
+test("foco inicial prioriza hoje quando visível", () => {
+    const grade = calendar.gerarGradeMensalHistorico(2026, 8, keyboardHistory, TODAY);
+    assert.equal(calendar.obterDataFocoInicialHistorico(grade, null, TODAY), TODAY);
+});
+test("foco inicial usa o último registro do mês", () => {
+    const grade = calendar.gerarGradeMensalHistorico(2026, 7, keyboardHistory, TODAY);
+    assert.equal(calendar.obterDataFocoInicialHistorico(grade, null, TODAY), "2026-07-10");
+});
+test("foco inicial usa o primeiro dia permitido sem seleção ou registro", () => {
+    const history = normalized({}, "2026-06-15");
+    const grade = calendar.gerarGradeMensalHistorico(2026, 6, history, TODAY);
+    assert.equal(calendar.obterDataFocoInicialHistorico(grade, null, TODAY), "2026-06-15");
+});
+test("exatamente um dia interativo recebe tabindex zero", () => {
+    const grade = calendar.gerarGradeMensalHistorico(2026, 8, keyboardHistory, TODAY);
+    const foco = calendar.obterDataFocoInicialHistorico(grade, null, TODAY);
+    const indices = grade.days.map(dia => calendar.obterTabIndexDiaHistorico(dia, foco));
+    assert.equal(indices.filter(indice => indice === 0).length, 1);
+    grade.days.filter(dia => dia.isFuture || dia.isBeforeTracking).forEach(dia => {
+        assert.equal(calendar.obterTabIndexDiaHistorico(dia, foco), -1);
+    });
 });
 
 // Resumo seguro do dia selecionado.

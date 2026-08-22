@@ -330,6 +330,76 @@ function moverMesCivil(year, month, deslocamento) {
     return { year: data.getUTCFullYear(), month: data.getUTCMonth() + 1 };
 }
 
+function moverDataCivil(data, deslocamento) {
+    const civil = componentesDataCivil(data);
+    if (!civil || !Number.isInteger(deslocamento)) return null;
+    const destino = new Date(Date.UTC(civil.year, civil.month - 1, civil.day + deslocamento));
+    return criarDataCivilString(destino.getUTCFullYear(), destino.getUTCMonth() + 1, destino.getUTCDate());
+}
+
+function dataNavegavelHistorico(data, historico, hoje = getDataLocalString()) {
+    if (!dataHistoricoValida(data) || !dataHistoricoValida(hoje)) return false;
+    const inicio = dataHistoricoValida(historico?.trackingStartedAt) ? historico.trackingStartedAt : hoje;
+    return compararDatasCivis(data, inicio) >= 0 && compararDatasCivis(data, hoje) <= 0;
+}
+
+function limitarDataNavegavelHistorico(data, historico, hoje = getDataLocalString()) {
+    if (!dataHistoricoValida(data) || !dataHistoricoValida(hoje)) return null;
+    const inicio = dataHistoricoValida(historico?.trackingStartedAt) ? historico.trackingStartedAt : hoje;
+    if (compararDatasCivis(inicio, hoje) > 0) return null;
+    if (compararDatasCivis(data, inicio) < 0) return inicio;
+    if (compararDatasCivis(data, hoje) > 0) return hoje;
+    return data;
+}
+
+function obterDataFocoSemanaHistorico(data, limiteFinal, historico, hoje = getDataLocalString()) {
+    const civil = componentesDataCivil(data);
+    if (!civil || (limiteFinal !== "inicio" && limiteFinal !== "fim")) return null;
+    const diaSemana = new Date(Date.UTC(civil.year, civil.month - 1, civil.day)).getUTCDay();
+    const deslocamentoSegunda = (diaSemana + 6) % 7;
+    const deslocamento = limiteFinal === "inicio" ? -deslocamentoSegunda : 6 - deslocamentoSegunda;
+    return limitarDataNavegavelHistorico(moverDataCivil(data, deslocamento), historico, hoje);
+}
+
+function obterDataFocoMesHistorico(data, direcao, historico, hoje = getDataLocalString()) {
+    const civil = componentesDataCivil(data);
+    if (!civil || (direcao !== -1 && direcao !== 1)) return null;
+    const destino = moverMesCivil(civil.year, civil.month, direcao);
+    const limites = obterLimitesMesesHistorico(historico, hoje);
+    if (compararMesesCivis(destino, limites.firstMonth) < 0
+        || compararMesesCivis(destino, limites.currentMonth) > 0) return data;
+    const dia = Math.min(civil.day, diasNoMesCivil(destino.year, destino.month));
+    return limitarDataNavegavelHistorico(
+        criarDataCivilString(destino.year, destino.month, dia), historico, hoje
+    ) || data;
+}
+
+function resolverNavegacaoTecladoHistorico(tecla, dataFoco, dataSelecionada, historico, hoje = getDataLocalString()) {
+    if (!dataNavegavelHistorico(dataFoco, historico, hoje)) return { handled: false };
+    if (tecla === "Enter" || tecla === " " || tecla === "Spacebar") {
+        return { handled: true, focusDate: dataFoco, selectedDate: dataFoco, selectionChanged: dataSelecionada !== dataFoco };
+    }
+
+    const deslocamentos = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
+    let proximoFoco = dataFoco;
+    if (Object.prototype.hasOwnProperty.call(deslocamentos, tecla)) {
+        const candidato = moverDataCivil(dataFoco, deslocamentos[tecla]);
+        proximoFoco = dataNavegavelHistorico(candidato, historico, hoje) ? candidato : dataFoco;
+    } else if (tecla === "Home" || tecla === "End") {
+        proximoFoco = obterDataFocoSemanaHistorico(
+            dataFoco, tecla === "Home" ? "inicio" : "fim", historico, hoje
+        ) || dataFoco;
+    } else if (tecla === "PageUp" || tecla === "PageDown") {
+        proximoFoco = obterDataFocoMesHistorico(
+            dataFoco, tecla === "PageUp" ? -1 : 1, historico, hoje
+        ) || dataFoco;
+    } else {
+        return { handled: false };
+    }
+
+    return { handled: true, focusDate: proximoFoco, selectedDate: dataSelecionada, selectionChanged: false };
+}
+
 function compararMesesCivis(mesA, mesB) {
     if (!mesA || !mesB || !Number.isInteger(mesA.year) || !Number.isInteger(mesA.month)
         || !Number.isInteger(mesB.year) || !Number.isInteger(mesB.month)) return null;
@@ -1071,9 +1141,23 @@ const estadoHistoricoUI = {
     year: null,
     month: null,
     selectedDate: null,
+    focusedDate: null,
     history: null,
     today: null
 };
+
+function obterDataFocoInicialHistorico(grade, dataSelecionada, hoje) {
+    const navegaveis = grade?.days?.filter(dia => !dia.isFuture && !dia.isBeforeTracking) || [];
+    if (navegaveis.length === 0) return null;
+    const datasNavegaveis = new Set(navegaveis.map(dia => dia.date));
+    if (datasNavegaveis.has(dataSelecionada)) return dataSelecionada;
+    if (datasNavegaveis.has(hoje)) return hoje;
+    return navegaveis.filter(dia => dia.hasRecord).at(-1)?.date || navegaveis[0].date;
+}
+
+function obterTabIndexDiaHistorico(dia, dataFoco) {
+    return dia && !dia.isFuture && !dia.isBeforeTracking && dia.date === dataFoco ? 0 : -1;
+}
 
 function formatarDataHistorico(data, incluirAno = true) {
     const civil = componentesDataCivil(data);
@@ -1164,11 +1248,12 @@ function selecionarDiaHistorico(data, devolverFoco = false) {
     const dia = grade.days.find(item => item.date === data && !item.isFuture && !item.isBeforeTracking);
     if (!dia) return;
     estadoHistoricoUI.selectedDate = data;
+    estadoHistoricoUI.focusedDate = data;
     renderizarCalendarioHistorico();
     if (devolverFoco) historyCalendarGrid?.querySelector(`[data-history-date="${data}"]`)?.focus();
 }
 
-function renderizarCalendarioHistorico() {
+function renderizarCalendarioHistorico(atualizarResumo = true) {
     if (!historyCalendarGrid || !estadoHistoricoUI.history || !estadoHistoricoUI.today) return;
     const grade = gerarGradeMensalHistorico(
         estadoHistoricoUI.year,
@@ -1178,6 +1263,13 @@ function renderizarCalendarioHistorico() {
     );
     estadoHistoricoUI.year = grade.year;
     estadoHistoricoUI.month = grade.month;
+    const focoExisteNaGrade = grade.days.some(dia => dia.date === estadoHistoricoUI.focusedDate
+        && !dia.isFuture && !dia.isBeforeTracking);
+    if (!focoExisteNaGrade) {
+        estadoHistoricoUI.focusedDate = obterDataFocoInicialHistorico(
+            grade, estadoHistoricoUI.selectedDate, estadoHistoricoUI.today
+        );
+    }
     if (historyMonthTitle) historyMonthTitle.textContent = `${MESES_HISTORICO[grade.month - 1]} ${grade.year}`;
     if (historyPreviousMonth) historyPreviousMonth.disabled = !grade.navigation.canGoPrevious;
     if (historyNextMonth) historyNextMonth.disabled = !grade.navigation.canGoNext;
@@ -1203,6 +1295,7 @@ function renderizarCalendarioHistorico() {
         botao.className = "history-day-button";
         botao.dataset.historyDate = dia.date;
         botao.disabled = dia.isFuture || dia.isBeforeTracking;
+        botao.tabIndex = obterTabIndexDiaHistorico(dia, estadoHistoricoUI.focusedDate);
         botao.setAttribute("aria-label", rotuloAcessivelDiaHistorico(dia));
         botao.setAttribute("aria-pressed", String(selecionado));
         if (dia.isToday) botao.setAttribute("aria-current", "date");
@@ -1232,8 +1325,54 @@ function renderizarCalendarioHistorico() {
         historyCalendarGrid.appendChild(celula);
     });
 
-    const selecionado = grade.days.find(dia => dia.date === estadoHistoricoUI.selectedDate);
-    renderizarResumoDiaHistorico(selecionado || null);
+    if (atualizarResumo) {
+        const selecionado = estadoHistoricoUI.selectedDate
+            ? obterEstadoDiaHistorico(estadoHistoricoUI.selectedDate, estadoHistoricoUI.history, estadoHistoricoUI.today)
+            : null;
+        renderizarResumoDiaHistorico(selecionado);
+    }
+}
+
+function atualizarFocoRovingHistorico(data) {
+    if (!historyCalendarGrid || !dataNavegavelHistorico(data, estadoHistoricoUI.history, estadoHistoricoUI.today)) return;
+    const alvo = historyCalendarGrid.querySelector(`[data-history-date="${data}"]`);
+    if (!alvo || alvo.disabled) return;
+    historyCalendarGrid.querySelectorAll(".history-day-button").forEach(botao => {
+        botao.tabIndex = botao === alvo ? 0 : -1;
+    });
+    estadoHistoricoUI.focusedDate = data;
+    alvo.focus();
+}
+
+function navegarCalendarioHistoricoPorTeclado(event) {
+    const botao = event.target.closest?.(".history-day-button");
+    if (!botao || botao.disabled || !historyCalendarGrid?.contains(botao)) return;
+    const resultado = resolverNavegacaoTecladoHistorico(
+        event.key,
+        botao.dataset.historyDate,
+        estadoHistoricoUI.selectedDate,
+        estadoHistoricoUI.history,
+        estadoHistoricoUI.today
+    );
+    if (!resultado.handled) return;
+    event.preventDefault();
+
+    if (event.key === "Enter" || event.key === " " || event.key === "Spacebar") {
+        selecionarDiaHistorico(resultado.focusDate, true);
+        return;
+    }
+
+    const civil = componentesDataCivil(resultado.focusDate);
+    if (!civil) return;
+    if (civil.year === estadoHistoricoUI.year && civil.month === estadoHistoricoUI.month) {
+        atualizarFocoRovingHistorico(resultado.focusDate);
+        return;
+    }
+    estadoHistoricoUI.year = civil.year;
+    estadoHistoricoUI.month = civil.month;
+    estadoHistoricoUI.focusedDate = resultado.focusDate;
+    renderizarCalendarioHistorico(false);
+    historyCalendarGrid.querySelector(`[data-history-date="${resultado.focusDate}"]`)?.focus();
 }
 
 function navegarMesHistorico(direcao) {
@@ -1257,6 +1396,7 @@ function navegarMesHistorico(direcao) {
     estadoHistoricoUI.selectedDate = novaGrade.days
         .filter(dia => dia.hasRecord && !dia.isFuture && !dia.isBeforeTracking)
         .at(-1)?.date || null;
+    estadoHistoricoUI.focusedDate = null;
     renderizarCalendarioHistorico();
 }
 
@@ -1269,6 +1409,7 @@ function abrirHistorico() {
     estadoHistoricoUI.year = civil.year;
     estadoHistoricoUI.month = civil.month;
     estadoHistoricoUI.selectedDate = today;
+    estadoHistoricoUI.focusedDate = today;
     renderizarCalendarioHistorico();
     abrirModalAcessivel(historyModal, btnOpenHistory, btnCloseHistory);
 }
@@ -1282,7 +1423,7 @@ const focoAnteriorPorModal = new WeakMap();
 function elementosFocaveisDoModal(modal) {
     if (!modal) return [];
     return Array.from(modal.querySelectorAll(
-        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        'button:not([disabled]):not([tabindex="-1"]), [href]:not([tabindex="-1"]), input:not([disabled]):not([tabindex="-1"]), select:not([disabled]):not([tabindex="-1"]), textarea:not([disabled]):not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])'
     )).filter(elemento => elemento.getClientRects().length > 0);
 }
 
@@ -1346,6 +1487,7 @@ btnOpenHistory?.addEventListener("click", abrirHistorico);
 btnCloseHistory?.addEventListener("click", fecharHistorico);
 historyPreviousMonth?.addEventListener("click", () => navegarMesHistorico(-1));
 historyNextMonth?.addEventListener("click", () => navegarMesHistorico(1));
+historyCalendarGrid?.addEventListener("keydown", navegarCalendarioHistoricoPorTeclado);
 btnOpenHowToPlay?.addEventListener("click", abrirComoJogar);
 btnCloseHowToPlay?.addEventListener("click", fecharComoJogar);
 integratedStatsModal?.addEventListener("click", event => {

@@ -53,6 +53,11 @@ test("seletores CSS essenciais permanecem definidos", () => {
     assert.deepEqual(missing, []);
 });
 
+test("CSS permanece estruturalmente balanceado", () => {
+    const semComentarios = css.replace(/\/\*[\s\S]*?\*\//g, "");
+    assert.equal((semComentarios.match(/\{/g) || []).length, (semComentarios.match(/\}/g) || []).length);
+});
+
 test("classes dinâmicas relevantes permanecem ligadas ao JS", () => {
     const all = [...new Set(Object.values(contract.dynamicClasses).flat())];
     const missing = all.filter(className => !script.includes(className));
@@ -86,6 +91,7 @@ test("Histórico preserva modal, calendário e estados acessíveis", () => {
     assert.match(modal, /aria-modal=["']true["']/i);
     assert.match(modal, /aria-labelledby=["']historyModalTitle["']/i);
     assert.match(grid, /role=["']grid["']/i);
+    assert.match(html.match(/<h3[^>]+id=["']historyMonthTitle["'][^>]*>/i)?.[0] || "", /aria-live=["']polite["']/i);
     assert.ok(html.includes('id="btnOpenHistory"'));
     assert.ok(html.includes('id="historyPreviousMonth"'));
     assert.ok(html.includes('id="historyNextMonth"'));
@@ -99,10 +105,15 @@ test("Histórico preserva modal, calendário e estados acessíveis", () => {
     for (const token of [
         'setAttribute("aria-selected"', 'setAttribute("aria-pressed"',
         'setAttribute("aria-current", "date")', "botao.disabled = dia.isFuture || dia.isBeforeTracking",
+        "botao.tabIndex = obterTabIndexDiaHistorico", 'addEventListener("keydown", navegarCalendarioHistoricoPorTeclado)',
+        "function resolverNavegacaoTecladoHistorico", "function atualizarFocoRovingHistorico",
+        "renderizarCalendarioHistorico(false)", "event.preventDefault()",
         "historyPreviousMonth.disabled = !grade.navigation.canGoPrevious",
         "historyNextMonth.disabled = !grade.navigation.canGoNext",
         "abrirModalAcessivel(historyModal", "fecharModalAcessivel(historyModal"
     ]) assert.ok(script.includes(token), token);
+    assert.match(script, /button:not\(\[disabled\]\):not\(\[tabindex="-1"\]\)/);
+    assert.match(cssRule(".history-day-button:focus-visible"), /outline:/);
 });
 
 test("Resumo histórico preserva quatro modos, progresso e estado sem registro", () => {
