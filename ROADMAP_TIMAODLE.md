@@ -2537,7 +2537,7 @@ Candidatos naturais para uma versão futura, sem versão iniciada:
 
 Fases:
 - [x] Fase A — auditoria completa dos jogadores, fotos e pools atuais;
-- [ ] Fase B — cobertura fotográfica (9/20 integradas; em andamento);
+- [x] Fase B — cobertura fotográfica concluída: 156/156 fotos (`100%`);
 - [ ] Fase C — validação externa e preenchimento responsável dos dados;
 - [ ] Fase D — validação histórica do Onze Inicial;
 - [ ] Fase E — auditoria final e fechamento.
@@ -2664,3 +2664,41 @@ Testado:
 Próximo passo:
 - fornecer e integrar as 11 fotos restantes antes de concluir a Fase B; depois avançar
   à Fase C para validação externa das assistências ausentes.
+
+
+## 22/08/2026 — v2.9 Fase B: cobertura fotográfica concluída
+
+Integrado:
+- validadas e adicionadas ao manifesto as fotos de Carlos Alberto, Coelho, Henrique,
+  Lucca, Marinho, Rafael Moura, Uendel, Wallace, Wendel, William e Willian;
+- os 11 arquivos são JPEG reais e legíveis, 480×480, proporção 1:1, com slugs corretos,
+  correspondência exata em `jogadores.json` e conteúdo não duplicado;
+- `fotos-manifest.json` passou de 145 para 156 entradas únicas;
+- cobertura ampliada de 145/156 (`92,95%`) para 156/156 (`100%`);
+- pool efetivo do Modo Foto ampliado de 145 para 156 jogadores;
+- pool efetivo do Mais ou Menos ampliado de 145 para 156 jogadores, todos com `jogos`
+  numérico e finito.
+
+Auditoria completa:
+- 156 jogadores, 156 entradas únicas e 156 arquivos físicos em correspondência exata;
+- 156 JPEGs legíveis, 480×480 e quadrados;
+- zero entrada duplicada, arquivo órfão, entrada sem arquivo, entrada sem jogador,
+  colisão de slug, divergência de caixa/extensão ou duplicidade de conteúdo;
+- algoritmos, seeds, plano 3/4/3, snapshots, persistência, saves e dados dos jogadores
+  permaneceram inalterados.
+
+Estado da fase:
+- **Fase B — CONCLUÍDA**;
+- cobertura fotográfica integral: **156/156 (`100%`)**;
+- v2.9 permanece **EM ANDAMENTO**.
+
+Testado:
+- suíte permanente completa, testes específicos de storage e histórico, sintaxe de
+  `script.js` e `storage-normalizers.js`, três JSONs e `git diff --check` aprovados;
+- inventário físico, formato real, legibilidade, dimensões, proporção, slugs,
+  correspondências e duplicidades das 156 imagens aprovados;
+- pools Foto e Mais ou Menos confirmados pelo mesmo critério usado no código real.
+
+Próximo passo:
+- **Fase C — validação externa das 11 assistências atualmente `null`**, sem inferir zero
+  nem preencher valores sem fonte confiável.
