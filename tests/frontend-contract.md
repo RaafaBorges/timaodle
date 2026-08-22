@@ -74,6 +74,10 @@ node tests/viewport-smoke.js
 - A troca de mês por teclado anuncia somente o título do novo mês; o resumo `aria-live`
   continua estável até uma seleção explícita.
 - O resumo do dia usa uma allowlist derivada exclusivamente do registro normalizado selecionado.
+- Dias completos exibem uma linha compacta com a sequência histórica acumulada até a data
+  selecionada; dias parciais, ausentes e futuros não exibem esse destaque.
+- O streak histórico deriva somente de `day.complete === true`, respeita `trackingStartedAt`
+  e hoje, e não altera nem reutiliza a semântica do streak geral da Home.
 - Dias sem registro exibem somente mensagem neutra; registros `0/4` mantêm as quatro linhas
   para distinguir progresso existente de ausência de dados.
 - Clássico, Foto, Mais ou Menos e Onze Inicial usam linhas compactas com estados textuais,

@@ -1294,6 +1294,26 @@ body.modal-open .page-content {
     color: var(--gold);
 }
 
+.history-historical-streak {
+    width: fit-content;
+    max-width: 100%;
+    margin: 8px auto 0;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: var(--ink);
+    background: rgba(0, 0, 0, 0.18);
+    border: 1px solid color-mix(in srgb, var(--gold) 42%, var(--line));
+    border-radius: 999px;
+    font-size: clamp(10px, 2.7vw, 12px);
+    font-weight: 700;
+    line-height: 1.35;
+    text-align: center;
+    overflow-wrap: break-word;
+}
+
 @media (min-width: 700px) {
     #integratedStatsModal .integrated-stats-modal-content {
         width: min(820px, calc(100vw - 48px));

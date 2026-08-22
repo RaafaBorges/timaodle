@@ -120,7 +120,8 @@ test("Resumo histórico preserva quatro modos, progresso e estado sem registro",
     for (const id of [
         "historyDaySummary", "historySelectedDateTitle", "historyNoRecord", "historyDayDetails",
         "historyClassicSummary", "historyPhotoSummary", "historyMoreLessSummary",
-        "historyLineupSummary", "historyOverallProgress"
+        "historyLineupSummary", "historyOverallProgress", "historyHistoricalStreak",
+        "historyHistoricalStreakText"
     ]) assert.ok(htmlIdSet.has(id), id);
     for (const mode of ["classic", "photo", "moreLess", "lineup"]) {
         assert.ok(html.includes(`data-history-mode="${mode}"`), mode);
@@ -132,9 +133,12 @@ test("Resumo histórico preserva quatro modos, progresso e estado sem registro",
     assert.ok(script.includes("historyMoreLessSummary.textContent = resumo.moreLess.statusText"));
     assert.ok(script.includes("historyLineupSummary.textContent = resumo.lineup.statusText"));
     assert.ok(script.includes('historyOverallProgress.classList.toggle("is-complete", resumo.complete)'));
+    assert.ok(script.includes("function obterSequenciaHistoricaDoDia(data, historico"));
+    assert.ok(script.includes('historyHistoricalStreak?.classList.toggle("hidden", !mostrarSequencia)'));
+    assert.ok(script.includes("sequencia.throughSelectedDate"));
     for (const selector of [
         ".history-day-summary", ".history-no-record", ".history-mode-summary",
-        ".history-exact-score", ".history-overall-progress.is-complete"
+        ".history-exact-score", ".history-overall-progress.is-complete", ".history-historical-streak"
     ]) assert.ok(css.includes(selector), selector);
 });
 

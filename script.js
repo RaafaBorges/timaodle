@@ -103,6 +103,8 @@ const historyMoreLessSummary = document.getElementById("historyMoreLessSummary")
 const historyLineupSummary = document.getElementById("historyLineupSummary");
 const historyLineupExactScore = document.getElementById("historyLineupExactScore");
 const historyOverallProgress = document.getElementById("historyOverallProgress");
+const historyHistoricalStreak = document.getElementById("historyHistoricalStreak");
+const historyHistoricalStreakText = document.getElementById("historyHistoricalStreakText");
 const btnOpenHowToPlay = document.getElementById("btnOpenHowToPlay");
 const howToPlayModal = document.getElementById("howToPlayModal");
 const btnCloseHowToPlay = document.getElementById("btnCloseHowToPlay");
@@ -583,6 +585,46 @@ function obterResumoHistoricoDia(data, historico) {
         moreLess,
         lineup
     };
+}
+
+function obterSequenciaHistoricaDoDia(data, historico, hoje = getDataLocalString()) {
+    const semSequencia = {
+        belongs: false,
+        throughSelectedDate: 0,
+        totalRun: 0,
+        startDate: null,
+        endDate: null
+    };
+    if (!dataHistoricoValida(data) || !dataHistoricoValida(hoje)
+        || compararDatasCivis(data, hoje) > 0) return semSequencia;
+
+    const trackingStartedAt = dataHistoricoValida(historico?.trackingStartedAt)
+        ? historico.trackingStartedAt
+        : data;
+    const diaCompleto = dataConsultada => compararDatasCivis(dataConsultada, trackingStartedAt) >= 0
+        && compararDatasCivis(dataConsultada, hoje) <= 0
+        && historico?.days?.[dataConsultada]?.complete === true;
+    if (!diaCompleto(data)) return semSequencia;
+
+    let startDate = data;
+    let endDate = data;
+    let throughSelectedDate = 1;
+    let anterior = moverDataCivil(data, -1);
+    while (anterior && diaCompleto(anterior)) {
+        startDate = anterior;
+        throughSelectedDate++;
+        anterior = moverDataCivil(anterior, -1);
+    }
+
+    let totalRun = throughSelectedDate;
+    let seguinte = moverDataCivil(data, 1);
+    while (seguinte && diaCompleto(seguinte)) {
+        endDate = seguinte;
+        totalRun++;
+        seguinte = moverDataCivil(seguinte, 1);
+    }
+
+    return { belongs: true, throughSelectedDate, totalRun, startDate, endDate };
 }
 
 function gerarGradeMensalHistorico(year, month, historico, hoje = getDataLocalString()) {
@@ -1194,6 +1236,7 @@ function renderizarResumoDiaHistorico(dia) {
         historySelectedDateTitle?.classList.add("hidden");
         historyNoRecord?.classList.add("hidden");
         historyDayDetails?.classList.add("hidden");
+        historyHistoricalStreak?.classList.add("hidden");
         return;
     }
     const resumo = obterResumoHistoricoDia(dia.date, estadoHistoricoUI.history);
@@ -1206,6 +1249,7 @@ function renderizarResumoDiaHistorico(dia) {
     if (!resumo.hasRecord) {
         historyNoRecord?.classList.remove("hidden");
         historyDayDetails?.classList.add("hidden");
+        historyHistoricalStreak?.classList.add("hidden");
         return;
     }
 
@@ -1235,6 +1279,15 @@ function renderizarResumoDiaHistorico(dia) {
     if (historyOverallProgress) {
         historyOverallProgress.textContent = `${resumo.completedCount}/4 DESAFIOS`;
         historyOverallProgress.classList.toggle("is-complete", resumo.complete);
+    }
+    const sequencia = resumo.complete
+        ? obterSequenciaHistoricaDoDia(dia.date, estadoHistoricoUI.history, estadoHistoricoUI.today)
+        : null;
+    const mostrarSequencia = sequencia?.belongs === true;
+    historyHistoricalStreak?.classList.toggle("hidden", !mostrarSequencia);
+    if (mostrarSequencia && historyHistoricalStreakText) {
+        const dias = sequencia.throughSelectedDate;
+        historyHistoricalStreakText.textContent = `Sequência até este dia: ${dias} ${dias === 1 ? "dia" : "dias"}`;
     }
 }
 

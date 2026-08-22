@@ -48,7 +48,7 @@ const calendar = compileFunctions([
     "obterDataFocoMesHistorico", "resolverNavegacaoTecladoHistorico",
     "compararMesesCivis", "obterLimitesMesesHistorico",
     "limitarMesAoHistorico", "obterNavegacaoMesHistorico", "obterEstadoDiaHistorico",
-    "obterResumoHistoricoDia", "gerarGradeMensalHistorico", "obterDataFocoInicialHistorico",
+    "obterResumoHistoricoDia", "obterSequenciaHistoricaDoDia", "gerarGradeMensalHistorico", "obterDataFocoInicialHistorico",
     "obterTabIndexDiaHistorico"
 ], {
     dataHistoricoValida: storage.validDate,
@@ -336,6 +336,112 @@ test("exatamente um dia interativo recebe tabindex zero", () => {
     grade.days.filter(dia => dia.isFuture || dia.isBeforeTracking).forEach(dia => {
         assert.equal(calendar.obterTabIndexDiaHistorico(dia, foco), -1);
     });
+});
+
+// Streak histórico do dia selecionado.
+const completeHistoryDay = () => ({ complete: true });
+const incompleteHistoryDay = () => ({ complete: false });
+const streakHistory = (days, trackingStartedAt = "2026-01-01") => ({
+    version: 1,
+    trackingStartedAt,
+    days
+});
+const historicalStreak = (date, days, today = TODAY, trackingStartedAt) => (
+    calendar.obterSequenciaHistoricaDoDia(date, streakHistory(days, trackingStartedAt), today)
+);
+
+test("dia parcial não pertence a sequência", () => {
+    assert.deepEqual(historicalStreak("2026-08-18", { "2026-08-18": incompleteHistoryDay() }), {
+        belongs: false, throughSelectedDate: 0, totalRun: 0, startDate: null, endDate: null
+    });
+});
+test("ausência de registro não pertence a sequência", () => {
+    assert.equal(historicalStreak("2026-08-18", {}).belongs, false);
+});
+test("sequência de um dia preserva início e fim", () => {
+    assert.deepEqual(historicalStreak("2026-08-18", { "2026-08-18": completeHistoryDay() }), {
+        belongs: true, throughSelectedDate: 1, totalRun: 1,
+        startDate: "2026-08-18", endDate: "2026-08-18"
+    });
+});
+
+const fiveDayRun = Object.fromEntries(
+    ["2026-08-18", "2026-08-19", "2026-08-20", "2026-08-21", "2026-08-22"]
+        .map(date => [date, completeHistoryDay()])
+);
+test("início da sequência mostra um dia até a seleção e o total completo", () => {
+    const result = historicalStreak("2026-08-18", fiveDayRun, "2026-08-25");
+    assert.equal(result.throughSelectedDate, 1);
+    assert.equal(result.totalRun, 5);
+    assert.equal(result.startDate, "2026-08-18");
+    assert.equal(result.endDate, "2026-08-22");
+});
+test("meio da sequência conta somente até o dia selecionado", () => {
+    const result = historicalStreak("2026-08-20", fiveDayRun, "2026-08-25");
+    assert.equal(result.throughSelectedDate, 3);
+    assert.equal(result.totalRun, 5);
+});
+test("fim da sequência acumula todos os dias anteriores", () => {
+    const result = historicalStreak("2026-08-22", fiveDayRun, "2026-08-25");
+    assert.equal(result.throughSelectedDate, 5);
+    assert.equal(result.totalRun, 5);
+});
+test("sequência de dois ou mais dias é acumulada", () => {
+    const days = { "2026-08-20": completeHistoryDay(), "2026-08-21": completeHistoryDay() };
+    assert.equal(historicalStreak("2026-08-21", days).throughSelectedDate, 2);
+});
+test("dia parcial entre completos quebra a sequência", () => {
+    const days = {
+        "2026-08-18": completeHistoryDay(),
+        "2026-08-19": incompleteHistoryDay(),
+        "2026-08-20": completeHistoryDay()
+    };
+    assert.deepEqual(historicalStreak("2026-08-20", days), {
+        belongs: true, throughSelectedDate: 1, totalRun: 1,
+        startDate: "2026-08-20", endDate: "2026-08-20"
+    });
+});
+test("data ausente entre completos quebra a sequência", () => {
+    const days = { "2026-08-18": completeHistoryDay(), "2026-08-20": completeHistoryDay() };
+    assert.equal(historicalStreak("2026-08-20", days).throughSelectedDate, 1);
+});
+test("sequência atravessa mudança de mês", () => {
+    const days = { "2026-07-31": completeHistoryDay(), "2026-08-01": completeHistoryDay() };
+    assert.equal(historicalStreak("2026-08-01", days).throughSelectedDate, 2);
+});
+test("sequência atravessa mudança de ano", () => {
+    const days = { "2025-12-31": completeHistoryDay(), "2026-01-01": completeHistoryDay() };
+    const result = historicalStreak("2026-01-01", days, TODAY, "2025-01-01");
+    assert.deepEqual([result.throughSelectedDate, result.startDate], [2, "2025-12-31"]);
+});
+test("sequência atravessa fevereiro bissexto", () => {
+    const days = {
+        "2028-02-28": completeHistoryDay(),
+        "2028-02-29": completeHistoryDay(),
+        "2028-03-01": completeHistoryDay()
+    };
+    const result = historicalStreak("2028-03-01", days, "2028-03-05", "2028-01-01");
+    assert.deepEqual([result.throughSelectedDate, result.startDate], [3, "2028-02-28"]);
+});
+test("dia futuro é ignorado mesmo se estiver marcado como completo", () => {
+    assert.equal(historicalStreak("2026-08-22", { "2026-08-22": completeHistoryDay() }).belongs, false);
+});
+test("dias futuros não ampliam totalRun de hoje", () => {
+    const days = { [TODAY]: completeHistoryDay(), "2026-08-22": completeHistoryDay() };
+    const result = historicalStreak(TODAY, days);
+    assert.deepEqual([result.throughSelectedDate, result.totalRun, result.endDate], [1, 1, TODAY]);
+});
+test("hoje completo recebe sequência histórica", () => {
+    const days = { "2026-08-20": completeHistoryDay(), [TODAY]: completeHistoryDay() };
+    assert.equal(historicalStreak(TODAY, days).throughSelectedDate, 2);
+});
+test("hoje parcial não recebe sequência histórica", () => {
+    assert.equal(historicalStreak(TODAY, { [TODAY]: incompleteHistoryDay() }).belongs, false);
+});
+test("trackingStartedAt limita o início da sequência", () => {
+    const days = { "2026-08-19": completeHistoryDay(), "2026-08-20": completeHistoryDay() };
+    const result = historicalStreak("2026-08-20", days, TODAY, "2026-08-20");
+    assert.deepEqual([result.throughSelectedDate, result.startDate], [1, "2026-08-20"]);
 });
 
 // Resumo seguro do dia selecionado.

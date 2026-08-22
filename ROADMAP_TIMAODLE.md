@@ -2232,13 +2232,14 @@ Fases:
 - [x] Fase B — modal e calendário visual;
 - [x] Fase C — resumo detalhado e seguro do dia selecionado;
 - [x] Fase D — acessibilidade e navegação por teclado;
-- [ ] Fase E — streak histórico, polimento e validação final.
+- [x] Fase E — streak histórico, polimento e validação final automatizada;
 
 Estado atual:
 - `timaodle_history_v1` continua sendo a única fonte diária;
 - metadata `trackingStartedAt` integrada ao mesmo objeto, sem nova chave de storage;
 - calendário visual, modal, resumo seguro e navegação avançada por teclado estão implementados;
-- Fase E permanece como próxima etapa para streak histórico, polimento e validação final.
+- Fase E implementada e aprovada na validação automatizada;
+- a v2.8 aguarda somente a validação manual final em navegador real antes do fechamento oficial.
 
 
 ## 21/08/2026 — v2.8 Fase A: modelo, limites e testes do histórico visual
@@ -2443,3 +2444,42 @@ Pendências:
 
 Próximo passo:
 - implementar a Fase E: streak histórico, polimento e validação final da v2.8.
+
+
+## 21/08/2026 — v2.8 Fase E: streak histórico e preparação para fechamento
+
+Implementado:
+- helper puro `obterSequenciaHistoricaDoDia(data, historico, hoje)` independente do streak
+  geral da Home e baseado exclusivamente em `day.complete === true`;
+- retorno seguro com pertencimento, sequência até a data selecionada, tamanho total,
+  data inicial e data final da sequência;
+- períodos parciais, registros 0/4, datas ausentes, futuro e pré-tracking quebram ou não
+  participam da sequência;
+- viradas de mês, ano e fevereiro bissexto são tratadas pelos helpers civis existentes;
+- resumo de dias 4/4 ganhou linha secundária compacta `Sequência até este dia: X dia(s)`;
+- streak fica oculto para dias parciais, sem registro e para hoje ainda incompleto;
+- apresentação usa somente preto, branco e dourado, sem animação nova ou alteração das
+  larguras recentes do modal;
+- estados hoje, selecionado, sem registro, parcial, completo, futuro e pré-tracking foram
+  revisados e permaneceram distinguíveis sem redesenho;
+- contrato estrutural ampliado para proteger o cálculo e a apresentação do streak histórico.
+
+Testado:
+- 17 novos cenários permanentes; suíte do calendário ampliada de 101 para 118 cenários;
+- sequência de um e vários dias, início/meio/fim, `throughSelectedDate`, `totalRun`,
+  `startDate`, `endDate`, interrupção parcial/ausente, mês, ano, bissexto, tracking e futuro;
+- hoje completo e hoje parcial validados separadamente;
+- suíte completa, storage, regras, anti-spoiler, navegação da Fase D, estrutura frontend,
+  sintaxe, JSONs, IDs, CSS balanceado e whitespace validados no encerramento.
+
+Compatibilidade preservada:
+- `timaodle_history_v1`, `trackingStartedAt`, estrutura diária, streak geral, saves,
+  quatro modos, seeds, estatísticas, calendário, resumo e navegação por teclado;
+- nenhum JSON foi alterado e nenhuma animação foi adicionada.
+
+Pendência final:
+- validação manual em navegador real nos viewports e fluxos do checklist final;
+- a v2.8 permanece **EM ANDAMENTO** até esse aceite manual.
+
+Próximo passo:
+- executar a validação manual final e, se aprovada, fechar oficialmente a v2.8 sem adicionar features.
