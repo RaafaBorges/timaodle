@@ -2533,7 +2533,7 @@ Candidatos naturais para uma versão futura, sem versão iniciada:
 - evolução incremental de funcionalidades somente após definição explícita do próximo escopo.
 
 
-## 🚧 v2.9 — EM ANDAMENTO: CONTEÚDO E PRECISÃO
+## ✅ v2.9 — CONCLUÍDA: CONTEÚDO E PRECISÃO
 
 Fases:
 - [x] Fase A — auditoria completa dos jogadores, fotos e pools atuais;
@@ -2542,8 +2542,10 @@ Fases:
   JUSTIFICADOS**: 8 valores confirmados gravados e 3 preservados sem evidência suficiente;
 - [x] Fase D — correção pontual de dados: posição de Wallace validada e corrigida para
   `Zagueiro`;
-- [ ] Validação histórica das partidas/formações 4-2-3-1 do Onze Inicial;
-- [ ] Fase E — auditoria final e fechamento.
+- [x] Fase E — auditoria final aprovada e fechamento oficial da v2.9.
+
+Pendência histórica não bloqueante:
+- [ ] validação histórica das quatro partidas/formações 4-2-3-1 do Onze Inicial.
 
 Estado inicial confirmado pelo código e pelos dados em 22/08/2026:
 - `jogadores.json`: 156 jogadores, 145 completos e 11 com ao menos um campo ausente;
@@ -2833,3 +2835,82 @@ Estado:
 Próximo passo:
 - realizar a validação histórica das partidas/formações 4-2-3-1 antes da auditoria final
   e do fechamento da v2.9.
+
+
+## 22/08/2026 — Fechamento oficial da v2.9
+
+**v2.9 — CONCLUÍDA**
+
+Escopo encerrado:
+- Fase A — auditoria integral dos 156 jogadores, campos, fotos e pools;
+- Fase B — cobertura fotográfica ampliada e validada em 156/156 (`100%`);
+- Fase C — oito assistências confirmadas adicionadas e três dados desconhecidos
+  justificados preservados como `null`;
+- Fase D — posição de Wallace corrigida de volante para zagueiro após validação de
+  identidade e compatibilidade;
+- Fase E — auditoria final dos dados, imagens, modos, persistência e regressões aprovada.
+
+Estado final dos jogadores:
+- 156 jogadores, 153 completamente preenchidos e 3 incompletos apenas por assistências;
+- Lucca permanece `null` por cobertura estatística incompleta;
+- Marinho permanece `null` por ausência de cobertura integral confiável;
+- Uendel permanece `null` por divergência material entre fontes;
+- os três casos são **DADOS DESCONHECIDOS JUSTIFICADOS**, não falhas de integridade;
+- zero ausências nos demais campos, zero nomes duplicados e 156 valores de `jogos`
+  numéricos e finitos;
+- 24 jogadores com `gols: 0` e 59 com `assistencias: 0`;
+- posições do Clássico limitadas aos seis valores presentes e reconhecidos: Atacante,
+  Goleiro, Lateral, Meia, Volante e Zagueiro.
+
+Identidades críticas revalidadas:
+- Wallace Reis da Silva: Zagueiro, 59 jogos, 1 gol e 0 assistências; foto e save nominal
+  coerentes;
+- Willian Gomes de Siqueira, o Willian Bigode: Atacante, 82 jogos, 15 gols e 5
+  assistências; `fotos/willian.jpg` correto;
+- William Machado de Oliveira: Zagueiro, 161 jogos, 4 gols e 1 assistência;
+  `fotos/william.jpg` correto;
+- arquivos, slugs e conteúdos de Willian e William permanecem distintos.
+
+Cobertura e modos:
+- 156 entradas únicas no manifesto e 156 arquivos físicos em correspondência exata;
+- 156 JPEGs estruturalmente válidos, 480×480 e 1:1;
+- zero arquivo órfão, ausente ou duplicado, entrada sem jogador, colisão de slug ou
+  divergência de caixa/extensão;
+- Modo Foto: 156 elegíveis;
+- Mais ou Menos: 156 elegíveis, todos com `jogos` numérico e finito;
+- Clássico: 156 elegíveis, zero renderizado como `0`, ausência como `—` e desconhecidos
+  sem setas enganosas;
+- `partidas.json`: 9 partidas, 9 IDs únicos, 11 titulares por partida, posições e
+  coordenadas estruturalmente válidas.
+
+Validação final:
+- suíte permanente completa aprovada com storage A–X, 39 cenários de regras e simulação
+  do Mais ou Menos v2 em 180 datas, 118 cenários de histórico e 27 cenários estruturais;
+- 151 IDs verificados sem duplicidade;
+- `script.js` e `storage-normalizers.js` aprovados por `node --check`;
+- três JSONs válidos, inventário das 156 fotos, frontend contract, CSS balanceado e
+  `git diff --check` aprovados;
+- histórico, calendário, streak, estatísticas, compartilhamento, `trackingStartedAt`,
+  normalizadores e saves existentes permaneceram compatíveis;
+- nenhuma feature, mecânica, seed, arquivo de produção ou dado adicional foi alterado no
+  fechamento.
+
+Pendências futuras não bloqueantes:
+- assistências de Lucca, até existir fonte com cobertura integral;
+- assistências de Marinho, até existir fonte histórica confiável;
+- assistências de Uendel, até a divergência entre fontes ser resolvida;
+- validação histórica das quatro partidas/formações 4-2-3-1;
+- validação com leitor de tela real;
+- smoke headless quando houver ambiente compatível.
+
+Estado da arquitetura:
+- Vanilla JavaScript, HTML e CSS continuam adequados ao porte atual;
+- normalizadores defensivos, testes permanentes e contrato estrutural continuam
+  protegendo os fluxos centrais;
+- nenhuma refatoração ampla ou migração de tecnologia é necessária para o próximo marco.
+
+Candidatos naturais para a próxima etapa, sem nova versão iniciada:
+- validação histórica e eventual correção das formações do Onze Inicial;
+- polimento de conteúdo e expansão segura do Onze Inicial;
+- novas partidas históricas após validação documental;
+- melhorias incrementais de retenção e evolução de produto.
