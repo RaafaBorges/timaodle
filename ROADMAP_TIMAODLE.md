@@ -2989,3 +2989,69 @@ Estado:
 Próximo passo:
 - revisar e aprovar explicitamente a correção de titulares e coordenadas de Palmeiras
   2011 em uma tarefa separada.
+
+
+## 22/08/2026 — Banco de jogadores: inclusão de Paulo André
+
+Implementado:
+- Paulo André adicionado ao `jogadores.json` com os nove campos pesquisados e aprovados;
+- banco ampliado de 156 para 157 jogadores, com 157 nomes e slugs únicos;
+- pool do Clássico ampliado de 156 para 157 jogadores;
+- `fotos/paulo-andre.jpg` não estava disponível, portanto o manifesto permaneceu com
+  156 entradas e Paulo André não foi incluído no Foto nem no Mais ou Menos;
+- documentado que alterações no tamanho do banco podem mudar o segredo diário do
+  Clássico durante o desenvolvimento; por decisão de pré-lançamento, nenhuma migração
+  ou persistência adicional foi implementada nesta etapa.
+
+Validado:
+- 157 jogadores: 154 completos e 3 incompletos somente por `assistencias: null` em
+  Lucca, Marinho e Uendel;
+- Paulo André possui posição reconhecida, `jogos: 153` numérico e finito e todos os
+  campos preenchidos;
+- pools efetivos: Clássico 157, Foto 156 e Mais ou Menos 156;
+- Liedson e Paulo André agora existem em `jogadores.json` para a futura correção da
+  escalação;
+- `partidas.json`, inclusive Palmeiras 2011, e `fotos-manifest.json` permaneceram
+  integralmente inalterados;
+- suíte permanente, storage, histórico, sintaxe, três JSONs, nomes, slugs, pools,
+  frontend contract, IDs, CSS balanceado e `git diff --check` aprovados.
+
+Estado:
+- Paulo André está temporariamente disponível apenas no Clássico;
+- validação histórica de Palmeiras 2011 permanece **EM ANDAMENTO**;
+- falta fornecer `fotos/paulo-andre.jpg` no padrão JPEG 480×480 e, em tarefa separada,
+  corrigir os titulares e a distribuição da partida.
+
+Próximo passo:
+- validar e integrar a foto de Paulo André quando fornecida ou avançar diretamente para
+  a correção histórica de Palmeiras 2011, mantendo o jogador fora de Foto/MM até lá.
+
+
+## 22/08/2026 — Fotos: integração de Paulo André
+
+Implementado:
+- `fotos/paulo-andre.jpg` validada e integrada ao `fotos-manifest.json` sem alterar
+  slug, ordem existente, mecânicas, seeds ou persistência;
+- manifesto e cobertura fotográfica ampliados de 156 para 157 jogadores;
+- pools efetivos do Modo Foto e do Mais ou Menos ampliados de 156 para 157 jogadores.
+
+Validado:
+- Paulo André existe em `jogadores.json`, resolve para o slug único `paulo-andre` e
+  possui `jogos: 153` numérico e finito;
+- a imagem é um JPEG real e legível, mede exatamente 480×480, possui proporção 1:1 e
+  conteúdo distinto das demais fotos;
+- inventário completo com 157 jogadores, 157 entradas únicas no manifesto e 157
+  arquivos físicos correspondentes;
+- as 157 imagens são JPEGs legíveis em 480×480, sem arquivos órfãos, ausentes,
+  colisões de slug ou duplicidades de conteúdo;
+- cobertura final: **157/157 (100%)**; pools finais: Clássico 157, Foto 157 e Mais ou
+  Menos 157.
+
+Estado:
+- integração fotográfica de Paulo André **CONCLUÍDA**;
+- correção histórica de Palmeiras 2011 permanece pendente e não foi alterada nesta
+  etapa.
+
+Próximo passo:
+- corrigir em tarefa separada os titulares e a distribuição de Palmeiras 2011, agora
+  que Paulo André e Liedson estão disponíveis no banco.
