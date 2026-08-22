@@ -2540,7 +2540,9 @@ Fases:
 - [x] Fase B — cobertura fotográfica concluída: 156/156 fotos (`100%`);
 - [x] Fase C — validação e preenchimento das assistências **CONCLUÍDA COM 3 NULLS
   JUSTIFICADOS**: 8 valores confirmados gravados e 3 preservados sem evidência suficiente;
-- [ ] Fase D — validação histórica do Onze Inicial;
+- [x] Fase D — correção pontual de dados: posição de Wallace validada e corrigida para
+  `Zagueiro`;
+- [ ] Validação histórica das partidas/formações 4-2-3-1 do Onze Inicial;
 - [ ] Fase E — auditoria final e fechamento.
 
 Estado inicial confirmado pelo código e pelos dados em 22/08/2026:
@@ -2796,3 +2798,38 @@ Estado da fase:
 Próximo passo:
 - iniciar a Fase D com a validação histórica das partidas e formações 4-2-3-1; tratar a
   posição de Wallace somente em uma tarefa de correção de dados explicitamente aprovada.
+
+
+## 22/08/2026 — v2.9 Fase D: correção pontual da posição de Wallace
+
+Implementado:
+- identidade reconfirmada como Wallace Reis da Silva, zagueiro do Corinthians em
+  2011–2012, compatível com estreia, jogos, gol e títulos existentes no registro;
+- alterado exclusivamente `posicao: "Volante"` para `posicao: "Zagueiro"` no registro
+  Wallace;
+- assistências, demais jogadores, fotos, manifesto, partidas, código, seeds e mecânicas
+  permaneceram inalterados.
+
+Impacto validado:
+- o Clássico passa a exibir e comparar Wallace como zagueiro;
+- o save do Clássico armazena data, nomes das tentativas e status, não snapshots ou objetos
+  completos dos jogadores;
+- tentativas antigas com o nome Wallace continuam válidas e são restauradas usando os dados
+  atuais, sem reset de progresso;
+- jogador secreto continua determinístico por data e não depende da posição para o sorteio;
+- normalizadores, histórico integrado e saves permaneceram compatíveis;
+- pools Foto e Mais ou Menos permaneceram com 156 jogadores.
+
+Testado:
+- comparação correta/incorreta de posição de Wallace e restauração de save nominal;
+- suíte permanente completa, storage, histórico, sintaxe, três JSONs, 156 fotos, pools,
+  frontend contract, IDs, CSS balanceado e whitespace aprovados.
+
+Estado:
+- **Fase D — correção pontual de Wallace CONCLUÍDA**;
+- v2.9 permanece **EM ANDAMENTO**;
+- validação histórica das partidas/formações 4-2-3-1 continua pendente.
+
+Próximo passo:
+- realizar a validação histórica das partidas/formações 4-2-3-1 antes da auditoria final
+  e do fechamento da v2.9.
