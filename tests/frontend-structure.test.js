@@ -171,11 +171,31 @@ test("componentes compartilhados preservam base e variantes", () => {
     assert.match(cssRule(".search-box input:focus"), /box-shadow:[^;]*var\(--gold-soft\)/);
     assert.match(cssRule(".autocomplete-items"), /max-height:\s*190px/);
     assert.match(cssRule(".autocomplete-items div"), /min-height:\s*46px/);
-    assert.match(cssRule(".back-btn"), /width:\s*40px/);
-    assert.match(cssRule(".daily-status-bar"), /display:\s*flex/);
+    assert.match(cssRule(".back-btn"), /min-width:\s*44px/);
+    assert.match(cssRule(".back-btn"), /min-height:\s*44px/);
+    assert.match(cssRule(".daily-status-bar"), /display:\s*grid/);
     assert.match(cssRule(".daily-end-message"), /font-size:\s*14px/);
     assert.ok(css.includes(".share-btn,\n.form-submit-btn"));
     assert.ok(css.includes("#escalacaoView .search-box input"), "variante de busca do Onze Inicial ausente");
+});
+
+test("navegação e iconografia v3.0 preservam contrato acessível monocromático", () => {
+    const backIds = ["backHomeBtn", "backHomeBtnFoto", "backHomeBtnMM", "backHomeBtnEsc"];
+    for (const id of backIds) {
+        const button = html.match(new RegExp(`<button[^>]+id=["']${id}["'][\\s\\S]*?<\\/button>`, "i"))?.[0] || "";
+        assert.match(button, /aria-label=["']Voltar para a Home["']/i, id);
+        assert.match(button, /class=["']back-arrow["'][^>]*aria-hidden=["']true["']/i, id);
+        assert.match(button, /←/, id);
+        assert.doesNotMatch(button, /⬅/, id);
+    }
+    assert.match(cssRule(".back-btn:focus-visible"), /outline:/);
+    assert.match(cssRule(".back-btn"), /background-color:\s*rgba\(255, 255, 255, 0\.035\)/);
+    assert.match(cssRule(".back-btn"), /border-radius:\s*var\(--radius-s\)/);
+    assert.ok(html.includes('class="ui-icon contrast-icon"'));
+    assert.match(html.match(/<button[^>]+id=["']photoGrayscaleToggle["'][^>]*>/i)?.[0] || "", /aria-label=/i);
+    for (const emoji of ["⬅", "📤", "🎨", "🗓️", "🖼️", "⚖️", "🧩", "🔥"]) {
+        assert.ok(!html.includes(emoji), `emoji permanente restante: ${emoji}`);
+    }
 });
 
 test("Modo Foto preserva layout fluido e estados visuais próprios", () => {
@@ -197,7 +217,8 @@ test("Modo Foto preserva layout fluido e estados visuais próprios", () => {
 
 test("Modo Clássico preserva oito colunas no desktop e duas no mobile", () => {
     const desktopGrid = cssRule("#gameView .board-header,\n#gameView .attempt-row");
-    assert.match(desktopGrid, /grid-template-columns:\s*1\.3fr 1fr 1fr 0\.7fr 1\.15fr 1\.6fr 0\.7fr 0\.75fr/);
+    assert.match(desktopGrid, /grid-template-columns:\s*1\.3fr 1\.05fr 1\.25fr 0\.85fr 1fr 1\.6fr 0\.7fr 0\.8fr/);
+    assert.match(desktopGrid, /gap:\s*7px/);
     assert.match(cssRule("#gameView .cell"), /word-break:\s*normal/);
     assert.match(cssRule("#gameView .cell"), /overflow-wrap:\s*break-word/);
 
@@ -322,6 +343,111 @@ test("shell global preserva eixo, gutters e um único scroll vertical", () => {
     assert.match(cssRule(".btn-title"), /font-size:\s*clamp\(/);
     assert.equal((css.match(/\.btn-title\s*\{/g) || []).length, 1);
     assert.equal((css.match(/\.pill-text\s*\{/g) || []).length, 1);
+});
+
+test("polimento A.1 simplifica Home e hierarquia do Clássico", () => {
+    assert.ok(!html.includes('class="pill-icon"'), "ícones decorativos dos modos ainda presentes");
+    assert.ok(!html.includes("mode-icon"), "classe visual antiga dos modos ainda presente");
+    for (const subtitle of [
+        "Um novo desafio por dia",
+        "Adivinhe o jogador pela foto",
+        "10 rodadas · Mais ou menos jogos",
+        "Complete a escalação"
+    ]) {
+        assert.ok(html.includes(subtitle), subtitle);
+    }
+    assert.match(cssRule(".btn-pill"), /border:\s*0/);
+    assert.match(cssRule(".daily-label"), /font-size:\s*18px/);
+    assert.match(css, /\n\.daily-timer\s*\{[^}]*font-size:\s*12px/);
+    assert.match(cssRule("#gameView .search-box input"), /min-height:\s*44px/);
+    assert.match(cssRule("#gameView .board-header"), /border-bottom:\s*1px solid var\(--line-soft\)/);
+    assert.doesNotMatch(cssRule("#gameView .board-header .col"), /border-bottom:/);
+});
+
+test("Fase A.2 dá hierarquia própria ao cabeçalho do Foto", () => {
+    const header = html.match(/<div class="daily-status-bar photo-mode-header">[\s\S]*?<\/div>\s*<span class="daily-timer photo-progress"[^>]*>[^<]*<\/span>/)?.[0] || "";
+    assert.match(header, /id="backHomeBtnFoto"/);
+    assert.match(header, /class="photo-mode-identity"/);
+    assert.match(header, />Modo Foto</);
+    assert.match(header, /id="photoDifficultyBadge"/);
+    assert.match(header, /id="photoAttemptsLabel">0 \/ 6 TENTATIVAS/);
+    assert.match(cssRule("#photoView .photo-mode-header"), /grid-template-columns:\s*minmax\(0, 1fr\) auto minmax\(0, 1fr\)/);
+    assert.match(cssRule("#photoView .search-box input"), /min-height:\s*44px/);
+    assert.match(cssRule("#photoView .photo-toggle-overlay-btn"), /border-radius:\s*var\(--radius-m\)/);
+    assert.match(html.match(/<button[^>]+id="photoGrayscaleToggle"[^>]*>/)?.[0] || "", /aria-label="Alternar contraste preto e branco da foto"/);
+});
+
+test("Fase A.3 centraliza títulos e integra labels do Clássico", () => {
+    const statusRule = cssRule(".daily-status-bar");
+    assert.match(statusRule, /grid-template-columns:\s*minmax\(0, 1fr\) auto minmax\(0, 1fr\)/);
+    assert.match(cssRule(".back-btn"), /justify-self:\s*start/);
+    assert.match(cssRule(".daily-label"), /justify-self:\s*center/);
+    assert.match(cssRule(".daily-status-bar .daily-timer"), /justify-self:\s*end/);
+    const headerRule = cssRule("#gameView .board-header");
+    assert.match(headerRule, /background:\s*transparent/);
+    assert.match(headerRule, /border-bottom:\s*1px solid var\(--line-soft\)/);
+    assert.doesNotMatch(headerRule, /border-top:/);
+    assert.match(cssRule("#gameView .board-header .col"), /color:\s*var\(--ink-muted\)/);
+    assert.match(html, /<div class="col" title="Assistências">ASSIST\.<\/div>/);
+});
+
+test("Fase A.4 remove a superfície ancestral do cabeçalho do Clássico", () => {
+    assert.match(css, /\n\.game-sticky-top\s*\{[^}]*background-color:\s*transparent/);
+    assert.match(cssRule("#gameView .board-header"), /background:\s*transparent/);
+    assert.match(cssRule("#gameView .board-header"), /border-bottom:\s*1px solid var\(--line-soft\)/);
+});
+
+test("polimento A.5 reforça labels sem alterar a grade do Clássico", () => {
+    const labelsRule = cssRule("#gameView .board-header .col");
+    assert.match(labelsRule, /font-size:\s*11px/);
+    assert.match(labelsRule, /font-weight:\s*700/);
+    assert.match(labelsRule, /letter-spacing:\s*0/);
+    assert.match(labelsRule, /white-space:\s*nowrap/);
+    assert.match(labelsRule, /justify-content:\s*center/);
+    assert.match(cssRule("#gameView .board-header,\n#gameView .attempt-row"), /grid-template-columns:\s*1\.3fr 1\.05fr 1\.25fr 0\.85fr 1fr 1\.6fr 0\.7fr 0\.8fr/);
+});
+
+test("Fase A.6 preserva uma única grade desktop mais confortável", () => {
+    const desktopGrid = cssRule("#gameView .board-header,\n#gameView .attempt-row");
+    assert.match(desktopGrid, /grid-template-columns:\s*1\.3fr 1\.05fr 1\.25fr 0\.85fr 1fr 1\.6fr 0\.7fr 0\.8fr/);
+    assert.match(desktopGrid, /gap:\s*7px/);
+    assert.match(cssRule("#gameView"), /min-width:\s*0/);
+    assert.match(css, /@media\s*\(max-width:\s*480px\)[\s\S]*?#gameView \.attempt-row\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
+});
+
+test("Fase A.7 protege a região sticky somente no mobile", () => {
+    assert.match(css, /\n\.game-sticky-top\s*\{[^}]*z-index:\s*20[^}]*background-color:\s*transparent/);
+    const responsiveStart = css.indexOf("/* ==========================================================================\n   RESPONSIVO");
+    const responsiveEnd = css.indexOf("/* ==========================================================================\n   PÁGINAS LEGAIS", responsiveStart);
+    const responsiveCss = css.slice(responsiveStart, responsiveEnd);
+    assert.match(responsiveCss, /@media\s*\(max-width:\s*480px\)/);
+    assert.match(responsiveCss, /\.game-sticky-top\s*\{[^}]*background-color:\s*rgba\(11, 11, 10, 0\.97\)/);
+    assert.match(responsiveCss, /\.game-sticky-top\s*\{[^}]*border-bottom:\s*1px solid var\(--line-soft\)/);
+    assert.match(cssRule(".autocomplete-items"), /z-index:\s*99/);
+});
+
+test("Fase A.8 compacta o sticky mobile sem reduzir alvos", () => {
+    const responsiveStart = css.indexOf("/* ==========================================================================\n   RESPONSIVO");
+    const responsiveEnd = css.indexOf("/* ==========================================================================\n   PÁGINAS LEGAIS", responsiveStart);
+    const responsiveCss = css.slice(responsiveStart, responsiveEnd);
+    assert.match(responsiveCss, /\.game-sticky-top\s*\{[^}]*gap:\s*5px[^}]*padding-bottom:\s*6px/);
+    assert.match(responsiveCss, /#photoView \.game-sticky-top\s*\{[^}]*gap:\s*5px[^}]*padding-bottom:\s*6px/);
+    assert.match(responsiveCss, /\.daily-status-bar\s*\{[^}]*border-bottom:\s*0[^}]*padding:\s*2px 0 5px/);
+    assert.match(responsiveCss, /\.back-btn\s*\{[^}]*width:\s*44px[^}]*background-color:\s*rgba\(255, 255, 255, 0\.02\)/);
+    assert.match(cssRule(".back-btn"), /min-height:\s*44px/);
+    assert.match(responsiveCss, /#gameView \.daily-timer\s*\{[^}]*font-size:\s*10px[^}]*font-weight:\s*500/);
+    assert.match(responsiveCss, /#gameView \.daily-timer strong\s*\{[^}]*font-size:\s*12px[^}]*font-weight:\s*800/);
+});
+
+test("Fase A.5 integra os quatro cabeçalhos ao canvas principal", () => {
+    const statusRule = cssRule(".daily-status-bar");
+    assert.match(statusRule, /background:\s*transparent/);
+    assert.match(statusRule, /border:\s*0/);
+    assert.match(statusRule, /border-bottom:\s*1px solid var\(--line-soft\)/);
+    assert.match(statusRule, /border-radius:\s*0/);
+    assert.doesNotMatch(statusRule, /linear-gradient|box-shadow/);
+    assert.match(css, /\n\.game-sticky-top\s*\{[^}]*background-color:\s*transparent/);
+    assert.doesNotMatch(css, /#gameView \.game-sticky-top\s*\{/);
 });
 
 console.log(`frontend-structure.test.js: ${scenarios} cenários estruturais aprovados; ${htmlIds.length} IDs verificados`);

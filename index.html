@@ -87,7 +87,7 @@
                         <span id="homeProgressFill"></span>
                     </div>
                     <div class="home-streak" aria-label="Sequência geral de dias completos" aria-live="polite">
-                        <span class="home-streak-label">🔥 SEQUÊNCIA</span>
+                        <span class="home-streak-label"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M13.4 2.8c.5 3-1.2 4.4-2.5 6.1-1.1 1.4-1.8 2.8-1.2 4.6.4-1.2 1.2-2 2.2-2.8-.1 2.1 1.8 3.1 1.8 5.3a4.2 4.2 0 0 1-8.4 0c0-4.6 3-7.2 8.1-11.2Z"/></svg> SEQUÊNCIA</span>
                         <strong id="homeStreakCurrent">Comece sua sequência</strong>
                         <small id="homeStreakBest">Recorde: 0 dias</small>
                     </div>
@@ -113,8 +113,7 @@
                     <button class="pokedle-btn active" id="btnPlayDiario" aria-describedby="homeStatusClassic">
                         <span class="btn-title">MODO DIÁRIO</span>
                         <div class="btn-pill">
-                            <span class="pill-icon">🗓️</span>
-                            <span class="pill-text">1 desafio novo a cada dia</span>
+                            <span class="pill-text">Um novo desafio por dia</span>
                         </div>
                         <span id="homeStatusClassic" class="mode-progress-status"></span>
                     </button>
@@ -122,8 +121,7 @@
                     <button class="pokedle-btn active" id="btnPlayFoto" aria-describedby="homeStatusPhoto">
                         <span class="btn-title">MODO FOTO</span>
                         <div class="btn-pill">
-                            <span class="pill-icon">🖼️</span>
-                            <span class="pill-text">Adivinhe pela imagem borrada</span>
+                            <span class="pill-text">Adivinhe o jogador pela foto</span>
                         </div>
                         <span id="homeStatusPhoto" class="mode-progress-status"></span>
                     </button>
@@ -131,8 +129,7 @@
                     <button class="pokedle-btn active" id="btnPlayMaisMenos" aria-describedby="homeStatusMoreLess">
                         <span class="btn-title">JOGOU MAIS OU MENOS</span>
                         <div class="btn-pill">
-                            <span class="pill-icon">⚖️</span>
-                            <span class="pill-text">Compare estatísticas, 10 rodadas</span>
+                            <span class="pill-text">10 rodadas · Mais ou menos jogos</span>
                         </div>
                         <span id="homeStatusMoreLess" class="mode-progress-status"></span>
                     </button>
@@ -140,7 +137,6 @@
                     <button class="pokedle-btn active" id="btnPlayEscalacao" aria-describedby="homeStatusLineup">
                         <span class="btn-title">ONZE INICIAL</span>
                         <div class="btn-pill">
-                            <span class="pill-icon">🧩</span>
                             <span class="pill-text">Complete a escalação</span>
                         </div>
                         <span id="homeStatusLineup" class="mode-progress-status"></span>
@@ -154,8 +150,8 @@
                 <!-- Bloco fixo no topo da área de jogo: status, busca e cabeçalho das colunas -->
                 <div class="game-sticky-top">
                     <div class="daily-status-bar">
-                        <button id="backHomeBtn" class="back-btn" title="Voltar">⬅</button>
-                        <span class="daily-label">🗓️ Desafio do dia</span>
+                        <button id="backHomeBtn" class="back-btn" type="button" title="Voltar para a Home" aria-label="Voltar para a Home"><span class="back-arrow" aria-hidden="true">←</span><span class="back-label">VOLTAR</span></button>
+                        <span class="daily-label">Desafio do dia</span>
                         <span class="daily-timer">Próximo em <strong id="timerCountdown">--:--:--</strong></span>
                     </div>
 
@@ -174,7 +170,7 @@
                         <div class="col">PÉ</div>
                         <div class="col">TÍTULOS</div>
                         <div class="col">GOLS</div>
-                        <div class="col">ASSISTÊNCIAS</div>
+                        <div class="col" title="Assistências">ASSIST.</div>
                     </div>
                 </div>
 
@@ -182,18 +178,20 @@
                 <div id="attemptsContainer" class="board-body"></div>
 
                 <p id="dailyEndMessage" class="daily-end-message hidden"></p>
-                <button id="shareResultBtn" class="share-btn hidden">📤 Compartilhar resultado</button>
+                <button id="shareResultBtn" class="share-btn hidden">Compartilhar resultado</button>
             </section>
 
             <!-- TELA DO JOGO — MODO FOTO -->
             <section id="photoView" class="game-view hidden">
 
                 <div class="game-sticky-top">
-                    <div class="daily-status-bar">
-                        <button id="backHomeBtnFoto" class="back-btn" title="Voltar">⬅</button>
-                        <span class="daily-label">🖼️ Modo Foto</span>
-                        <span id="photoDifficultyBadge" class="difficulty-badge hidden"></span>
-                        <span class="daily-timer" id="photoAttemptsLabel">Tentativa 0/6</span>
+                    <div class="daily-status-bar photo-mode-header">
+                        <button id="backHomeBtnFoto" class="back-btn" type="button" title="Voltar para a Home" aria-label="Voltar para a Home"><span class="back-arrow" aria-hidden="true">←</span><span class="back-label">VOLTAR</span></button>
+                        <div class="photo-mode-identity">
+                            <span class="daily-label">Modo Foto</span>
+                            <span id="photoDifficultyBadge" class="difficulty-badge hidden"></span>
+                        </div>
+                        <span class="daily-timer photo-progress" id="photoAttemptsLabel">0 / 6 TENTATIVAS</span>
                     </div>
 
                     <div class="search-box">
@@ -207,7 +205,7 @@
                 <div class="photo-card">
                     <img id="photoImg" class="photo-img" src="" alt="Jogador do Corinthians (borrado)">
                     <button id="photoGrayscaleToggle" class="photo-toggle-overlay-btn active" aria-pressed="true"
-                        title="Alternar preto-e-branco">🎨</button>
+                        aria-label="Alternar contraste preto e branco da foto" title="Alternar contraste da foto"><svg class="ui-icon contrast-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16Z" class="icon-fill"/></svg></button>
                 </div>
 
                 <div class="photo-dots" id="photoDots"></div>
@@ -222,8 +220,8 @@
 
                 <div class="game-sticky-top">
                     <div class="daily-status-bar">
-                        <button id="backHomeBtnMM" class="back-btn" title="Voltar">⬅</button>
-                        <span class="daily-label">⚖️ Mais ou Menos</span>
+                        <button id="backHomeBtnMM" class="back-btn" type="button" title="Voltar para a Home" aria-label="Voltar para a Home"><span class="back-arrow" aria-hidden="true">←</span><span class="back-label">VOLTAR</span></button>
+                        <span class="daily-label">Mais ou Menos</span>
                         <span class="daily-timer" id="mmRoundLabel">Rodada 0/10</span>
                     </div>
                 </div>
@@ -285,8 +283,8 @@
 
                 <div class="game-sticky-top">
                     <div class="daily-status-bar">
-                        <button id="backHomeBtnEsc" class="back-btn" title="Voltar">⬅</button>
-                        <span class="daily-label">🧩 Onze Inicial</span>
+                        <button id="backHomeBtnEsc" class="back-btn" type="button" title="Voltar para a Home" aria-label="Voltar para a Home"><span class="back-arrow" aria-hidden="true">←</span><span class="back-label">VOLTAR</span></button>
+                        <span class="daily-label">Onze Inicial</span>
                     </div>
                 </div>
 
@@ -400,7 +398,7 @@
                         <span class="lineup-next-challenge-label">PRÓXIMO DESAFIO EM</span>
                         <strong id="escNextChallengeCountdown" class="lineup-next-challenge-time">--:--:--</strong>
                     </div>
-                    <button id="escShareLineupBtn" class="share-btn lineup-share-btn">📤 Compartilhar resultado</button>
+                    <button id="escShareLineupBtn" class="share-btn lineup-share-btn">Compartilhar resultado</button>
                 </div>
 
                 <p id="escalacaoEndMessage" class="daily-end-message hidden"></p>
@@ -463,9 +461,9 @@
     <div id="photoTutorialModal" class="modal hidden" role="dialog" aria-modal="true"
         aria-labelledby="photoTutorialTitle">
         <div class="modal-content">
-            <h2 id="photoTutorialTitle">🖼️ Modo Foto</h2>
+            <h2 id="photoTutorialTitle">Modo Foto</h2>
             <p class="welcome-text">A foto começa borrada e em preto-e-branco — cada palpite "foca" um pouco mais.
-                Prefere ver com cor desde já? É só tocar no botão <strong>🎨</strong> no canto da foto, a qualquer
+                Prefere ver com cor desde já? É só tocar no <strong>controle de contraste</strong> no canto da foto, a qualquer
                 momento.</p>
             <button id="photoTutorialCloseBtn" class="form-submit-btn">Entendi, vamos lá!</button>
         </div>
@@ -540,7 +538,7 @@
                         </div>
                         <div id="historyOverallProgress" class="history-overall-progress">0/4 DESAFIOS</div>
                         <p id="historyHistoricalStreak" class="history-historical-streak hidden">
-                            <span aria-hidden="true">🔥</span>
+                            <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M13.4 2.8c.5 3-1.2 4.4-2.5 6.1-1.1 1.4-1.8 2.8-1.2 4.6.4-1.2 1.2-2 2.2-2.8-.1 2.1 1.8 3.1 1.8 5.3a4.2 4.2 0 0 1-8.4 0c0-4.6 3-7.2 8.1-11.2Z"/></svg>
                             <span id="historyHistoricalStreakText">Sequência até este dia: 1 dia</span>
                         </p>
                     </div>

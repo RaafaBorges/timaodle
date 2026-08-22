@@ -1,6 +1,6 @@
 # TIMÃODLE --- ROADMAP E CONTEXTO DO PROJETO
 
-**Versão do documento:** 2.9\
+**Versão do documento:** 3.0\
 **Data:** 22/08/2026\
 **Projeto:** Timãodle\
 **Objetivo deste arquivo:** servir como documento de contexto para
@@ -3097,3 +3097,626 @@ Pendência não bloqueante:
 Próximo passo:
 - realizar teste visual da escalação de Palmeiras 2011 quando ela for selecionada em
   navegador real e tratar `local_tag` somente após formalizar sua semântica no projeto.
+
+
+## v3.0 — UX & VISUAL POLISH
+
+**Status: EM ANDAMENTO — FASE A CONCLUÍDA COM PENDÊNCIAS VISUAIS NÃO BLOQUEANTES / FASE B PRÓXIMA**
+
+Objetivo:
+- refinar hierarquia, clareza, simplicidade, consistência e conforto responsivo sem
+  alterar mecânicas, dados, seeds ou persistência;
+- preservar a identidade de jogo do Corinthians em preto, branco e dourado, evitando
+  aparência de dashboard corporativo genérico.
+
+Diagnóstico inicial:
+- não foi encontrado P0 estrutural evidente na inspeção estática; os fluxos centrais
+  permanecem compreensíveis e protegidos pela suíte;
+- a Home concentra timer, jogador anterior, progresso, streak, resumo 4/4, duas ações
+  secundárias e quatro cards, com Estatísticas/Histórico aparecendo antes dos modos;
+- o conteúdo principal da Home permanece limitado a aproximadamente 400 px e uma coluna
+  mesmo em desktop amplo, desperdiçando espaço e aumentando o scroll;
+- cards dos modos acumulam título, emoji, explicação, divisor e estado, produzindo caixas
+  dentro de caixas e repetição visual;
+- os quatro botões Voltar usam emoji colorido `⬅`, área de 40×40 e aparência pouco
+  integrada à linguagem tipográfica do projeto;
+- Foto preserva corretamente a imagem como foco, mas o botão `🎨`, labels do status e
+  lista de tentativas competem progressivamente com ela;
+- Mais ou Menos possui boa prioridade para fotos, nomes, números e ações, porém mantém
+  simultaneamente rodada, acertos, dez marcadores, objetivo, legenda e labels redundantes;
+- Onze Inicial tem hierarquia funcional, mas combina card de contexto, placar, campo,
+  progresso, faltam, busca, feedback e erros; informações secundárias podem ser reveladas
+  conforme a etapa;
+- Histórico combina calendário, resumo, quatro linhas, progresso e streak no mesmo fluxo;
+  a seleção do dia é clara, mas o resumo pode receber menos peso antes da escolha;
+- Estatísticas apresenta oito métricas gerais e até dez métricas por modo, distribuições
+  e muitos chips com peso semelhante, sem separar claramente principal, secundário e
+  detalhado;
+- resultados finais possuem boa identidade individual, mas variam em título, mensagem,
+  contador, ação de compartilhar e indicação do próximo desafio;
+- o CSS usa 219 declarações de tamanho de fonte com 63 valores distintos, incluindo
+  labels de 8–10 px; há 245 declarações de borda e 114 referências diretas ao dourado,
+  indicando oportunidade de reduzir ruído sem trocar a identidade.
+
+Prioridades da auditoria:
+- **P1 / risco médio:** reordenar a hierarquia da Home e aproveitar melhor desktop;
+- **P1 / risco baixo:** substituir Voltar e controles utilitários coloridos por linguagem
+  monocromática consistente e alvos de toque de pelo menos 44 px;
+- **P1 / risco médio:** criar níveis principal/secundário/detalhado nas Estatísticas;
+- **P1 / risco médio:** reduzir informação simultânea no Onze Inicial e no Histórico;
+- **P2 / risco baixo:** reduzir emojis decorativos, bordas, pills e dourado concorrente;
+- **P2 / risco médio:** harmonizar o esqueleto visual dos resultados finais;
+- **P2 / risco baixo:** consolidar escala tipográfica e elevar labels essenciais abaixo
+  de 10 px;
+- **P3 / risco baixo:** ajustar microespaçamentos, sombras, divisores e animações.
+
+Estado das fases:
+- [x] **Fase A — CONCLUÍDA COM PENDÊNCIAS VISUAIS NÃO BLOQUEANTES:** linguagem visual compartilhada, iconografia monocromática,
+  navegação, cabeçalhos dos modos, buscas e comportamento sticky responsivo;
+- [ ] **Fase B — PRÓXIMA — Home:** reduzir informação simultânea, priorizar os quatro
+  modos, revisar progresso diário, streak, Estatísticas/Histórico e uso do desktop;
+- [ ] **Fase C — PLANEJADA — resultados finais e continuidade do dia:** linguagem compartilhada de
+  conclusão, métrica principal, compartilhar, retorno à Home e acesso aos modos ainda
+  não concluídos;
+- [ ] **Fase D — PLANEJADA — modos:** Clássico, Foto, Mais ou Menos e Onze Inicial em pequenas
+  entregas independentes;
+- [ ] **Fase E — PLANEJADA — Histórico e Estatísticas:** divulgação progressiva e níveis de métricas,
+  preservando todos os dados;
+- [ ] **Fase F — PLANEJADA — validação final:** navegador real nos viewports definidos, teclado,
+  reduced motion, overflow, contraste e regressão integral.
+
+Objetivos consolidados da Fase B — Home:
+- reduzir a quantidade de informação exibida simultaneamente;
+- tornar os quatro modos os protagonistas da tela;
+- rever a posição e o peso de Estatísticas e Histórico;
+- separar progresso do dia de informações históricas;
+- rever o bloco **TIMÃODLE DO DIA** e mover ou reformular o streak;
+- aproveitar melhor o desktop, que ainda parece excessivamente estreito e vertical;
+- preservar um mobile simples, legível e sem excesso de scroll;
+- evitar card dentro de card e reduzir o uso decorativo de dourado;
+- manter a identidade preto, branco e dourado e todas as mecânicas atuais.
+
+Escopo futuro da Fase C — resultados finais e continuidade do dia:
+- ao concluir qualquer modo, apresentar overlay/card com linguagem Timãodle compartilhada,
+  sem aparência de modal genérico e sem obrigar estruturas internas idênticas;
+- resultado explícito: **GANHOU**, **PERDEU** ou **CONCLUÍDO**, conforme a mecânica real;
+- Clássico: **GANHOU** e `X tentativa(s)`, sem inventar derrota inexistente;
+- Foto: **GANHOU** ou **PERDEU** e métrica `X/6`;
+- Mais ou Menos: **GANHOU** ou **PERDEU** e `X/10 acertos`;
+- Onze Inicial: **CONCLUÍDO**, `3/3 jogadores`, `X erro(s)` e placar exato somente como
+  informação secundária segura;
+- reutilizar os compartilhamentos existentes, sem criar sistema paralelo de resultado;
+- oferecer **COMPARTILHAR** e **VOLTAR À HOME** com a navegação atual;
+- derivar continuidade exclusivamente de `obterProgressoDiario()` ou da fonte consolidada
+  equivalente, distinguindo não iniciado, em andamento e concluído;
+- usar a linguagem **AINDA FALTA CONCLUIR** e mostrar somente modos ainda não concluídos,
+  permitindo abri-los diretamente pela navegação existente;
+- quando o dia estiver completo, mostrar **TIMÃODLE DO DIA COMPLETO — 4/4** sem botões de
+  modos pendentes;
+- preservar preto, branco e dourado, símbolos monocromáticos e verde/vermelho discretos;
+- prever `role` apropriado, título associado, foco inicial, Escape quando aplicável,
+  retorno de foco, teclado e alvos de toque;
+- validar sem overflow em 360, 390, 412, 430, 480, 768 e desktop;
+- não alterar mecânicas, estados, saves ou textos compartilhados além do necessário para
+  apresentar a camada comum.
+
+Regra de iconografia da v3.0:
+- reduzir a dependência de emojis coloridos na interface permanente sem simplesmente
+  trocá-los por outros emojis;
+- adotar, nesta ordem, símbolo tipográfico monocromático, SVG simples com `currentColor`,
+  CSS e texto sem ícone quando a imagem não acrescentar informação;
+- avaliar cada ocorrência como **MANTER**, **SUBSTITUIR POR SÍMBOLO**, **SUBSTITUIR POR
+  SVG**, **SUBSTITUIR POR CSS** ou **REMOVER**, sem substituição automática em massa;
+- criar uma linguagem pequena e reutilizável em preto, branco e dourado, ligada a
+  futebol/Corinthians e com aparência de jogo;
+- evitar dependência da renderização nativa de emojis do sistema operacional ou
+  navegador e não introduzir cores alheias à identidade por meio dos glifos;
+- tratar separadamente os emojis gerados apenas no texto de compartilhamento, pois não
+  fazem parte da interface permanente;
+- marcar ícones decorativos como ignoráveis por tecnologia assistiva, dar nome acessível
+  a todo botão somente com ícone e nunca comunicar estado importante apenas pelo ícone;
+- candidatos iniciais da Fase A: `⬅` → `←`/`← VOLTAR`; fogo do streak → símbolo/SVG
+  monocromático; compartilhar → SVG `currentColor`; controle `🎨` → ícone de
+  filtro/contraste; `✅`/`❌` → `✓`/`✕`; ícones dos quatro modos → SVG, CSS ou remoção
+  após avaliação individual.
+
+Restrições preservadas:
+- regras, seeds, saves, streak, histórico, pools, banco de jogadores, três ocultos do
+  Onze Inicial e balanceamento do Mais ou Menos não fazem parte desta rodada visual;
+- foto como protagonista, cores semânticas do Clássico, campo do Onze Inicial e números
+  principais do Mais ou Menos devem permanecer reconhecíveis.
+
+Testado nesta auditoria:
+- suíte permanente completa, storage, histórico, sintaxe de `script.js` e
+  `storage-normalizers.js`, frontend contract, 151 IDs e `git diff --check` aprovados;
+- inspeção estática de `index.html`, `style.css`, classes dinâmicas e breakpoints;
+- validação visual real nos viewports permanece para cada fase de implementação.
+
+Próximo passo:
+- iniciar a Fase A com uma proposta pequena para navegação/ícones e tokens de hierarquia,
+  validando o botão Voltar antes de modificar a Home.
+
+
+## 22/08/2026 — v3.0 Fase A: linguagem visual e navegação
+
+**Status: IMPLEMENTADA / AGUARDANDO VALIDAÇÃO MANUAL**
+
+Implementado:
+- os quatro controles Voltar agora usam `← VOLTAR` no desktop e somente `←` no mobile,
+  com o mesmo `aria-label`, alvo mínimo de 44×44, hover, active e foco visível;
+- criada a base `.ui-icon` para SVGs monocromáticos que herdam `currentColor`, sem
+  biblioteca ou cores internas hardcoded;
+- calendário, foto, comparação e campo dos cards receberam SVGs decorativos simples;
+- streak recebeu chama monocromática em SVG e o controle de contraste do Foto recebeu
+  SVG próprio, alvo 44×44 e nome acessível explícito;
+- compartilhar passou a usar texto sem ícone na interface; o texto compartilhado em si
+  permaneceu intacto;
+- mensagens visuais de sucesso/erro do Clássico e Foto passaram a usar `✓`/`✕` no lugar
+  de emojis coloridos;
+- bandeiras nativas do Mais ou Menos foram substituídas por `Nacionalidade · Posição`,
+  preservando e tornando explícita a informação;
+- controles de fechar modal e ajuda foram elevados para alvo de 44×44;
+- Estatísticas e Histórico mantiveram estrutura e posição, mas seus botões secundários
+  deixaram de usar dourado como decoração permanente.
+
+Inventário e decisão:
+- **MANTER:** corações preto/branco em saudação e assinatura, águia/badges do footer
+  nesta fase, setas tipográficas do Clássico e MM, chevrons do widget e emojis dentro dos
+  textos de compartilhamento;
+- **SUBSTITUIR POR SÍMBOLO:** `⬅` → `←`/`← VOLTAR`; `✅`/`❌` e celebração visual →
+  `✓`/`✕` nas mensagens permanentes;
+- **SUBSTITUIR POR SVG:** ícones dos quatro modos, fogo do streak e contraste do Foto,
+  todos com `currentColor` e `aria-hidden` quando decorativos;
+- **SUBSTITUIR POR CSS:** nenhum caso nesta fase; não foi criada abstração sem benefício;
+- **REMOVER:** `📤` dos botões de compartilhar, emojis repetidos nos títulos internos e
+  tutorial do Foto, além das bandeiras nativas substituídas por texto;
+- compartilhamentos preservam `✅`, `🔥`, quadrados coloridos, bola e corações porque
+  pertencem à linguagem textual externa, não à interface permanente.
+
+Proteção permanente:
+- contrato estrutural cobre os quatro IDs Voltar, nomes acessíveis, seta monocromática,
+  ausência de `⬅`, alvo mínimo, foco visível, SVG de contraste e ausência dos emojis
+  coloridos substituídos no HTML;
+- frontend contract documenta o padrão compartilhado de navegação e `.ui-icon`.
+
+Riscos e validação manual pendente:
+- confirmar legibilidade dos SVGs nas renderizações reais de Windows, macOS, Android e
+  navegadores móveis;
+- confirmar que `← VOLTAR` não comprime as barras em desktop/tablet e que o alvo circular
+  de 44 px permanece confortável no mobile;
+- verificar contraste, hover, active e focus-visible nos quatro modos;
+- confirmar visualmente que compartilhamentos mantiveram sua grade/texto e que nenhuma
+  mudança alterou comportamento funcional.
+
+Checklist manual:
+- desktop 1366×768, 1440×900 e 1920×1080: quatro botões Voltar, hover, foco, alinhamento
+  e iconografia;
+- mobile 360×800, 390×844, 412×915 e 480×900: seta isolada, alvo de toque, ausência de
+  overflow e barras de status sem colisão;
+- abrir Clássico, Foto, Mais ou Menos e Onze Inicial; testar retorno à Home;
+- abrir/fechar Como Jogar, Estatísticas e Histórico; testar foco dos controles de fechar;
+- alternar contraste do Foto e verificar `aria-pressed`;
+- concluir/copiar resultados e confirmar emojis preservados somente no conteúdo
+  compartilhado.
+
+Próximo passo:
+- aprovar a Fase A em navegador real; somente depois iniciar a Fase B — Home.
+
+
+## 22/08/2026 — v3.0 Fase A.1: polimento após validação visual
+
+**Status: VALIDAÇÃO VISUAL NÃO APROVADA / SUPERADA PELA FASE A.2**
+
+Implementado:
+- o botão Voltar deixou de usar cápsula/círculo decorativo e passou a integrar a barra
+  superior como controle retangular discreto, preservando `← VOLTAR` no desktop, `←` no
+  mobile, alvo mínimo de 44×44 e nome acessível;
+- a barra superior dos modos ganhou hierarquia mais clara: título principal de 15 px,
+  informação de rodada/timer secundária de 12 px e dourado removido do timer concorrente;
+- a busca do Clássico foi compactada para 44 px, sem alterar input, autocomplete ou
+  comportamento;
+- o cabeçalho desktop do Clássico passou a formar uma linha única com divisores externos,
+  removendo os oito sublinhados/mini-pills independentes; as labels mobile foram mantidas;
+- os quatro SVGs decorativos dos cards da Home foram removidos após validação visual;
+- subtítulos da Home foram simplificados e deixaram de usar pill/borda, preservando a
+  hierarquia título, descrição e status;
+- os SVGs de streak e contraste foram preservados por terem função/identidade próprias.
+
+Proteção permanente:
+- o contrato estrutural agora verifica o formato discreto do Voltar, os quatro subtítulos
+  sem ícones, a busca compacta e o cabeçalho unificado do Clássico;
+- nenhuma mecânica, seed, save, histórico, JSON ou ordem/layout estrutural da Home mudou.
+
+Testado:
+- suíte permanente completa, storage, histórico, sintaxe dos scripts, contrato de
+  frontend, IDs únicos, JSONs e `git diff --check`;
+- inspeção estática das regras desktop/mobile e preservação das labels responsivas;
+- validação visual real desta iteração permanece pendente.
+
+Checklist manual:
+- desktop 1366×768, 1440×900 e 1920×1080: hierarquia da barra, Voltar, busca e linha de
+  cabeçalho do Clássico;
+- mobile 360×800, 390×844, 412×915 e 480×900: seta isolada, alvo de toque, labels das
+  tentativas, autocomplete e ausência de overflow;
+- Home: conferir títulos, novos subtítulos, status dos quatro modos e ausência dos quatro
+  SVGs decorativos, preservando streak e contraste;
+- teclado: Tab, Shift+Tab, Enter e foco visível nos quatro controles Voltar.
+
+Próximo passo:
+- executar a segunda iteração visual dos cabeçalhos antes de qualquer trabalho da Fase B.
+
+
+## 22/08/2026 — v3.0 Fase A.2: segunda iteração visual dos cabeçalhos
+
+**Status: IMPLEMENTADA / AGUARDANDO VALIDAÇÃO MANUAL**
+
+Motivação:
+- a validação visual da Fase A.1 não foi aprovada porque o cabeçalho do Foto comprimia
+  Voltar, título, dificuldade e tentativas na mesma linha, com aparência de toolbar;
+- a busca e o controle de contraste também não davam à fotografia o protagonismo esperado.
+
+Implementado:
+- o cabeçalho do Foto passou a separar navegação, identidade do modo e progresso em áreas
+  próprias; `MODO FOTO` usa a tipografia de personalidade e a dificuldade fica abaixo;
+- o progresso foi simplificado para `X / 6 TENTATIVAS`, preservando o contador para o
+  próximo desafio após a conclusão;
+- o Voltar ganhou fundo e borda muito sutis, raio moderado e dourado apenas em hover/foco,
+  sem retornar à cápsula anterior e mantendo alvo 44×44;
+- a base dos cabeçalhos ganhou superfície escura discreta e títulos mais reconhecíveis,
+  aplicando aos quatro modos os mesmos princípios sem igualar seus conteúdos;
+- a busca do Foto passou a ter 44 px, largura alinhada à imagem, borda neutra e dourado
+  somente no foco; autocomplete e comportamento foram preservados;
+- o espaço entre cabeçalho, busca e fotografia foi reorganizado sem alterar a dimensão da
+  imagem ou criar divisor dourado decorativo;
+- o controle de contraste passou de círculo fraco para controle quadrado arredondado de
+  alto contraste, com ícone maior, hover/foco/estado ativo e `aria-label` mais explícito.
+
+Proteção permanente:
+- o contrato estrutural valida agrupamento do cabeçalho, ordem semântica, progresso,
+  busca de 44 px, controle de contraste e nome acessível;
+- tentativas, dificuldade, blur, autocomplete, resultado, seeds, saves e JSONs permanecem
+  inalterados.
+
+Testado:
+- suíte permanente, storage, histórico, sintaxe dos scripts, frontend contract, IDs,
+  CSS balanceado, JSONs e `git diff --check`;
+- validação visual real desta segunda iteração permanece pendente.
+
+Checklist manual:
+- Foto inicial e após tentativas: conferir hierarquia entre Voltar, `MODO FOTO`, badge e
+  progresso, além da troca para o contador diário ao concluir;
+- desktop 1366×768, 1440×900 e 1920×1080: busca alinhada à foto, fotografia protagonista
+  e controle de contraste claramente acionável;
+- mobile 360×800, 390×844, 412×915 e 480×900: cabeçalho sem compressão, seta isolada,
+  título/badge legíveis, progresso sem quebra estranha e ausência de overflow;
+- teclado: Voltar, busca, autocomplete e contraste com Tab, Enter, Escape e foco visível;
+- abrir Clássico, Mais ou Menos e Onze Inicial para confirmar a hierarquia compartilhada
+  sem regressão de conteúdo ou navegação.
+
+Próximo passo:
+- validar a Fase A.2 em navegador real; não iniciar a Fase B antes da aprovação.
+
+
+## 22/08/2026 — v3.0 Fase A.3: centralização e cabeçalho do Clássico
+
+**Status: IMPLEMENTADA / AGUARDANDO VALIDAÇÃO VISUAL MANUAL**
+
+Implementado:
+- os cabeçalhos dos quatro modos passaram a usar três colunas, com laterais simétricas no
+  desktop, garantindo que o nome do modo fique geometricamente centralizado sem depender
+  das larguras do Voltar ou da informação contextual;
+- em até 480 px, a grade prioriza 44 px para a seta, espaço fluido para o título e largura
+  natural para o progresso, evitando forçar a centralização quando ela causaria colisão;
+- o cabeçalho das oito colunas do Clássico perdeu a borda superior e qualquer superfície
+  própria, ficando transparente e integrado ao fundo com apenas uma linha inferior neutra;
+- labels ganharam contraste secundário mais claro, peso, espaçamento entre letras e
+  alinhamento vertical mais legíveis, sem dourado permanente;
+- `ASSISTÊNCIAS` foi abreviado visualmente para `ASSIST.` somente no cabeçalho desktop;
+  a label completa dentro das tentativas mobile permanece preservada;
+- a busca do Clássico aprovada na A.2 e as células coloridas das tentativas não foram
+  alteradas.
+
+Proteção permanente:
+- o teste estrutural confirma a grade simétrica desktop, alinhamento esquerda/centro/
+  direita, adaptação mobile, transparência do cabeçalho e abreviação exclusivamente visual;
+- IDs, listeners, autocomplete, navegação, mecânicas, seeds, saves e JSONs permanecem
+  preservados.
+
+Testado:
+- suíte permanente, storage, histórico, sintaxe dos scripts, frontend contract, 151 IDs,
+  CSS balanceado, JSONs e `git diff --check`;
+- validação visual real nos viewports solicitados permanece pendente.
+
+Checklist manual:
+- desktop 1366×768, 1440×900 e 1920×1080: confirmar centro geométrico dos títulos nos
+  quatro modos, independentemente do conteúdo à esquerda e à direita;
+- Clássico desktop: verificar cabeçalho integrado ao fundo, linha neutra, labels legíveis,
+  alinhamento das oito colunas e busca visualmente idêntica à A.2;
+- mobile 360×800, 390×844, 412×915 e 480×900: conferir ausência de colisões/overflow,
+  seta de 44 px e labels completas dentro das tentativas, sem duplicação;
+- navegar com teclado pelos quatro Voltar e pelo autocomplete do Clássico.
+
+Próximo passo:
+- validar a Fase A.3 em navegador real; manter a Fase B bloqueada até a aprovação.
+
+
+## 22/08/2026 — v3.0 Fase A.4: remoção definitiva da superfície do cabeçalho do Clássico
+
+**Status: IMPLEMENTADA / AGUARDANDO VALIDAÇÃO VISUAL MANUAL**
+
+Causa confirmada:
+- a faixa não era produzida pelo `.board-header`, já transparente desde a A.3;
+- o ancestral compartilhado `.game-sticky-top` aplicava `background-color: var(--bg)` em
+  toda a largura, cobrindo a textura sutil do canvas principal com um retângulo preto sólido;
+- não havia pseudo-elemento, sombra ou segunda borda responsável pelo efeito.
+
+Implementado:
+- `#gameView .game-sticky-top` neutraliza somente no Clássico o fundo sólido herdado da
+  base compartilhada, permitindo que o fundo principal apareça diretamente atrás das labels;
+- o `.board-header` continua sem superfície própria e mantém apenas a linha inferior neutra
+  de 1 px, o alinhamento das oito colunas e a tipografia aprovada na A.3;
+- busca, autocomplete, tentativas desktop/mobile e os outros três modos não foram alterados.
+
+Proteção permanente:
+- o contrato estrutural verifica tanto a regra compartilhada que originou o problema quanto
+  o override específico transparente, evitando que a faixa ancestral reapareça;
+- IDs, listeners, grid desktop, labels mobile, mecânicas, seeds, saves e JSONs permanecem
+  preservados.
+
+Testado:
+- suíte permanente, storage, histórico, sintaxe dos scripts, frontend contract, IDs, CSS,
+  JSONs e `git diff --check`;
+- validação visual real permanece pendente.
+
+Checklist manual:
+- desktop 1366×768, 1440×900 e 1920×1080: confirmar que não existe retângulo perceptível
+  atrás das labels e que a única separação é a linha inferior neutra;
+- conferir busca inalterada, alinhamento das oito colunas e espaçamento antes das tentativas;
+- rolar uma partida com várias tentativas e verificar a leitura do cabeçalho sticky;
+- mobile 360×800, 390×844, 412×915 e 480×900: confirmar cabeçalho desktop oculto, labels
+  internas preservadas, ausência de duplicação e overflow.
+
+Próximo passo:
+- validar a Fase A.4 em navegador real; não iniciar a Fase B antes da aprovação.
+
+
+## 22/08/2026 — v3.0 Fase A.4.1: proporção tipográfica das labels do Clássico
+
+**Status: IMPLEMENTADA / AGUARDANDO VALIDAÇÃO VISUAL MANUAL**
+
+Implementado:
+- labels do cabeçalho desktop passaram de 10 px para 11 px e de peso 650 para 700;
+- letter-spacing foi neutralizado, line-height ajustado para 1.15 e padding horizontal
+  reduzido para 1 px, melhorando a distribuição sem aumentar significativamente a linha;
+- `min-width: 0` e `white-space: nowrap` protegem alinhamento e evitam quebra, especialmente
+  em `NACIONALIDADE`, `TÍTULOS` e `ASSIST.`;
+- a grade de oito colunas permanece exatamente a mesma das tentativas e o alinhamento
+  central foi preservado;
+- fundo transparente, divisor neutro, busca, autocomplete, células e mobile não mudaram.
+
+Proteção permanente:
+- teste estrutural fixa tamanho, peso, spacing, ausência de quebra, centralização e a grade
+  compartilhada original, sem permitir recriação da superfície removida na A.4.
+
+Testado:
+- suíte permanente, storage, histórico, sintaxe dos scripts, frontend contract, IDs, CSS,
+  JSONs e `git diff --check`;
+- validação visual real em desktop permanece pendente.
+
+Checklist manual:
+- 1366×768, 1440×900 e 1920×1080: conferir legibilidade, proporção e alinhamento de todas
+  as labels, com atenção a `NACIONALIDADE`, `TÍTULOS` e `ASSIST.`;
+- confirmar ausência de quebra, overflow, sobreposição ou retorno da faixa preta;
+- confirmar busca, divisor, tentativas e comportamento mobile visualmente inalterados.
+
+Próximo passo:
+- executar a validação manual final da Fase A; manter a Fase B bloqueada até aprovação.
+
+
+## 22/08/2026 — v3.0 Fase A.5: remoção das superfícies dos cabeçalhos dos modos
+
+**Status: IMPLEMENTADA / AGUARDANDO VALIDAÇÃO VISUAL MANUAL**
+
+Causa confirmada:
+- `.daily-status-bar` criava o card externo com gradiente escuro, borda completa, raio de
+  10 px e padding lateral;
+- o ancestral `.game-sticky-top` ainda aplicava `background-color: var(--bg)` nos modos,
+  formando uma segunda superfície preta sólida sobre o canvas texturizado da página;
+- não havia `box-shadow` ou pseudo-elemento adicional nos cabeçalhos superiores;
+- o override anterior do Clássico neutralizava apenas o ancestral naquele modo e não
+  removia o card desenhado por `.daily-status-bar`.
+
+Implementado:
+- `.daily-status-bar` agora é transparente, sem borda externa e sem raio; preserva somente
+  um divisor inferior neutro de 1 px e espaçamento vertical;
+- `.game-sticky-top` passou a ser transparente na base compartilhada dos quatro modos;
+- o override exclusivo do Clássico tornou-se redundante e foi removido;
+- botão Voltar, título central, timer/progresso/rodada, badge do Foto e adaptação mobile
+  permanecem com a hierarquia das fases A.2/A.3;
+- buscas, autocompletes e o conteúdo interno dos quatro modos não foram alterados.
+
+Comportamento responsivo:
+- desktop preserva três colunas com laterais simétricas e título geometricamente central;
+- até 480 px, a grade continua priorizando 44 px para a seta, centro fluido e informação
+  contextual à direita, sem recriar um container visual;
+- não foram adicionados breakpoints, backgrounds, gradientes, sombras ou dourado decorativo.
+
+Proteção permanente:
+- teste estrutural confirma transparência das duas camadas ancestrais, ausência de gradiente,
+  sombra e raio, além do único divisor neutro permitido;
+- IDs, listeners, navegação, mecânicas, seeds, saves, histórico e JSONs permanecem intactos.
+
+Testado:
+- suíte permanente, storage, histórico, sintaxe dos scripts, frontend contract, IDs, CSS,
+  JSONs e `git diff --check`;
+- validação visual real nos viewports solicitados permanece pendente.
+
+Checklist manual:
+- desktop 1366×768, 1440×900 e 1920×1080: conferir os quatro cabeçalhos integrados ao
+  fundo, títulos centralizados e ausência de qualquer retângulo externo;
+- mobile 360×800, 390×844, 412×915, 430×932 e 480×900: verificar duas linhas quando
+  necessário, touch target, ausência de colisão e overflow;
+- Foto: preservar badge, progresso, busca e contraste; Clássico: busca e oito labels;
+- Mais ou Menos e Onze Inicial: confirmar que somente a superfície superior desapareceu;
+- testar Voltar, foco, teclado e rolagem em todos os modos.
+
+Próximo passo:
+- validar visualmente a Fase A.5; não iniciar a Fase B antes da aprovação final da Fase A.
+
+
+## 22/08/2026 — v3.0 Fase A.6: proporções desktop do Clássico
+
+**Status: IMPLEMENTADA / AGUARDANDO VALIDAÇÃO VISUAL MANUAL**
+
+Implementado:
+- a grade desktop compartilhada pelo cabeçalho e por todas as tentativas passou de
+  `1.3 / 1 / 1 / 0.7 / 1.15 / 1.6 / 0.7 / 0.75` para
+  `1.3 / 1.05 / 1.25 / 0.85 / 1 / 1.6 / 0.7 / 0.8`;
+- o gap horizontal passou de 6 px para 7 px, criando separação mais clara sem produzir
+  grandes vazios ou scroll horizontal;
+- Nacionalidade recebeu aproximadamente 25% mais peso e Estreia aproximadamente 21% mais,
+  resolvendo a proximidade observada; Jogador e Títulos continuam as maiores colunas;
+- Posição e Pé mantêm largura intermediária, enquanto Gols e Assist. permanecem compactas;
+- a largura máxima útil continua obedecendo ao shell global de 760 px: em desktop com
+  gutters de 16 px, o Clássico usa aproximadamente 728 px internos;
+- nenhum breakpoint foi adicionado e a grade mobile de duas colunas permanece intacta.
+
+Proteção permanente:
+- o contrato estrutural exige a mesma definição de colunas e gap no cabeçalho/tentativas,
+  além de confirmar a regra mobile original em até 480 px;
+- cores, setas, conteúdo, altura, bordas, fallback, busca e autocomplete não mudaram.
+
+Testado:
+- suíte permanente, storage, histórico, sintaxe dos scripts, frontend contract, IDs, CSS,
+  JSONs e `git diff --check`;
+- validação visual real em desktop e confirmação rápida em 412×915 permanecem pendentes.
+
+Checklist manual:
+- 1366×768, 1440×900 e 1920×1080: conferir separação Nacionalidade/Estreia, alinhamento
+  cabeçalho/células, espaço de Títulos, Gols/Assist. e ausência de overflow;
+- testar nomes longos como Marcelo Mattos e Carlos Alberto, confirmando quebra natural;
+- 412×915: confirmar grade mobile de duas colunas, Jogador/Títulos em largura completa e
+  labels internas sem qualquer alteração.
+
+Próximo passo:
+- validar visualmente a Fase A.6; não iniciar a Fase B antes da aprovação final da Fase A.
+
+
+## 22/08/2026 — v3.0 Fase A.7: superfície funcional dos cabeçalhos sticky no mobile
+
+**Status: IMPLEMENTADA / AGUARDANDO VALIDAÇÃO VISUAL MANUAL**
+
+Problema confirmado:
+- `.game-sticky-top` é a região sticky compartilhada dos quatro modos, com `top: 0` e
+  `z-index: 20`; no Clássico e Foto ela também envolve busca/autocomplete;
+- após a transparência desktop da A.5, cards e tentativas rolavam visivelmente por trás da
+  região no mobile, prejudicando contraste e leitura.
+
+Implementado:
+- somente em até 480 px, `.game-sticky-top` recebe `rgba(11, 11, 10, 0.97)`, fundo quase
+  sólido coerente com o canvas, sem radius, sombra, blur ou aparência de card;
+- uma borda inferior neutra de 1 px separa discretamente a região sticky do conteúdo;
+- a superfície cobre conjuntamente cabeçalho e busca no Clássico/Foto, evitando lacuna
+  transparente, e somente o cabeçalho no Mais ou Menos/Onze Inicial;
+- desktop permanece completamente transparente conforme aprovado na A.5.
+
+Stacking auditado:
+- sticky permanece em `z-index: 20`, suficiente para ficar acima do conteúdo dos modos;
+- autocomplete continua em 99 dentro da região; infraestrutura de modal permanece em 100;
+- nenhum z-index novo ou arbitrariamente alto foi criado.
+
+Proteção permanente:
+- teste estrutural diferencia fundo desktop transparente e superfície mobile em até 480 px,
+  fixa o divisor neutro e protege os níveis sticky/autocomplete;
+- títulos, Voltar, grids, buscas, mecânicas, dados, seeds e saves não foram alterados.
+
+Testado:
+- suíte permanente, storage, histórico, sintaxe dos scripts, frontend contract, IDs, CSS,
+  JSONs e `git diff --check`;
+- validação visual real durante scroll permanece pendente.
+
+Checklist manual:
+- 360×800, 390×844, 412×915, 430×932, 480×900 e especialmente 412×600: rolar conteúdo
+  suficiente nos quatro modos e confirmar que nada fica legível através do sticky;
+- Clássico com 1 e várias tentativas; Foto com várias tentativas; MM em rodada intermediária
+  e resultado; Onze Inicial com placar, campo e feedback;
+- conferir ausência de lacuna entre cabeçalho e busca, autocomplete acima do conteúdo,
+  modais/overlays sem bloqueio e nenhum overflow;
+- desktop: confirmar rapidamente que os quatro cabeçalhos continuam transparentes.
+
+Próximo passo:
+- validar visualmente a Fase A.7; não iniciar a Fase B antes da aprovação final da Fase A.
+
+
+## 22/08/2026 — v3.0 Fase A.8: polimento final do sticky mobile
+
+**Status: IMPLEMENTADA / AGUARDANDO VALIDAÇÃO VISUAL FINAL DA FASE A**
+
+Implementado:
+- no mobile, o gap compartilhado do sticky passou de 8 px para 5 px e o padding inferior
+  de 10 px para 6 px; o Foto, que sobrescrevia o gap para 12 px, também passou a 5 px;
+- a barra interna passou de `6px 0 8px` para `2px 0 5px` e perdeu seu divisor próprio no
+  mobile, deixando somente a separação final da região sticky;
+- a composição recupera aproximadamente 14 px verticais no Clássico/Foto sem reduzir o
+  Voltar ou a busca abaixo de 44 px;
+- o Voltar mobile mantém 44×44, mas usa fundo de 2% e borda de 10% de branco, com dourado
+  apenas durante foco/active;
+- no contador mobile do Clássico, `Próximo em` passou a 10 px/peso 500 e cor secundária,
+  enquanto o horário permanece em 12 px/peso 800; Foto e MM não tiveram o progresso alterado;
+- fundo opaco, arquitetura sticky e níveis de z-index da A.7 foram preservados integralmente.
+
+Relação cabeçalho/busca:
+- Clássico e Foto usam gap único de 5 px e background contínuo, sem linha intermediária;
+- autocomplete continua ligado ao campo e acima do conteúdo; a foto sobe discretamente
+  pela redução de espaço, sem mudar dimensão, blur, contraste, dots ou tentativas;
+- MM e Onze Inicial recebem apenas compactação coerente do cabeçalho, sem estrutura extra.
+
+Proteção permanente:
+- teste estrutural fixa gaps, paddings, único divisor, alvo 44 px, superfície sutil do
+  Voltar e hierarquia tipográfica do contador;
+- desktop, grids, células, buscas, mecânicas, dados, saves e seeds permanecem intactos.
+
+Testado:
+- suíte permanente, storage, histórico, sintaxe dos scripts, frontend contract, IDs, CSS,
+  JSONs e `git diff --check`;
+- validação visual final da Fase A permanece pendente.
+
+Checklist manual:
+- 412×600: conferir ganho de área útil, continuidade entre cabeçalho/busca, conteúdo oculto
+  sob o sticky e ausência de compressão do título/progresso;
+- 360×800, 390×844, 412×915, 430×932 e 480×900: testar os quatro modos, Voltar 44×44,
+  contador, badge, rodada, autocomplete e ausência de overflow;
+- Foto: confirmar que a imagem subiu discretamente; MM/Onze: confirmar ausência de espaço
+  ou estrutura indevida; desktop: confirmar ausência total de regressão.
+
+Próximo passo:
+- executar a validação visual final da Fase A; não iniciar a Fase B antes da aprovação.
+
+
+## 22/08/2026 — Encerramento da v3.0 Fase A
+
+**Status: CONCLUÍDA — FASE B É A PRÓXIMA ETAPA**
+
+Concluído:
+- linguagem visual compartilhada e redução de emojis coloridos na interface permanente;
+- símbolos tipográficos e SVGs monocromáticos `currentColor` onde agregam função;
+- botão Voltar acessível, cabeçalhos dos quatro modos e centralização dos títulos;
+- buscas do Clássico e Foto preservadas/compactadas, sem regressão nos autocompletes;
+- cabeçalho desktop e proporções das oito colunas do Clássico;
+- superfície funcional do sticky mobile e compactação da região em viewport baixo;
+- contraste, foco visível, nomes acessíveis e touch targets mínimos preservados.
+
+Validação:
+- a validação visual da A.8 foi considerada suficiente para permitir o avanço da v3.0;
+- a suíte permanente e os contratos estruturais das entregas A.1–A.8 permaneceram verdes;
+- a conclusão da Fase A não inicia nem implementa qualquer item da Home/Fase B.
+
+Pendências visuais não bloqueantes para a Fase F:
+- o sticky mobile ainda pode receber pequeno refinamento estético;
+- a sensação visual do cabeçalho em viewport baixo pode ser revisitada;
+- microespaçamentos e contraste fino ainda podem ser ajustados;
+- nenhuma dessas pendências afeta uso, mecânica ou acessibilidade e não será aberta como A.9.
+
+Próximo passo:
+- iniciar a Fase B — Home em tarefa própria, preservando a Fase C de resultados finais e
+  continuidade do dia como etapa planejada posterior.

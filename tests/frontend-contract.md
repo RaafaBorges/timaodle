@@ -90,22 +90,55 @@ node tests/viewport-smoke.js
 - `.search-box` e `.autocomplete-items` controlam aparência, foco, scroll e alvos de toque; cada modo mantém somente largura e posicionamento próprios.
 - Onze Inicial preserva a variante de busca com 52 px, avatar e lista mais alta; o autocomplete ARIA completo continua pendente.
 - `.daily-status-bar`, `.back-btn`, `.daily-end-message` e `.escalacao-feedback` compartilham estrutura sem apagar suas diferenças semânticas.
+- Em desktop, `.daily-status-bar` usa colunas laterais simétricas para manter o nome do
+  modo geometricamente centralizado; em até 480 px, prioriza espaço útil sem colisões.
+- Os quatro controles Voltar usam `← VOLTAR` no desktop e somente a seta visual no mobile,
+  preservando `aria-label="Voltar para a Home"`, alvo mínimo de 44×44 e foco dourado.
+- Os controles Voltar permanecem retangulares e discretos, sem cápsula ou círculo
+  decorativo, preservando o alvo mínimo e o foco acessível.
+- `.ui-icon` é a base monocromática dos SVGs `currentColor`; SVGs decorativos permanecem
+  ocultos de tecnologia assistiva e controles somente com ícone mantêm nome acessível.
+- Os cards de modo da Home usam subtítulos textuais sem pill, borda ou SVG decorativo;
+  streak e contraste preservam seus SVGs funcionais/identitários.
 - `.share-btn` e `.form-submit-btn` compartilham a ação dourada; Home, Onze Inicial e formulários mantêm variantes locais.
 - Botões e resultados específicos do Mais ou Menos permanecem fora dessa base.
 
 ## Modo Foto
 
 - `#photoView` possui limite próprio de 400 px e continua fluido abaixo desse valor.
+- O cabeçalho do Foto separa navegação, identidade/dificuldade e progresso em três áreas;
+  a dificuldade fica abaixo do título e evita comprimir as quatro informações em uma linha.
+- O progresso usa a forma `X / 6 TENTATIVAS`, sem pill, e volta a exibir o contador diário
+  consolidado quando o desafio termina.
 - Imagem quadrada e lista de tentativas compartilham o limite fluido de 320 px.
 - Enquadramento, fallback e estados de revelação permanecem proprietários do modo.
 - Busca, autocomplete, barra de status e mensagem final consomem a base compartilhada sem overrides responsivos.
+- O controle de contraste mantém 44×44, ícone monocromático, nome acessível e estados
+  visualmente perceptíveis de hover, foco e ativação.
 - O tutorial continua sob a infraestrutura comum e acessível de modais, sem CSS duplicado no Foto.
 
 ## Modo Clássico
 
 - `#gameView` delimita tabuleiro, tentativas, células, animações e estados de comparação.
 - Desktop preserva oito colunas na ordem Jogador, Posição, Nacionalidade, Estreia, Pé,
-  Títulos, Gols e Assistências.
+  Títulos, Gols e Assistências; cabeçalho e tentativas compartilham os pesos
+  `1.3 / 1.05 / 1.25 / 0.85 / 1 / 1.6 / 0.7 / 0.8` e gap de 7 px.
+- A busca do Clássico usa altura compacta de 44 px e o cabeçalho desktop forma uma única
+  linha visual integrada ao fundo, sem caixa externa, mini-pills ou divisores independentes.
+- `.game-sticky-top` e `.daily-status-bar` são transparentes nos quatro modos; somente uma
+  linha inferior neutra organiza o cabeçalho, sem gradiente, card, sombra ou raio externo.
+- Em até 480 px, `.game-sticky-top` recebe fundo quase sólido e divisor neutro para que
+  cabeçalho e busca ocultem o conteúdo rolando por baixo; desktop permanece transparente.
+- O sticky mobile usa gap de 5 px e padding inferior de 6 px; a barra interna remove seu
+  divisor duplicado e usa `2px 0 5px`, mantendo busca e Voltar com 44 px.
+- No Clássico mobile, o prefixo do contador usa 10 px/peso 500 e o horário permanece em
+  12 px/peso 800; Foto e MM preservam suas apresentações específicas de progresso.
+- O stacking permanece em 20 para a região sticky e 99 para o autocomplete, abaixo da
+  infraestrutura de modais, sem introduzir novos níveis arbitrários.
+- As labels desktop usam contraste secundário legível e somente `ASSIST.` é abreviada;
+  as labels completas dentro das tentativas mobile permanecem inalteradas.
+- As labels desktop usam 11 px, peso 700, espaçamento neutro e `nowrap`, mantendo exatamente
+  a mesma grade de oito colunas das tentativas e sem recuperar qualquer superfície própria.
 - Em até 480 px, o cabeçalho é ocultado e cada tentativa vira uma grade de duas colunas;
   Jogador e Títulos ocupam a largura completa.
 - As labels mobile permanecem ligadas à ordem das oito células por `nth-child`.

@@ -90,6 +90,25 @@ input:focus-visible {
     outline-offset: 2px;
 }
 
+/* Iconografia da interface: traço monocromático, herdando a cor do controle. */
+.ui-icon {
+    width: 1em;
+    height: 1em;
+    display: inline-block;
+    flex: 0 0 auto;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vertical-align: -0.12em;
+}
+
+.ui-icon .icon-fill {
+    fill: currentColor;
+    stroke: none;
+}
+
 .main-wrapper {
     width: 100%;
     max-width: var(--shell-max-width);
@@ -207,8 +226,8 @@ input:focus-visible {
     border: 1px solid var(--line);
     font-size: 15px;
     cursor: pointer;
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     transition: border-color 0.15s ease, transform 0.1s ease, background-color 0.15s ease;
     color: var(--ink-muted);
@@ -354,18 +373,10 @@ input:focus-visible {
 
 .btn-pill {
     background: transparent;
-    border: 1px solid var(--line);
-    border-radius: 20px;
-    padding: 4px 12px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    width: fit-content;
-    justify-content: center;
-}
-
-.pill-icon {
-    font-size: 12px;
+    border: 0;
+    padding: 0;
+    width: 100%;
+    text-align: center;
 }
 
 .pill-text {
@@ -476,6 +487,9 @@ input:focus-visible {
     font-size: 9px;
     font-weight: 800;
     letter-spacing: 0.7px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .home-streak strong {
@@ -537,7 +551,7 @@ input:focus-visible {
     background: transparent;
     border: 1px solid var(--line);
     border-radius: var(--radius-s);
-    color: var(--gold);
+    color: var(--ink-muted);
     font-family: var(--font-body);
     font-size: 11px;
     font-weight: 800;
@@ -566,8 +580,8 @@ input:focus-visible {
 }
 
 .home-history-btn {
-    color: var(--gold);
-    border-color: color-mix(in srgb, var(--gold) 48%, var(--line));
+    color: var(--ink-muted);
+    border-color: var(--line);
 }
 
 .home-completion-summary {
@@ -700,8 +714,8 @@ input:focus-visible {
 .stats-close-btn {
     position: static;
     flex-shrink: 0;
-    width: 34px;
-    height: 34px;
+    width: 44px;
+    height: 44px;
     background: transparent;
     border: 1px solid var(--line);
     border-radius: 50%;
@@ -1605,19 +1619,22 @@ body.modal-open .page-content {
 }
 
 .daily-status-bar {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
     width: 100%;
-    flex-wrap: wrap;
-    gap: 10px;
-    background-color: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-s);
-    padding: 8px 14px;
+    gap: 9px;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--line-soft);
+    border-radius: 0;
+    padding: 6px 0 8px;
 }
 
 .daily-status-bar .daily-timer {
-    margin-left: auto;
+    margin-left: 0;
+    justify-self: end;
+    text-align: right;
 }
 
 .difficulty-badge {
@@ -1649,41 +1666,67 @@ body.modal-open .page-content {
 }
 
 .back-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: var(--surface-2);
-    border: 1px solid var(--line);
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0 10px;
+    gap: 6px;
+    border-radius: var(--radius-s);
+    background-color: rgba(255, 255, 255, 0.035);
+    border: 1px solid var(--line-soft);
     color: var(--ink-muted);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.45px;
     flex-shrink: 0;
-    transition: border-color 0.15s ease, color 0.15s ease;
+    justify-self: start;
+    transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease, transform 0.1s ease;
 }
 
 .back-btn:hover {
     border-color: var(--gold);
-    color: var(--ink);
+    color: var(--gold);
+    background-color: var(--surface-2);
+}
+
+.back-btn:active {
+    transform: translateY(1px);
+}
+
+.back-btn:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+}
+
+.back-arrow {
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1;
 }
 
 .daily-label {
-    font-size: 14px;
-    font-weight: 700;
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 400;
     color: var(--ink);
-    letter-spacing: 0.2px;
+    letter-spacing: 1.1px;
+    line-height: 1;
+    text-transform: uppercase;
+    justify-self: center;
+    text-align: center;
 }
 
 .daily-timer {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--ink-muted);
 }
 
 .daily-timer strong {
-    color: var(--gold);
+    color: var(--ink);
     font-family: var(--font-body);
     font-weight: 800;
     letter-spacing: 0.3px;
@@ -1764,6 +1807,72 @@ body.modal-open .page-content {
     min-width: 0;
 }
 
+#photoView .game-sticky-top {
+    gap: 12px;
+    padding-bottom: 6px;
+}
+
+#photoView .photo-mode-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+}
+
+#photoView .photo-mode-identity {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-self: center;
+    gap: 5px;
+}
+
+#photoView .daily-label {
+    font-size: 21px;
+    letter-spacing: 1.4px;
+}
+
+#photoView .photo-progress {
+    margin-left: 0;
+    max-width: 86px;
+    color: var(--ink-muted);
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.25;
+    letter-spacing: 0.45px;
+    text-align: right;
+    text-wrap: balance;
+}
+
+#photoView .difficulty-badge {
+    padding: 3px 8px;
+    border-radius: var(--radius-s);
+    font-size: 9px;
+    line-height: 1;
+}
+
+#photoView .difficulty-badge.facil {
+    color: #9fc0a8;
+    border-color: rgba(76, 154, 106, 0.55);
+    background-color: rgba(76, 154, 106, 0.1);
+}
+
+#photoView .search-box {
+    width: min(320px, 100%);
+    margin-inline: auto;
+}
+
+#photoView .search-box input {
+    min-height: 44px;
+    padding: 10px 14px;
+    border-width: 1px;
+    border-color: var(--line);
+    border-radius: var(--radius-m);
+    background-color: var(--surface);
+    font-size: 14px;
+}
+
 #photoView .photo-card,
 #photoView .photo-attempts-list {
     width: min(320px, 100%);
@@ -1774,28 +1883,42 @@ body.modal-open .page-content {
     position: absolute;
     top: 10px;
     right: 10px;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background-color: rgba(21, 21, 19, 0.85);
-    border: 1px solid var(--line);
-    color: var(--ink-muted);
-    font-size: 16px;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-m);
+    background-color: rgba(10, 10, 9, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    color: var(--ink);
+    font-size: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     backdrop-filter: blur(4px);
-    transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.1s ease;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.38);
+    transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease, transform 0.1s ease;
 }
 
 #photoView .photo-toggle-overlay-btn.active {
     border-color: var(--gold);
-    background-color: rgba(185, 151, 90, 0.25);
+    color: var(--gold);
+    background-color: rgba(21, 21, 19, 0.94);
 }
 
 #photoView .photo-toggle-overlay-btn:hover {
+    border-color: var(--gold);
+    color: var(--gold);
     transform: scale(1.06);
+}
+
+#photoView .photo-toggle-overlay-btn:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+}
+
+#photoView .contrast-icon {
+    width: 24px;
+    height: 24px;
 }
 
 #photoView .photo-card {
@@ -1805,7 +1928,7 @@ body.modal-open .page-content {
     position: relative;
     border: 1px solid var(--line);
     background-color: var(--surface);
-    margin: 4px auto 0;
+    margin: 10px auto 0;
 }
 
 #photoView .photo-img {
@@ -2359,33 +2482,47 @@ body.modal-open .page-content {
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    background-color: var(--bg);
+    gap: 8px;
+    background-color: transparent;
     padding-bottom: 10px;
+}
+
+#gameView .search-box input {
+    min-height: 44px;
+    padding: 10px 14px;
+    font-size: 14px;
+}
+
+#gameView .board-header {
+    padding: 2px 0 7px;
+    border: 0;
+    border-bottom: 1px solid var(--line-soft);
+    background: transparent;
 }
 
 #gameView .board-header,
 #gameView .attempt-row {
     display: grid;
-    grid-template-columns: 1.3fr 1fr 1fr 0.7fr 1.15fr 1.6fr 0.7fr 0.75fr;
-    gap: 6px;
+    grid-template-columns: 1.3fr 1.05fr 1.25fr 0.85fr 1fr 1.6fr 0.7fr 0.8fr;
+    gap: 7px;
 }
 
 #gameView .board-header .col {
     background-color: transparent;
-    padding: 6px 2px;
+    min-width: 0;
+    padding: 2px 1px;
     text-align: center;
     font-weight: 700;
-    font-size: 9px;
-    letter-spacing: 0.3px;
-    border-radius: var(--radius-s);
-    border-bottom: 1px solid var(--line);
+    font-size: 11px;
+    line-height: 1.15;
+    letter-spacing: 0;
     font-family: var(--font-body);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--ink-faint);
+    color: var(--ink-muted);
     text-transform: uppercase;
+    white-space: nowrap;
 }
 
 #gameView .board-body {
@@ -2593,6 +2730,68 @@ body.modal-open .page-content {
    ========================================================================== */
 @media (max-width: 480px) {
     .logo-box h1 { font-size: 28px; }
+
+    .game-sticky-top {
+        gap: 5px;
+        background-color: rgba(11, 11, 10, 0.97);
+        border-bottom: 1px solid var(--line-soft);
+        padding-bottom: 6px;
+    }
+
+    #photoView .game-sticky-top {
+        gap: 5px;
+        padding-bottom: 6px;
+    }
+
+    .daily-status-bar {
+        grid-template-columns: 44px minmax(0, 1fr) auto;
+        gap: 6px;
+        border-bottom: 0;
+        padding: 2px 0 5px;
+    }
+
+    .back-btn {
+        width: 44px;
+        padding: 0;
+        background-color: rgba(255, 255, 255, 0.02);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .back-btn:hover {
+        background-color: rgba(255, 255, 255, 0.02);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: var(--ink-muted);
+    }
+
+    .back-btn:active {
+        border-color: var(--gold);
+        color: var(--gold);
+    }
+
+    #gameView .daily-timer {
+        color: var(--ink-faint);
+        font-size: 10px;
+        font-weight: 500;
+        line-height: 1.2;
+    }
+
+    #gameView .daily-timer strong {
+        display: inline-block;
+        color: var(--ink);
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .back-label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
 }
 
 /* ==========================================================================
@@ -3932,13 +4131,9 @@ body {
     width: min(520px, 100%);
 }
 
-#maisMenosView .daily-status-bar {
-    border-color: rgba(185, 151, 90, 0.34);
-}
-
 #maisMenosView .daily-timer {
-    color: var(--gold);
-    font-weight: 900;
+    color: var(--ink-muted);
+    font-weight: 600;
 }
 
 #maisMenosView .mm-card {

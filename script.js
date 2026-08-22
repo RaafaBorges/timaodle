@@ -1984,7 +1984,7 @@ async function compartilharResultado() {
     try {
         await navigator.clipboard.writeText(texto);
         const textoOriginal = shareResultBtn.innerText;
-        shareResultBtn.innerText = "Copiado! ✅";
+        shareResultBtn.innerText = "Copiado! ✓";
         setTimeout(() => { shareResultBtn.innerText = textoOriginal; }, 2000);
     } catch {
         alert(texto); // Último recurso — mostra o texto pra copiar manualmente
@@ -2001,7 +2001,7 @@ function mostrarFimDeJogo(comAnimacao) {
     fecharAutocomplete();
 
     dailyEndMessageEl.classList.remove("hidden");
-    dailyEndMessageEl.innerHTML = `🎉 Você acertou! O jogador de hoje era <strong>${jogadorSecreto.nome}</strong>. Volte amanhã para um novo desafio.`;
+    dailyEndMessageEl.innerHTML = `✓ Você acertou! O jogador de hoje era <strong>${jogadorSecreto.nome}</strong>. Volte amanhã para um novo desafio.`;
     shareResultBtn.classList.remove("hidden");
 
     if (comAnimacao) {
@@ -2353,13 +2353,13 @@ function iniciarDesafioFotoDoDia() {
         if (estadoFotoDiario.status === "won") {
             photoImgEl.style.filter = "blur(0px) grayscale(0%)";
             photoEndMessageEl.classList.remove("hidden");
-            photoEndMessageEl.innerHTML = `🎉 Isso aí! Era o <strong>${jogadorSecretoFoto.nome}</strong> mesmo.`;
+            photoEndMessageEl.innerHTML = `✓ Isso aí! Era o <strong>${jogadorSecretoFoto.nome}</strong> mesmo.`;
         } else if (estadoFotoDiario.status === "lost") {
             photoImgEl.style.filter = "blur(0px) grayscale(0%)";
             photoEndMessageEl.classList.remove("hidden");
-            photoEndMessageEl.innerHTML = `❌ Suas tentativas acabaram. Era o <strong>${jogadorSecretoFoto.nome}</strong>.`;
+            photoEndMessageEl.innerHTML = `✕ Suas tentativas acabaram. Era o <strong>${jogadorSecretoFoto.nome}</strong>.`;
         } else {
-            photoAttemptsLabelEl.innerText = `Tentativa ${tentativasFoto.length}/${MAX_TENTATIVAS_FOTO}`;
+            photoAttemptsLabelEl.innerText = `${tentativasFoto.length} / ${MAX_TENTATIVAS_FOTO} TENTATIVAS`;
         }
     } else {
         estadoFotoDiario = {
@@ -2372,7 +2372,7 @@ function iniciarDesafioFotoDoDia() {
         tentativasFoto = [];
         fotoAtiva = true;
         photoSearchInput.disabled = false;
-        photoAttemptsLabelEl.innerText = `Tentativa 0/${MAX_TENTATIVAS_FOTO}`;
+        photoAttemptsLabelEl.innerText = `0 / ${MAX_TENTATIVAS_FOTO} TENTATIVAS`;
         atualizarImagemFoto();
         renderizarDotsFoto();
     }
@@ -2406,7 +2406,7 @@ function fazerPalpiteFoto(palpiteJogador) {
 
     atualizarImagemFoto();
     renderizarDotsFoto();
-    photoAttemptsLabelEl.innerText = `Tentativa ${tentativasFoto.length}/${MAX_TENTATIVAS_FOTO}`;
+    photoAttemptsLabelEl.innerText = `${tentativasFoto.length} / ${MAX_TENTATIVAS_FOTO} TENTATIVAS`;
 
     if (acertou) {
         fotoAtiva = false;
@@ -2415,7 +2415,7 @@ function fazerPalpiteFoto(palpiteJogador) {
         photoSearchInput.disabled = true;
         photoImgEl.style.filter = "blur(0px) grayscale(0%)";
         photoEndMessageEl.classList.remove("hidden");
-        photoEndMessageEl.innerHTML = `🎉 Isso aí! Era o <strong>${jogadorSecretoFoto.nome}</strong> mesmo.`;
+        photoEndMessageEl.innerHTML = `✓ Isso aí! Era o <strong>${jogadorSecretoFoto.nome}</strong> mesmo.`;
         dispararConfetes();
     } else if (tentativasFoto.length >= MAX_TENTATIVAS_FOTO) {
         fotoAtiva = false;
@@ -2424,7 +2424,7 @@ function fazerPalpiteFoto(palpiteJogador) {
         photoSearchInput.disabled = true;
         photoImgEl.style.filter = "blur(0px) grayscale(0%)";
         photoEndMessageEl.classList.remove("hidden");
-        photoEndMessageEl.innerHTML = `❌ Suas tentativas acabaram. Era o <strong>${jogadorSecretoFoto.nome}</strong>.`;
+        photoEndMessageEl.innerHTML = `✕ Suas tentativas acabaram. Era o <strong>${jogadorSecretoFoto.nome}</strong>.`;
     }
 }
 
@@ -2842,14 +2842,6 @@ function renderizarDotsMM() {
     mmHitsLabelEl.innerText = `${acertosMM} ${acertosMM === 1 ? "ACERTO" : "ACERTOS"}`;
 }
 
-const FLAGS_NACIONALIDADE = {
-    "Brasil": "🇧🇷", "Argentina": "🇦🇷", "Paraguai": "🇵🇾", "Equador": "🇪🇨",
-    "Venezuela": "🇻🇪", "Colômbia": "🇨🇴", "Peru": "🇵🇪", "Holanda": "🇳🇱", "Portugal": "🇵🇹",
-};
-function flagDoJogador(nacionalidade) {
-    return FLAGS_NACIONALIDADE[nacionalidade] || "🌎";
-}
-
 function cancelarAvancoAutomaticoMM() {
     if (timerAvancoMM !== null) {
         clearTimeout(timerAvancoMM);
@@ -2889,14 +2881,14 @@ function renderizarRodadaMM() {
 
     definirFotoJogador(mmRefFotoEl, referenciaAtualMM);
     mmRefNomeEl.innerText = referenciaAtualMM.nome;
-    mmRefMetaEl.innerHTML = `${flagDoJogador(referenciaAtualMM.nacionalidade)} ${referenciaAtualMM.posicao}`;
+    mmRefMetaEl.innerText = `${referenciaAtualMM.nacionalidade} · ${referenciaAtualMM.posicao}`;
     mmRefStatEl.innerText = referenciaAtualMM[CAMPO_STAT_MM];
     mmRefStatLabelEl.innerText = rotuloStatMM().toUpperCase();
 
     const candidato = sequenciaMM[rodadaAtualMM + 1];
     definirFotoJogador(mmCandFotoEl, candidato);
     mmCandNomeEl.innerText = candidato.nome;
-    mmCandMetaEl.innerHTML = `${flagDoJogador(candidato.nacionalidade)} ${candidato.posicao}`;
+    mmCandMetaEl.innerText = `${candidato.nacionalidade} · ${candidato.posicao}`;
     mmCandStatEl.innerText = "?";
     mmCandStatLabelEl.innerText = rotuloStatMM().toUpperCase();
 
