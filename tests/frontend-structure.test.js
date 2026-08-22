@@ -9,6 +9,7 @@ const root = path.join(__dirname, "..");
 const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
 const script = fs.readFileSync(path.join(root, "script.js"), "utf8");
 const css = fs.readFileSync(path.join(root, "style.css"), "utf8");
+const partidas = JSON.parse(fs.readFileSync(path.join(root, "partidas.json"), "utf8"));
 
 let scenarios = 0;
 function test(name, callback) {
@@ -224,6 +225,12 @@ test("Modo Foto preserva layout fluido e estados visuais próprios", () => {
     assert.match(cssRule("#photoView .photo-img"), /object-fit:\s*cover/);
     assert.match(cssRule("#photoView .photo-img"), /object-position:\s*center top/);
     assert.match(cssRule("#photoView .photo-img.image-fallback"), /filter:\s*none\s*!important/);
+    const shareButton = html.match(/<button[^>]+id=["']photoShareResultBtn["'][^>]*>[^<]*<\/button>/i)?.[0] || "";
+    assert.match(shareButton, /class=["'][^"']*share-btn[^"']*photo-share-result[^"']*hidden/);
+    assert.match(shareButton, /type=["']button["']/);
+    assert.match(shareButton, />COMPARTILHAR<\/button>/);
+    assert.match(cssRule("#photoView .photo-share-result"), /width:\s*min\(320px,\s*100%\)/);
+    assert.match(script, /for \(let i = 0; i < MAX_TENTATIVAS_FOTO; i\+\+\)/);
     for (const selector of [
         "#photoView .photo-dots .dot-attempt.used",
         "#photoView .photo-dots .dot-attempt.wrong-used",
@@ -247,6 +254,8 @@ test("Modo Clássico preserva oito colunas no desktop e duas no mobile", () => {
     assert.match(mobileCss, /@media\s*\(max-width:\s*480px\)/);
     assert.match(mobileCss, /grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
     assert.match(mobileCss, /nth-child\(1\)[\s\S]*nth-child\(6\)[\s\S]*grid-column:\s*1\s*\/\s*-1/);
+    assert.match(mobileCss, /nth-child\(6\) \.cell-text\s*\{[^}]*white-space:\s*normal/);
+    assert.doesNotMatch(mobileCss, /text-overflow:\s*ellipsis|-webkit-line-clamp/);
     for (const label of ["JOGADOR", "POSIÇÃO", "NACIONALIDADE", "ESTREIA", "PÉ", "TÍTULOS", "GOLS", "ASSISTÊNCIAS"]) {
         assert.ok(mobileCss.includes(`content: "${label}"`), label);
     }
@@ -263,6 +272,21 @@ test("Mais ou Menos preserva layout, overlay e escala responsiva", () => {
     assert.match(cssRule("#maisMenosView .mm-round-feedback"), /position:\s*absolute/);
     assert.match(cssRule("#maisMenosView .mm-round-feedback"), /inset:\s*0/);
     assert.match(cssRule("#maisMenosView .mm-round-feedback::after"), /animation:\s*mm-feedback-timer 1\.5s/);
+    const guessRule = cssRule("#maisMenosView .mm-guess-btn");
+    assert.match(guessRule, /border:\s*2px solid rgba\(255, 255, 255, 0\.42\)/);
+    assert.match(guessRule, /background:\s*rgba\(255, 255, 255, 0\.045\)/);
+    assert.doesNotMatch(css, /#maisMenosView \.mm-btn-(?:mais|menos)\s*\{/);
+    for (const state of ["correct", "correct-answer", "wrong"]) {
+        assert.ok(css.includes(`.mm-guess-btn.${state}`), state);
+    }
+    const shareButton = html.match(/<button[^>]+id=["']mmShareResultBtn["'][^>]*>[^<]*<\/button>/i)?.[0] || "";
+    assert.match(shareButton, /class=["'][^"']*share-btn[^"']*mm-share-result[^"']*hidden/);
+    assert.match(shareButton, /type=["']button["']/);
+    assert.match(html, /id="mmHitsLabel"[^>]*>0 ACERTOS<\/strong>/);
+    assert.match(html, /class="mm-goal">Meta: <strong>7 acertos<\/strong>/);
+    assert.ok(!html.includes('class="mm-progress-label"'));
+    assert.ok(!html.includes('id="mmCaptionRound"'));
+    assert.match(script, /for \(let i = 0; i < RODADAS_MM; i\+\+\)/);
     assert.ok(script.includes("const ATRASO_AVANCO_MM = 1500"));
     for (const breakpoint of [680, 480, 360]) {
         assert.ok(css.includes(`@media (max-width: ${breakpoint}px)`), `${breakpoint}px`);
@@ -277,17 +301,39 @@ test("Mais ou Menos preserva layout, overlay e escala responsiva", () => {
 });
 
 test("Onze Inicial preserva campo, dense-line, placar e resultado", () => {
-    assert.match(cssRule("#escalacaoView"), /max-width:\s*440px/);
-    assert.match(cssRule("#escalacaoView .game-sticky-top,\n#escalacaoView .match-card,\n#escalacaoView .lineup-card,\n#escalacaoView .lineup-result-card"), /width:\s*min\(430px,\s*100%\)/);
+    assert.match(cssRule("#escalacaoView"), /max-width:\s*480px/);
+    assert.match(cssRule("#escalacaoView .game-sticky-top,\n#escalacaoView .match-card,\n#escalacaoView .lineup-card,\n#escalacaoView .lineup-result-card"), /width:\s*min\(470px,\s*100%\)/);
     assert.match(cssRule(".pitch"), /aspect-ratio:\s*2\s*\/\s*3/);
     assert.match(cssRule(".player-chip"), /position:\s*absolute/);
     assert.match(cssRule("#escalacaoView .player-chip .chip-label"), /-webkit-line-clamp:\s*2/);
     assert.match(cssRule("#escalacaoView .player-chip .chip-label"), /overflow-wrap:\s*break-word/);
-    assert.match(cssRule("#escalacaoView .player-chip.dense-line"), /width:\s*78px/);
+    assert.match(cssRule("#escalacaoView .player-chip.dense-line"), /width:\s*82px/);
     assert.match(cssRule("#escalacaoView .match-score-row"), /grid-template-columns:\s*minmax\(66px/);
     assert.ok(css.includes("#escalacaoView .escalacao-feedback"));
     assert.ok(css.includes("#escalacaoView .lineup-result-errors"));
     assert.ok(css.includes("#escalacaoView .lineup-next-challenge-time"));
+    assert.match(script, /const MAX_OCULTOS_ESCALACAO = 3/);
+    assert.match(script, /escalacaoProgressEl\.innerText = `\$\{acertosEscalacao\}\/\$\{total\} JOGADORES`/);
+    assert.match(script, /partida\.titulares\.forEach\(\(j, i\) =>/);
+    assert.match(script, /top: j\.top,[\s\S]*?left: j\.left/);
+    assert.match(script, /function restaurarEstadoOnzeInicial\(\) \{\s*iniciarOnzeInicial\(\)/);
+    assert.ok(script.includes("compartilharResultadoEscalacao"));
+    assert.ok(html.includes('id="escalacaoSearchInput"'));
+    assert.ok(html.includes('id="escalacaoAutocompleteList"'));
+    assert.ok(html.includes('id="escalacaoDots"'));
+    assert.ok(html.includes('id="escalacaoFaltam"'));
+    assert.ok(!html.includes("Seu resumo da partida de hoje"));
+    assert.ok(partidas.length > 0);
+    partidas.forEach(partida => {
+        assert.equal(partida.titulares.length, 11, partida.id);
+        partida.titulares.forEach(jogador => {
+            assert.ok(Number.isFinite(jogador.top) && jogador.top >= 0 && jogador.top <= 100, `${partida.id}: top`);
+            assert.ok(Number.isFinite(jogador.left) && jogador.left >= 0 && jogador.left <= 100, `${partida.id}: left`);
+        });
+    });
+    for (const nome of ["Ángel Romero", "Jorge Henrique", "Leandro Castán"]) {
+        assert.ok(partidas.some(partida => partida.titulares.some(jogador => jogador.nome === nome)), nome);
+    }
     for (const breakpoint of [480, 360]) {
         assert.ok(css.includes(`@media (max-width: ${breakpoint}px)`), `${breakpoint}px`);
     }

@@ -1064,9 +1064,7 @@ function renderizarProgressoHome() {
     const homeVisivel = !homeView?.classList.contains("hidden");
     if (progresso.complete && !progresso.modes.completionCelebrated && homeVisivel
         && marcarConclusaoCelebrada(progresso.data)) {
-        const reduzirMovimento = typeof window !== "undefined"
-            && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-        if (!reduzirMovimento) {
+        if (!prefereMovimentoReduzido()) {
             homeDailyProgressEl.classList.remove("celebrate-once");
             void homeDailyProgressEl.offsetWidth;
             homeDailyProgressEl.classList.add("celebrate-once");
@@ -2039,9 +2037,16 @@ function compararTitulos(palpiteTitulos, corretoTitulos) {
 }
 
 function dispararConfetes() {
+    if (prefereMovimentoReduzido()) return;
+
     if (typeof confetti === 'function') {
         confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
     }
+}
+
+function prefereMovimentoReduzido() {
+    return typeof window !== "undefined"
+        && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
 }
 
 // ==========================================================================
@@ -2162,8 +2167,8 @@ function gerarTextoCompartilhamentoFoto() {
     return `TIMÃODLE — FOTO #${numero}\n${venceu ? "GANHOU" : "PERDEU"} — ${tentativas}/${MAX_TENTATIVAS_FOTO}\n\n${grade}\n\n${URL_OFICIAL_TIMAODLE}`;
 }
 
-function compartilharResultadoFoto() {
-    return compartilharTextoNovoModo(gerarTextoCompartilhamentoFoto());
+function compartilharResultadoFoto(botaoFeedback = finalResultShareBtn) {
+    return compartilharTextoNovoModo(gerarTextoCompartilhamentoFoto(), botaoFeedback);
 }
 
 function gerarTextoCompartilhamentoMM() {
@@ -2173,8 +2178,8 @@ function gerarTextoCompartilhamentoMM() {
     return `TIMÃODLE — MAIS OU MENOS #${numero}\n${venceu ? "GANHOU" : "PERDEU"} — ${acertosMM}/${RODADAS_MM} ACERTOS\n\n${grade}\n\n${URL_OFICIAL_TIMAODLE}`;
 }
 
-function compartilharResultadoMM() {
-    return compartilharTextoNovoModo(gerarTextoCompartilhamentoMM());
+function compartilharResultadoMM(botaoFeedback = finalResultShareBtn) {
+    return compartilharTextoNovoModo(gerarTextoCompartilhamentoMM(), botaoFeedback);
 }
 
 shareResultBtn.addEventListener("click", compartilharResultado);
@@ -2408,6 +2413,7 @@ const photoSearchInput = document.getElementById("photoSearchInput");
 const photoAutocompleteList = document.getElementById("photoAutocompleteList");
 const photoAttemptsListEl = document.getElementById("photoAttemptsList");
 const photoEndMessageEl = document.getElementById("photoEndMessage");
+const photoShareResultBtn = document.getElementById("photoShareResultBtn");
 const photoGrayscaleToggle = document.getElementById("photoGrayscaleToggle");
 const photoTutorialModal = document.getElementById("photoTutorialModal");
 const photoTutorialCloseBtn = document.getElementById("photoTutorialCloseBtn");
@@ -2465,6 +2471,11 @@ function salvarEstadoFoto(estado) {
     sincronizarProgressoDiario();
 }
 
+function atualizarCompartilhamentoEstaticoFoto() {
+    const concluido = estadoFotoDiario?.status === "won" || estadoFotoDiario?.status === "lost";
+    photoShareResultBtn?.classList.toggle("hidden", !concluido);
+}
+
 function renderizarDotsFoto() {
     photoDotsEl.innerHTML = "";
     for (let i = 0; i < MAX_TENTATIVAS_FOTO; i++) {
@@ -2500,6 +2511,7 @@ function iniciarDesafioFotoDoDia() {
     photoAttemptsListEl.innerHTML = "";
     photoSearchInput.value = "";
     fecharAutocompleteFoto();
+    photoShareResultBtn?.classList.add("hidden");
 
     if (!jogadorSecretoFoto) {
         photoEndMessageEl.classList.remove("hidden");
@@ -2536,6 +2548,7 @@ function iniciarDesafioFotoDoDia() {
         atualizarImagemFoto();
         renderizarDotsFoto();
         photoSearchInput.disabled = !fotoAtiva;
+        atualizarCompartilhamentoEstaticoFoto();
 
         if (estadoFotoDiario.status === "won") {
             photoImgEl.style.filter = "blur(0px) grayscale(0%)";
@@ -2562,6 +2575,7 @@ function iniciarDesafioFotoDoDia() {
         photoAttemptsLabelEl.innerText = `0 / ${MAX_TENTATIVAS_FOTO} TENTATIVAS`;
         atualizarImagemFoto();
         renderizarDotsFoto();
+        atualizarCompartilhamentoEstaticoFoto();
     }
 
     // Tutorial do botão de preto-e-branco — só na primeira vez que
@@ -2603,6 +2617,7 @@ function fazerPalpiteFoto(palpiteJogador) {
         photoImgEl.style.filter = "blur(0px) grayscale(0%)";
         photoEndMessageEl.classList.remove("hidden");
         photoEndMessageEl.innerHTML = `✓ Isso aí! Era o <strong>${jogadorSecretoFoto.nome}</strong> mesmo.`;
+        atualizarCompartilhamentoEstaticoFoto();
         dispararConfetes();
         abrirResultadoFinal("photo");
     } else if (tentativasFoto.length >= MAX_TENTATIVAS_FOTO) {
@@ -2613,6 +2628,7 @@ function fazerPalpiteFoto(palpiteJogador) {
         photoImgEl.style.filter = "blur(0px) grayscale(0%)";
         photoEndMessageEl.classList.remove("hidden");
         photoEndMessageEl.innerHTML = `✕ Suas tentativas acabaram. Era o <strong>${jogadorSecretoFoto.nome}</strong>.`;
+        atualizarCompartilhamentoEstaticoFoto();
         abrirResultadoFinal("photo");
     }
 }
@@ -2702,6 +2718,8 @@ photoGrayscaleToggle.addEventListener("click", () => {
     atualizarImagemFoto();
 });
 
+photoShareResultBtn?.addEventListener("click", () => compartilharResultadoFoto(photoShareResultBtn));
+
 function fecharTutorialFoto() {
     localStorage.setItem(CHAVE_TUTORIAL_FOTO, "1");
     fecharModalAcessivel(photoTutorialModal, photoSearchInput);
@@ -2752,11 +2770,11 @@ const mmCandStatEl = document.getElementById("mmCandStat");
 const mmCandStatLabelEl = document.getElementById("mmCandStatLabel");
 const mmCandRowEl = document.getElementById("mmCandRow");
 const mmDividerTextEl = document.getElementById("mmDividerText");
-const mmCaptionRoundEl = document.getElementById("mmCaptionRound");
 const mmBtnMenos = document.getElementById("mmBtnMenos");
 const mmBtnMais = document.getElementById("mmBtnMais");
 const mmRoundResultEl = document.getElementById("mmRoundResult");
 const mmEndMessageEl = document.getElementById("mmEndMessage");
+const mmShareResultBtn = document.getElementById("mmShareResultBtn");
 const mmCardEl = maisMenosView.querySelector(".mm-card");
 
 let sequenciaMM = [];
@@ -2991,6 +3009,11 @@ function salvarEstadoMM(estado) {
     sincronizarProgressoDiario();
 }
 
+function atualizarCompartilhamentoEstaticoMM() {
+    const concluido = estadoMMDiario?.status === "won" || estadoMMDiario?.status === "lost";
+    mmShareResultBtn?.classList.toggle("hidden", !concluido);
+}
+
 function snapshotSequenciaMM(sequencia) {
     return sequencia.map(jogador => ({ ...jogador }));
 }
@@ -3061,7 +3084,6 @@ function agendarAvancoAutomaticoMM(finalizou) {
 function renderizarRodadaMM() {
     transicaoMMAtiva = false;
     mmRoundLabelEl.innerText = `Rodada ${rodadaAtualMM + 1}/${RODADAS_MM}`;
-    mmCaptionRoundEl.innerText = rodadaAtualMM + 1;
     mmDividerTextEl.innerText = `FEZ MAIS OU MENOS ${rotuloStatMM().toUpperCase()}?`;
     mmRoundResultEl.classList.add("hidden");
     mmRoundResultEl.classList.remove("correct", "wrong", "tie");
@@ -3101,6 +3123,7 @@ function iniciarDesafioMMDoDia() {
     cancelarAvancoAutomaticoMM();
     const hoje = getDataLocalString();
     mmEndMessageEl.classList.add("hidden");
+    mmShareResultBtn?.classList.add("hidden");
     maisMenosView.classList.remove("resultado-final");
 
     const salvo = carregarEstadoMM();
@@ -3265,6 +3288,7 @@ function mostrarFimDeJogoMM(comAnimacao) {
 
     const venceu = acertosMM >= MIN_ACERTOS_MM;
     mmEndMessageEl.className = `mm-result-card ${venceu ? "won" : "lost"}`;
+    atualizarCompartilhamentoEstaticoMM();
     mmEndMessageEl.innerHTML = `
         <span class="mm-result-kicker">MAIS OU MENOS</span>
         <h3>${venceu ? "VITÓRIA!" : "NÃO FOI DESTA VEZ"}</h3>
@@ -3283,6 +3307,7 @@ function mostrarFimDeJogoMM(comAnimacao) {
 
 mmBtnMenos.addEventListener("click", () => responderMM("menos"));
 mmBtnMais.addEventListener("click", () => responderMM("mais"));
+mmShareResultBtn?.addEventListener("click", () => compartilharResultadoMM(mmShareResultBtn));
 
 btnPlayMaisMenos.addEventListener("click", async () => {
     cancelarAvancoAutomaticoMM();
@@ -3696,7 +3721,7 @@ function renderizarFaltam() {
 
 function atualizarProgressoEscalacao() {
     const total = dadosEscalacao.jogadores_ocultos.length;
-    escalacaoProgressEl.innerText = `${acertosEscalacao}/${total}`;
+    escalacaoProgressEl.innerText = `${acertosEscalacao}/${total} JOGADORES`;
 
     escalacaoDotsEl.innerHTML = "";
     for (let i = 0; i < total; i++) {

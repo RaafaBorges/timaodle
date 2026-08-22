@@ -24,11 +24,11 @@ const essentialIds = {
     ],
     photo: [
         "photoView", "photoSearchInput", "photoAutocompleteList", "photoImg",
-        "photoDots", "photoAttemptsList", "photoEndMessage", "backHomeBtnFoto"
+        "photoDots", "photoAttemptsList", "photoEndMessage", "photoShareResultBtn", "backHomeBtnFoto"
     ],
     moreLess: [
         "maisMenosView", "mmRefRow", "mmCandRow", "mmBtnMais", "mmBtnMenos",
-        "mmRoundResult", "mmEndMessage", "backHomeBtnMM"
+        "mmRoundResult", "mmEndMessage", "mmShareResultBtn", "backHomeBtnMM"
     ],
     lineup: [
         "escalacaoView", "escScoreGuess", "escResultadoFinal", "escLineupCard",

@@ -71,6 +71,45 @@ test("compartilhamento Foto cobre derrota sem resposta", () => {
     tentativas.forEach(nome => assert.ok(!texto.includes(`${nome}\n`)));
 });
 
+function visibilidadeCompartilhamentoFoto(status) {
+    const operacoes = [];
+    const { atualizarCompartilhamentoEstaticoFoto } = compileFunctions(["atualizarCompartilhamentoEstaticoFoto"], {
+        estadoFotoDiario: { status },
+        photoShareResultBtn: { classList: { toggle: (...args) => operacoes.push(args) } }
+    });
+    atualizarCompartilhamentoEstaticoFoto();
+    return operacoes;
+}
+
+test("resultado estático do Foto oferece Compartilhar em vitória e derrota", () => {
+    assert.deepEqual(visibilidadeCompartilhamentoFoto("won"), [["hidden", false]]);
+    assert.deepEqual(visibilidadeCompartilhamentoFoto("lost"), [["hidden", false]]);
+    assert.deepEqual(visibilidadeCompartilhamentoFoto("playing"), [["hidden", true]]);
+});
+
+test("Compartilhar estático reutiliza builder e infraestrutura do overlay", () => {
+    const botao = { innerText: "COMPARTILHAR" };
+    const recebidos = [];
+    const api = compileFunctions(["gerarTextoCompartilhamentoFoto", "compartilharResultadoFoto"], {
+        numeroDoDesafio: () => 235,
+        getDataLocalString: () => "2026-08-22",
+        estadoFotoDiario: { status: "won", tentativas: ["Tentativa", "Resposta secreta"] },
+        MAX_TENTATIVAS_FOTO: 6,
+        URL_OFICIAL_TIMAODLE: "https://timaodle.net",
+        compartilharTextoNovoModo: (texto, feedback) => recebidos.push({ texto, feedback }),
+        finalResultShareBtn: null
+    });
+    api.compartilharResultadoFoto(botao);
+    assert.deepEqual(recebidos, [{ texto: api.gerarTextoCompartilhamentoFoto(), feedback: botao }]);
+    assert.ok(!recebidos[0].texto.includes("Resposta secreta"));
+});
+
+test("restauração do Foto concluído mostra ação estática sem reabrir overlay", () => {
+    assert.match(scriptSource, /iniciarDesafioFotoDoDia\(\)[\s\S]*?estadoFotoDiario = salvo;[\s\S]*?atualizarCompartilhamentoEstaticoFoto\(\)/);
+    assert.ok(!/iniciarDesafioFotoDoDia\(\)[\s\S]{0,2600}abrirResultadoFinal/.test(scriptSource));
+    assert.ok(scriptSource.includes('photoShareResultBtn?.addEventListener("click", () => compartilharResultadoFoto(photoShareResultBtn))'));
+});
+
 function apiMM(estado, acertos = 7) {
     return compileFunctions(["gerarTextoCompartilhamentoMM"], {
         numeroDoDesafio: () => 235,
@@ -95,6 +134,59 @@ test("compartilhamento MM resume rodadas sem jogadores ou respostas", () => {
     assert.ok(!texto.includes(secret));
     assert.ok(!texto.includes("mais"));
     assert.ok(!texto.includes("menos\n"));
+});
+
+function visibilidadeCompartilhamentoMM(status) {
+    const operacoes = [];
+    const { atualizarCompartilhamentoEstaticoMM } = compileFunctions(["atualizarCompartilhamentoEstaticoMM"], {
+        estadoMMDiario: { status },
+        mmShareResultBtn: { classList: { toggle: (...args) => operacoes.push(args) } }
+    });
+    atualizarCompartilhamentoEstaticoMM();
+    return operacoes;
+}
+
+test("resultado estático do MM oferece Compartilhar em vitória e derrota", () => {
+    assert.deepEqual(visibilidadeCompartilhamentoMM("won"), [["hidden", false]]);
+    assert.deepEqual(visibilidadeCompartilhamentoMM("lost"), [["hidden", false]]);
+    assert.deepEqual(visibilidadeCompartilhamentoMM("playing"), [["hidden", true]]);
+});
+
+test("Compartilhar estático do MM reutiliza builder e preserva limites", () => {
+    for (const [status, acertos, esperado] of [["lost", 6, "PERDEU"], ["won", 7, "GANHOU"], ["won", 10, "GANHOU"]]) {
+        const botao = { innerText: "COMPARTILHAR" };
+        const recebidos = [];
+        const segredo = `Jogador secreto ${acertos}`;
+        const historico = Array.from({ length: 10 }, (_, indice) => ({
+            candidato: `${segredo} ${indice}`,
+            correto: indice < acertos,
+            direcao: indice % 2 ? "mais" : "menos"
+        }));
+        const api = compileFunctions(["gerarTextoCompartilhamentoMM", "compartilharResultadoMM"], {
+            numeroDoDesafio: () => 235,
+            getDataLocalString: () => "2026-08-22",
+            estadoMMDiario: { status, historico },
+            acertosMM: acertos,
+            RODADAS_MM: 10,
+            URL_OFICIAL_TIMAODLE: "https://timaodle.net",
+            compartilharTextoNovoModo: (texto, feedback) => recebidos.push({ texto, feedback }),
+            finalResultShareBtn: null
+        });
+        api.compartilharResultadoMM(botao);
+        assert.deepEqual(recebidos, [{ texto: api.gerarTextoCompartilhamentoMM(), feedback: botao }]);
+        assert.match(recebidos[0].texto, new RegExp(`${esperado} — ${acertos}/10 ACERTOS`));
+        assert.ok(!recebidos[0].texto.includes(segredo));
+        assert.ok(!recebidos[0].texto.includes("mais\n"));
+        assert.ok(!recebidos[0].texto.includes("menos\n"));
+    }
+});
+
+test("restauração do MM concluído mostra ação estática após o feedback", () => {
+    assert.match(scriptSource, /iniciarDesafioMMDoDia\(\)[\s\S]*?if \(!mmAtivo\) \{\s*mostrarFimDeJogoMM\(false\)/);
+    assert.match(scriptSource, /function mostrarFimDeJogoMM\(comAnimacao\)[\s\S]*?atualizarCompartilhamentoEstaticoMM\(\)/);
+    assert.ok(!/iniciarDesafioMMDoDia\(\)[\s\S]{0,4500}abrirResultadoFinal/.test(scriptSource));
+    assert.match(scriptSource, /agendarAvancoAutomaticoMM\(true\)[\s\S]*?function mostrarFimDeJogoMM/);
+    assert.ok(scriptSource.includes('mmShareResultBtn?.addEventListener("click", () => compartilharResultadoMM(mmShareResultBtn))'));
 });
 
 test("overlay abre somente em conclusões imediatas", () => {

@@ -228,6 +228,7 @@
                 <div id="photoAttemptsList" class="photo-attempts-list"></div>
 
                 <p id="photoEndMessage" class="daily-end-message hidden"></p>
+                <button id="photoShareResultBtn" class="share-btn photo-share-result hidden" type="button">COMPARTILHAR</button>
             </section>
 
             <!-- TELA DO JOGO — JOGOU MAIS OU MENOS -->
@@ -244,11 +245,10 @@
                 <div class="mm-card">
                     <div class="mm-progress-panel">
                         <div class="mm-progress-topline">
-                            <span class="mm-progress-label">PROGRESSO</span>
                             <strong id="mmHitsLabel" class="mm-hits-label">0 ACERTOS</strong>
                         </div>
                         <div class="mm-dots" id="mmDots"></div>
-                        <p class="mm-goal">Objetivo: <strong>7 acertos</strong> em 10 rodadas</p>
+                        <p class="mm-goal">Meta: <strong>7 acertos</strong></p>
                     </div>
 
                     <div id="mmRefRow" class="mm-player-row mm-player-reference">
@@ -280,17 +280,17 @@
                     </div>
 
                     <div class="mm-guess-buttons" id="mmGuessButtons">
-                        <button id="mmBtnMais" class="mm-guess-btn mm-btn-mais">▲ Mais</button>
-                        <button id="mmBtnMenos" class="mm-guess-btn mm-btn-menos">▼ Menos</button>
+                        <button id="mmBtnMais" class="mm-guess-btn">▲ Mais</button>
+                        <button id="mmBtnMenos" class="mm-guess-btn">▼ Menos</button>
                     </div>
 
-                    <p class="mm-caption">Rodada <span id="mmCaptionRound">1</span> de 10 — em caso de empate,
-                        qualquer resposta conta.</p>
+                    <p class="mm-caption">Em caso de empate, qualquer resposta conta.</p>
 
                     <p id="mmRoundResult" class="mm-round-feedback hidden" aria-live="polite"></p>
                 </div>
 
                 <div id="mmEndMessage" class="mm-result-card hidden" aria-live="polite"></div>
+                <button id="mmShareResultBtn" class="share-btn mm-share-result hidden" type="button">COMPARTILHAR</button>
             </section>
 
             <!-- TELA DO JOGO — ONZE INICIAL -->
@@ -356,7 +356,7 @@
                     <div class="lineup-header">
                         <span class="lineup-title">O ONZE INICIAL</span>
                         <div class="lineup-progress">
-                            <span id="escalacaoProgress">0/3</span>
+                            <span id="escalacaoProgress">0/3 JOGADORES</span>
                             <span class="mm-dots" id="escalacaoDots"></span>
                         </div>
                     </div>
@@ -383,7 +383,6 @@
                 <div id="escCompletionCard" class="lineup-result-card hidden" aria-live="polite">
                     <div class="lineup-result-kicker">ONZE INICIAL</div>
                     <h3>DESAFIO CONCLUÍDO</h3>
-                    <p class="lineup-result-subtitle">Seu resumo da partida de hoje</p>
 
                     <div class="lineup-result-score">
                         <div>

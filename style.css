@@ -2005,15 +2005,15 @@ body.modal-open .page-content {
 #photoView .photo-dots {
     display: flex;
     justify-content: center;
-    gap: 8px;
+    gap: 5px;
 }
 
 #photoView .photo-dots .dot-attempt {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
-    background-color: var(--surface-2);
-    border: 1px solid var(--line);
+    background-color: rgba(255, 255, 255, 0.035);
+    border: 1px solid var(--line-soft);
     transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
@@ -2030,14 +2030,14 @@ body.modal-open .page-content {
 #photoView .photo-attempts-list {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 5px;
 }
 
 #photoView .photo-attempt-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 9px 14px;
+    padding: 8px 12px;
     border-radius: var(--radius-s);
     font-size: 13px;
     font-weight: 600;
@@ -2054,6 +2054,10 @@ body.modal-open .page-content {
     background-color: var(--ok);
     border-color: var(--ok-line);
     color: #e9efe9;
+}
+
+#photoView .photo-share-result {
+    width: min(320px, 100%);
 }
 
 /* Progresso compacto reutilizado por Mais ou Menos e Onze Inicial. */
@@ -2665,13 +2669,13 @@ body.modal-open .page-content {
     }
 
     #gameView .board-body {
-        gap: 12px;
+        gap: 8px;
     }
 
     #gameView .attempt-row {
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 7px;
-        padding: 8px;
+        gap: 5px;
+        padding: 6px;
         background: var(--surface);
         border: 1px solid var(--line);
         border-radius: var(--radius-m);
@@ -2679,12 +2683,12 @@ body.modal-open .page-content {
 
     #gameView .attempt-row .cell {
         min-width: 0;
-        min-height: 66px;
-        padding: 9px 8px;
+        min-height: 56px;
+        padding: 6px 7px;
         flex-direction: column;
-        gap: 5px;
+        gap: 3px;
         font-size: 13px;
-        line-height: 1.4;
+        line-height: 1.3;
         word-break: normal;
         overflow-wrap: break-word;
     }
@@ -2694,7 +2698,7 @@ body.modal-open .page-content {
         font-size: 8px;
         font-weight: 800;
         line-height: 1;
-        letter-spacing: 0.65px;
+        letter-spacing: 0.4px;
     }
 
     #gameView .attempt-row .cell:nth-child(1),
@@ -2719,7 +2723,7 @@ body.modal-open .page-content {
     #gameView .attempt-row .cell:nth-child(6) .cell-text {
         max-width: 100%;
         font-size: 12px;
-        line-height: 1.45;
+        line-height: 1.35;
         white-space: normal;
     }
 }
@@ -3957,13 +3961,6 @@ body {
     font-weight: 400;
 }
 
-.lineup-result-subtitle {
-    margin-top: -5px;
-    color: var(--ink-muted);
-    font-size: 12px;
-    font-weight: 700;
-}
-
 .lineup-result-score {
     width: 100%;
     display: grid;
@@ -4076,7 +4073,7 @@ body {
    Layout, placar, campo, jogadores, busca, resultado e responsividade.
    ========================================================================== */
 #escalacaoView {
-    max-width: 440px;
+    max-width: 480px;
     gap: 16px;
 }
 
@@ -4084,13 +4081,36 @@ body {
 #escalacaoView .match-card,
 #escalacaoView .lineup-card,
 #escalacaoView .lineup-result-card {
-    width: min(430px, 100%);
+    width: min(470px, 100%);
 }
 
 #escalacaoView .match-card,
 #escalacaoView .lineup-card,
 #escalacaoView .lineup-result-card {
-    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.38);
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.3);
+}
+
+#escalacaoView .match-competicao {
+    color: var(--ink-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.55px;
+}
+
+#escalacaoView .match-meta {
+    gap: 5px;
+    color: var(--ink-faint);
+    font-size: 11px;
+    font-weight: 550;
+}
+
+#escalacaoView .match-local-tag {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--ink-muted);
+    font-weight: 650;
 }
 
 #escalacaoView .match-confronto {
@@ -4137,7 +4157,7 @@ body {
 
 #escalacaoView .pitch-container {
     width: 100%;
-    max-width: 380px;
+    max-width: 410px;
     padding: 4px;
 }
 
@@ -4147,7 +4167,7 @@ body {
 }
 
 #escalacaoView .player-chip {
-    width: 88px;
+    width: 92px;
     gap: 4px;
     pointer-events: none;
 }
@@ -4160,7 +4180,7 @@ body {
 #escalacaoView .player-chip .chip-label {
     display: -webkit-box;
     width: fit-content;
-    max-width: 88px;
+    max-width: 92px;
     min-height: 18px;
     padding: 3px 6px;
     overflow: hidden;
@@ -4169,7 +4189,7 @@ body {
     white-space: normal;
     overflow-wrap: break-word;
     text-overflow: clip;
-    font-size: 9.5px;
+    font-size: 10px;
     line-height: 1.12;
     text-wrap: balance;
 }
@@ -4177,13 +4197,13 @@ body {
 /* Linhas com quatro ou mais atletas recebem somente um ajuste de rótulo.
    O marcador continua centralizado nas coordenadas top/left do JSON. */
 #escalacaoView .player-chip.dense-line {
-    width: 78px;
+    width: 82px;
 }
 
 #escalacaoView .player-chip.dense-line .chip-label {
-    max-width: 78px;
-    padding-inline: 5px;
-    font-size: 9px;
+    max-width: 82px;
+    padding-inline: 4px;
+    font-size: 9.5px;
     letter-spacing: -0.1px;
 }
 
@@ -4196,10 +4216,64 @@ body {
     font-size: 9.5px;
 }
 
+#escalacaoView .lineup-progress {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    letter-spacing: 0.25px;
+    white-space: nowrap;
+}
+
+#escalacaoView .lineup-progress .dot-attempt {
+    width: 5px;
+    height: 5px;
+    border-color: var(--line);
+    opacity: 0.62;
+}
+
+#escalacaoView .lineup-faltam {
+    justify-content: center;
+    gap: 5px;
+    padding: 3px 0;
+    border: 0;
+    background: transparent;
+}
+
+#escalacaoView .lineup-faltam-label {
+    color: var(--ink-faint);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.45px;
+}
+
+#escalacaoView .faltam-pill {
+    padding: 2px 6px;
+    border-color: var(--line-soft);
+    background: rgba(255, 255, 255, 0.025);
+    color: var(--ink-muted);
+    font-size: 9px;
+    font-weight: 700;
+}
+
 #escalacaoView .escalacao-feedback,
 #escalacaoView .escalacao-fora {
     overflow-wrap: break-word;
     line-height: 1.45;
+}
+
+#escalacaoView .escalacao-fora {
+    padding: 6px 8px;
+    border: 1px solid var(--line-soft);
+    background: rgba(255, 255, 255, 0.025);
+    color: var(--ink-faint);
+    font-size: 11.5px;
+    font-weight: 550;
+}
+
+#escalacaoView .escalacao-fora strong {
+    color: var(--ink-muted);
+    font-weight: 700;
 }
 
 #escalacaoView .lineup-result-kicker,
@@ -4214,8 +4288,30 @@ body {
 }
 
 #escalacaoView .lineup-result-errors {
-    font-size: 12px;
+    padding: 7px 8px;
+    border-color: var(--line-soft);
+    background: rgba(255, 255, 255, 0.025);
+    color: var(--ink-faint);
+    font-size: 11px;
     overflow-wrap: break-word;
+}
+
+#escalacaoView .lineup-result-card {
+    gap: 10px;
+    padding: 18px 16px;
+}
+
+#escalacaoView .lineup-result-score > div,
+#escalacaoView .result-stat-box {
+    padding: 9px 7px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+}
+
+#escalacaoView .lineup-result-score > div + div,
+#escalacaoView .result-stat-box + .result-stat-box {
+    border-left: 1px solid var(--line-soft);
 }
 
 #escalacaoView .lineup-next-challenge {
@@ -4223,11 +4319,11 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
-    padding: 14px 12px;
+    gap: 4px;
+    padding: 10px 8px;
     border-top: 1px solid rgba(185, 151, 90, 0.34);
-    border-bottom: 1px solid rgba(185, 151, 90, 0.34);
-    background: rgba(8, 8, 7, 0.34);
+    border-bottom: 0;
+    background: transparent;
 }
 
 #escalacaoView .lineup-next-challenge-label {
@@ -4240,7 +4336,7 @@ body {
 #escalacaoView .lineup-next-challenge-time {
     color: var(--gold);
     font-family: var(--font-body);
-    font-size: clamp(28px, 8vw, 36px);
+    font-size: clamp(24px, 7vw, 30px);
     font-weight: 900;
     line-height: 1;
     letter-spacing: 2px;
@@ -4294,16 +4390,17 @@ body {
     }
 
     #escalacaoView .pitch-container {
-        max-width: 360px;
+        max-width: 100%;
     }
 
     #escalacaoView .player-chip {
-        width: 76px;
+        width: 80px;
     }
 
     #escalacaoView .player-chip .chip-label {
-        max-width: 76px;
-        font-size: 9px;
+        max-width: 80px;
+        padding-inline: 4px;
+        font-size: 9.5px;
     }
 
     #escalacaoView .player-chip.dense-line {
@@ -4312,8 +4409,8 @@ body {
 
     #escalacaoView .player-chip.dense-line .chip-label {
         max-width: 70px;
-        padding-inline: 4px;
-        font-size: 8.5px;
+        padding-inline: 3px;
+        font-size: 9.25px;
     }
 
     #escalacaoView .player-chip .chip-dot {
@@ -4344,8 +4441,8 @@ body {
     #escalacaoView .match-card,
     #escalacaoView .lineup-card,
     #escalacaoView .lineup-result-card {
-        padding-left: 11px;
-        padding-right: 11px;
+        padding-left: 9px;
+        padding-right: 9px;
     }
 
     #escalacaoView .match-score-row {
@@ -4363,13 +4460,13 @@ body {
     }
 
     #escalacaoView .player-chip {
-        width: 68px;
+        width: 72px;
     }
 
     #escalacaoView .player-chip .chip-label {
-        max-width: 68px;
-        padding-inline: 4px;
-        font-size: 8.5px;
+        max-width: 72px;
+        padding-inline: 3px;
+        font-size: 9.25px;
     }
 
     #escalacaoView .player-chip.dense-line {
@@ -4378,8 +4475,8 @@ body {
 
     #escalacaoView .player-chip.dense-line .chip-label {
         max-width: 64px;
-        padding-inline: 3px;
-        font-size: 8.25px;
+        padding-inline: 2px;
+        font-size: 9px;
     }
 
     #escalacaoView .player-chip .chip-dot {
@@ -4462,15 +4559,8 @@ body {
 #maisMenosView .mm-progress-topline {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 10px;
-}
-
-#maisMenosView .mm-progress-label {
-    color: #c8c5bb;
-    font-size: 10px;
-    font-weight: 900;
-    letter-spacing: 1px;
 }
 
 #maisMenosView .mm-hits-label {
@@ -4673,10 +4763,10 @@ body {
     flex: 1;
     min-height: 60px;
     padding: 12px 10px;
-    border-width: 2px;
+    border: 2px solid rgba(255, 255, 255, 0.42);
     border-radius: 12px;
-    background: var(--surface);
-    color: var(--ink);
+    background: rgba(255, 255, 255, 0.045);
+    color: #fff;
     cursor: pointer;
     font-family: var(--font-body);
     font-size: 15px;
@@ -4685,18 +4775,6 @@ body {
     text-transform: uppercase;
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.24);
     transition: transform 0.14s ease, border-color 0.14s ease, background-color 0.14s ease, box-shadow 0.14s ease;
-}
-
-#maisMenosView .mm-btn-mais {
-    border-color: var(--gold);
-    background: var(--gold-soft);
-    color: #f3d68e;
-}
-
-#maisMenosView .mm-btn-menos {
-    border-color: rgba(255, 255, 255, 0.48);
-    background: rgba(255, 255, 255, 0.045);
-    color: #fff;
 }
 
 #maisMenosView .mm-guess-btn:hover:not(:disabled) {
@@ -4736,10 +4814,10 @@ body {
 
 #maisMenosView .mm-caption {
     margin-top: -2px;
-    color: #aaa79e;
-    font-size: 11px;
-    font-weight: 650;
-    line-height: 1.5;
+    color: var(--ink-faint);
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.4;
     text-align: center;
 }
 
@@ -4958,6 +5036,10 @@ body {
     font-weight: 800;
 }
 
+#maisMenosView .mm-share-result {
+    width: min(320px, 100%);
+}
+
 @keyframes mm-reveal {
     from { transform: scale(0.985); opacity: 0.78; }
     to { transform: scale(1); opacity: 1; }
@@ -5133,6 +5215,16 @@ body {
     #maisMenosView .mm-round-feedback::after,
     #maisMenosView .mm-card.mm-round-enter {
         animation: none;
+    }
+
+    #photoView .photo-toggle-overlay-btn,
+    #photoView .photo-img,
+    #photoView .photo-dots .dot-attempt {
+        transition: none;
+    }
+
+    #photoView .photo-toggle-overlay-btn:hover {
+        transform: none;
     }
 }
 

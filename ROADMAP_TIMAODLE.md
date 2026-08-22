@@ -3101,7 +3101,7 @@ Próximo passo:
 
 ## v3.0 — UX & VISUAL POLISH
 
-**Status: EM ANDAMENTO — FASE A CONCLUÍDA / FASE B CONCLUÍDA / FASE C CONCLUÍDA / FASE D NÃO INICIADA**
+**Status: EM ANDAMENTO — FASE A CONCLUÍDA / FASE B CONCLUÍDA / FASE C CONCLUÍDA / FASE D CONCLUÍDA / FASE E NÃO INICIADA**
 
 Objetivo:
 - refinar hierarquia, clareza, simplicidade, consistência e conforto responsivo sem
@@ -3158,9 +3158,9 @@ Estado das fases:
 - [x] **Fase C — CONCLUÍDA — resultados finais e continuidade do dia:** linguagem compartilhada de
   conclusão, métrica principal, compartilhar, retorno à Home e acesso aos modos ainda
   não concluídos;
-- [ ] **Fase D — PLANEJADA — modos:** Clássico, Foto, Mais ou Menos e Onze Inicial em pequenas
+- [x] **Fase D — CONCLUÍDA — modos:** Clássico, Foto, Mais ou Menos e Onze Inicial em pequenas
   entregas independentes;
-- [ ] **Fase E — PLANEJADA — Histórico e Estatísticas:** divulgação progressiva e níveis de métricas,
+- [ ] **Fase E — NÃO INICIADA — Histórico e Estatísticas:** divulgação progressiva e níveis de métricas,
   preservando todos os dados;
 - [ ] **Fase F — PLANEJADA — validação final:** navegador real nos viewports definidos, teclado,
   reduced motion, overflow, contraste e regressão integral.
@@ -4179,3 +4179,599 @@ Pendências:
 
 Próximo passo:
 - criar o checkpoint de encerramento da Fase C; iniciar a Fase D somente em tarefa própria.
+
+
+## 22/08/2026 — v3.0 Fase D: auditoria do jogo interno dos quatro modos
+
+**Status: AUDITORIA / ESPECIFICAÇÃO EM ANDAMENTO — NENHUMA IMPLEMENTAÇÃO INICIADA**
+
+### Diagnóstico geral
+
+- os cabeçalhos da Fase A estão consistentes, compactos e funcionalmente diferentes apenas
+  onde a mecânica exige; não há justificativa para reabrir o sticky mobile;
+- os quatro modos possuem foco principal reconhecível, mas Clássico mobile, Mais ou Menos e
+  Onze Inicial ainda exibem mais informação simultânea que o necessário;
+- larguras desktop diferentes são majoritariamente justificadas: Clássico precisa da grade
+  de oito atributos, Foto da imagem quadrada, MM da comparação e Onze do campo vertical;
+- não foi encontrado P0 confirmado na inspeção estática;
+- foram encontrados quatro pontos P1: scroll de tentativas do Clássico mobile, viés visual
+  entre Mais/Menos, indisponibilidade persistente de Compartilhar Foto/MM após F5/fechamento
+  e confete JavaScript sem respeito a `prefers-reduced-motion`;
+- resultados estáticos continuam necessários e não devem ser removidos; Foto/MM precisam
+  apenas recuperar acesso persistente ao compartilhamento já aprovado na Fase C.
+
+### Cabeçalho compartilhado
+
+Classificação: **CONSISTENTE**.
+
+- Voltar possui alvo de 44 px, nome acessível, foco visível e posição equivalente;
+- título central e informação contextual direita preservam a grade compartilhada;
+- Clássico usa timer, Foto dificuldade + tentativas, MM rodada e Onze não inventa métrica
+  de cabeçalho: diferenças justificadas;
+- sticky mobile opaco, divisor único e busca conjunta no Clássico/Foto resolvem o scroll;
+- não foi observado problema concreto que autorize mudança na Fase A;
+- pendência apenas de validação integrada em 412×600 com conteúdo longo, sem proposta de
+  alteração estrutural.
+
+### Clássico
+
+Estado geral: funcional, claro e tecnicamente protegido.
+
+Desktop:
+- grade de 760 px utiliza oito proporções específicas; Nacionalidade/Estreia e cabeçalho/
+  células estão alinhados, e Títulos recebe a maior coluna depois de Jogador;
+- 11,5 px em Títulos é uma redução controlada; Gols/Assist. permanecem compactos;
+- gap de 7 px e células de 12×8 px equilibram densidade e leitura em 1366–1920;
+- aumentar muito a largura prejudicaria a comparação horizontal; largura atual é adequada;
+- melhoria potencial P3: revisar somente após navegador real nomes/títulos extremos, sem
+  nova alteração preventiva.
+
+Mobile:
+- a ordem semântica das oito propriedades é preservada; Jogador e Títulos usam largura
+  total, demais atributos duas colunas;
+- cada tentativa ocupa aproximadamente cinco fileiras, com células mínimas de 66 px, labels
+  repetidas e gaps; clareza é alta, mas duas tentativas já exigem scroll considerável;
+- comparação entre tentativas distantes fica difícil porque as labels e o card inteiro se
+  repetem; não se deve remover propriedades nem converter em tabela horizontal;
+- recomendação P1: testar compactação conservadora de min-height/padding/gaps e hierarquia
+  das labels, mantendo Jogador/Títulos completos e as oito propriedades;
+- setas textuais são claras e não dependem apenas de cor; textos longos têm quebra natural;
+- resultado estático: **SIMPLIFICAR** no futuro (mensagem + compartilhar), preservando
+  resposta, tentativas e acesso após F5; o texto `Volte amanhã` compete com timer existente.
+
+### Foto
+
+Estado geral: a fotografia é protagonista e a largura quadrada de 320 px é apropriada.
+
+- busca dentro do sticky ocupa espaço antes da foto, mas é a ação principal e a prioridade é
+  justificada; não há evidência para movê-la;
+- dificuldade no cabeçalho é contextual e compacta; cores fácil/médio/difícil comunicam
+  dificuldade, não resultado, diferença justificada;
+- contraste tem alvo 44 px, `aria-pressed`, ícone monocromático e estado ativo claro;
+- cabeçalho numérico, seis dots e lista repetem parcialmente tentativas: o número explica
+  limite, dots mostram distribuição e lista mostra nomes, mas os dots têm menor valor após
+  várias tentativas;
+- recomendação P2: reduzir peso visual dos dots ou avaliar sua remoção somente após teste A/B
+  manual; manter sempre o contador explícito e a lista;
+- transição de filtro de 0,6 s é funcional e limitada à imagem de 320 px; custo aceitável;
+- resultado estático: **REORGANIZAR** apenas para manter resposta/foto e disponibilizar o
+  Compartilhar Foto após fechar overlay/F5. Hoje essa ação existe somente no overlay imediato
+  e fica inacessível na reentrada, inconsistência funcional P1;
+- espaço vertical e primeira dobra são adequados em 390–480; 412×600 deve validar imagem
+  parcialmente visível sem reduzir o alvo de busca/contraste.
+
+### Mais ou Menos
+
+Estado geral: comparação é compreensível e números recebem prioridade correta.
+
+- kickers `REFERÊNCIA ATUAL`/`PRÓXIMO JOGADOR`, borda do candidato e `?` deixam papéis claros;
+- fotos, nome, Nacionalidade · Posição e número formam hierarquia legível; metadados são
+  úteis para identidade, mas secundários corretamente;
+- cabeçalho `Rodada X/10`, label `PROGRESSO`, dez segmentos, acertos, objetivo e caption de
+  rodada repetem parte do estado;
+- recomendação P1/P2: manter cabeçalho, segmentos, acertos e meta; remover ou reduzir
+  `PROGRESSO` e a caption repetitiva, sem alterar rodadas ou feedback;
+- problema P1: `Mais` usa borda/fundo dourados antes da resposta enquanto `Menos` é neutro;
+  escolhas equivalentes recebem pesos diferentes e podem induzir seleção. Recomenda-se base
+  neutra simétrica, reservando ouro/verde/vermelho para hover, foco e resposta;
+- feedback de 1,5 s é funcional, cobre o card, revela comparação, possui anúncio oculto e
+  bloqueia duplo clique; duração e ordem devem permanecer;
+- animações de entrada/pop são curtas e já cobertas parcialmente por movimento reduzido;
+- resultado estático: **REORGANIZAR** minimamente e adicionar acesso persistente ao mesmo
+  Compartilhar MM da Fase C; hoje compartilhar desaparece após fechar/F5 (P1);
+- desktop de 520 px é adequado; no mobile, 72/64 px para fotos e botões de 56–58 px mantêm
+  decisão clara sem overflow aparente.
+
+### Onze Inicial
+
+Estado geral: maior densidade informacional, mas fluxo em duas etapas é compreensível.
+
+Antes do placar:
+- competição, confronto, local/data/estádio e pergunta contextualizam a partida; confronto e
+  placar devem dominar, enquanto competição e meta podem perder peso;
+- `local_tag` e data/estádio têm valor contextual, mas não precisam competir com adversário;
+- placar com inputs e Confirmar é claro e possui dimensões adequadas.
+
+Durante a escalação:
+- resultado real permanece no card da partida, necessário para a etapa já revelada;
+- `0/3`, três dots e pills `FALTAM` repetem progresso; recomenda-se P1/P2 manter número e
+  `FALTAM`, reduzindo ou removendo dots após validação;
+- busca acima do campo é a ação correta; autocomplete com avatar e 50 px é acessível;
+- campo vertical é protagonista, mas labels chegam a 8,25–9 px em 360 px e linhas densas;
+  esta é uma limitação real de legibilidade P1 que precisa teste com formações/nome extremos,
+  sem mover coordenadas nem aumentar campo além da viewport;
+- lista `Fora` confirma erros acumulados, mas pode crescer e empurrar conteúdo; P2: manter
+  contagem/feedback imediato e tornar lista nominal secundária, sem apagar histórico;
+- competição, data, placar e formação não precisam do mesmo peso: confronto/placar primeiro,
+  campo/progresso na etapa 2, metadados por último;
+- desktop de 430 px parece estreito em tela ampla, mas é justificado pelo campo 2:3; aumento
+  moderado só deve ocorrer se melhorar labels sem alongar excessivamente a página.
+
+Resultado estático:
+- classificação **SIMPLIFICAR**: preservar placar real/palpite, 3/3, erros, countdown e
+  Compartilhar, mas reduzir subtítulo, caixas aninhadas e detalhe nominal de erros;
+- não é candidato a remoção: é a consulta completa após F5/fechar overlay.
+
+### Feedbacks e cores
+
+| Modo | Correto | Incorreto | Progresso | Avaliação |
+|---|---|---|---|---|
+| Clássico | célula verde + flip | célula vermelha + shake | tentativas empilhadas | consistente com a mecânica |
+| Foto | item/dot verde no acerto | item/dot vermelho | contador + dots | consistente, parcialmente redundante |
+| MM | verde + overlay 1,5 s | vermelho + resposta correta | rodada, barras, acertos, meta | claro, excesso de indicadores |
+| Onze | chip revelado/dourado + campo | texto, lista Fora e contador | 0/3 + dots + Faltam | claro, parcialmente redundante |
+
+- verde e vermelho representam resultado de tentativa de modo consistente;
+- dourado representa ação/conquista, exceto no botão `Mais`, onde antecipa prioridade e deve
+  ser neutralizado;
+- Clássico usa vermelho em muitas células por natureza; tons profundos evitam aparência de
+  alerta, mas contraste deve ser validado em navegador real;
+- feedback textual acompanha cor nos pontos críticos, evitando dependência exclusiva de cor.
+
+### Tipografia e espaçamento
+
+- títulos de modo e métricas usam a família display de forma consistente;
+- labels de 8–10 px aparecem sobretudo em Clássico mobile, dots/status e campo do Onze;
+- P1: labels de jogadores do Onze em 8,25–9 px são o principal risco de legibilidade;
+- P2: `PROGRESSO`, caption MM e dots adicionam caixa alta sem nova informação;
+- Clássico desktop, Foto e MM possuem espaçamento adequado;
+- Clássico mobile é excessivo por tentativa; Onze é excessivo no fluxo total, não em um
+  único gap; compactar hierarquia antes de reduzir touch targets;
+- nenhuma recomendação exige novo card ou superfície.
+
+### Mobile por modo
+
+- Clássico: sticky + busca aparecem antes do scroll; primeira tentativa ocupa cerca de
+  350–390 px. Maior custo de scroll, sem overflow estrutural conhecido;
+- Foto: sticky + busca e parte relevante da foto aparecem primeiro; resultado depende da
+  altura, com bom comportamento em 412×600 desde a Fase A;
+- MM: cabeçalho, progresso e jogadores competem pela primeira dobra; ações ainda permanecem
+  grandes e claras, mas 412×600 provavelmente exige pequeno scroll antes dos botões;
+- Onze: cabeçalho + contexto/placar dominam etapa 1; etapa 2 exige scroll natural até campo e
+  busca. Não tentar mostrar tudo na primeira dobra;
+- footer pertence ao fluxo/scroll principal e não há regra indicativa de sobreposição;
+- touch targets principais ficam em 44 px ou mais; chips de campo não são controles.
+
+### Desktop por modo
+
+- Clássico aproveita aproximadamente 760 px e é o modo mais horizontal: correto;
+- Foto permanece estreito por causa da imagem quadrada: diferença justificada;
+- MM usa 520 px e poderia ganhar poucos pixels, mas não há benefício confirmado;
+- Onze usa 430 px; formato vertical justifica centralização, porém teste futuro pode avaliar
+  460–480 px para legibilidade do campo sem transformar em fullscreen;
+- não há evidência de interface mobile simplesmente ampliada no Clássico; MM/Onze são
+  deliberadamente focados e não devem ocupar largura só porque ela existe.
+
+### Acessibilidade
+
+- buscas usam combobox/listbox, `aria-expanded`, opção ativa e teclado; Escape fecha listas;
+- Voltar, contraste e ações principais têm foco visível e nomes acessíveis;
+- MM desabilita ações durante transição e fornece anúncio textual oculto no feedback;
+- overlay final e modais possuem trap/Escape já validados na Fase C;
+- P1: `dispararConfetes()` ignora `prefers-reduced-motion`; os CSS principais respeitam a
+  preferência, mas confete ainda é executado nos quatro modos aplicáveis;
+- P2: transição de filtro da Foto e alguns transforms/hover não estão neutralizados no bloco
+  reduced-motion; revisar sem remover feedback funcional;
+- não foram encontrados ARIA redundantes que exijam correção imediata.
+
+### Animações e performance
+
+- Clássico flip/shake: funcionais, curtos e cobertos por movimento reduzido;
+- Foto filter 0,6 s: funcional; blur em imagem 320×320 tem custo limitado e aceitável;
+- MM reveal/pop/feedback/timer: funcionais; bloco reduced-motion desativa animação visual,
+  mas mantém corretamente o atraso lógico de 1,5 s;
+- Onze chip correto: funcional e coberto por movimento reduzido;
+- confete: decorativo e não condicionado à preferência de movimento (P1);
+- sticky usa fundo opaco no mobile sem blur; custo baixo;
+- backdrop blur pertence a header/modais compartilhados já validados, sem problema concreto;
+- não há justificativa para otimização prematura de sombras/filtros.
+
+### Matriz de consistência
+
+| Critério | Clássico | Foto | Mais ou Menos | Onze Inicial |
+|---|---|---|---|---|
+| Cabeçalho | CONSISTENTE | DIFERENÇA JUSTIFICADA | DIFERENÇA JUSTIFICADA | CONSISTENTE |
+| Progresso | tentativas implícitas, JUSTIFICADO | consistente, redundância leve | INCONSISTÊNCIA A CORRIGIR | INCONSISTÊNCIA A CORRIGIR |
+| Busca | CONSISTENTE | CONSISTENTE | não se aplica | CONSISTENTE |
+| Ação principal | palpite, CONSISTENTE | palpite, CONSISTENTE | INCONSISTÊNCIA A CORRIGIR no peso Mais/Menos | placar/palpite, JUSTIFICADO |
+| Feedback | CONSISTENTE | CONSISTENTE | DIFERENÇA FUNCIONAL JUSTIFICADA | CONSISTENTE |
+| Resultado estático | SIMPLIFICAR | REORGANIZAR/Compartilhar | REORGANIZAR/Compartilhar | SIMPLIFICAR |
+| Cores | CONSISTENTE | dificuldade justificada | viés dourado A CORRIGIR | campo/dourado justificados |
+| Tipografia | adequada | adequada | secundários excessivos | labels do campo A CORRIGIR |
+| Espaçamento | desktop correto/mobile excessivo | correto | correto, informação excessiva | fluxo total excessivo |
+| Mobile | scroll alto | adequado | adequado com scroll curto | denso, mas mecânica justifica |
+| Acessibilidade | boa; confete pendente | boa; movimento pendente | boa; confete pendente | boa; labels/confete pendentes |
+
+### Prioridades consolidadas
+
+P0:
+- nenhum problema funcional ou de acessibilidade bloqueante confirmado.
+
+P1:
+- compactar conservadoramente tentativas do Clássico mobile sem remover atributos;
+- neutralizar peso inicial desigual dos botões Mais/Menos;
+- disponibilizar Compartilhar individual de Foto/MM também no resultado estático/reentrada;
+- respeitar `prefers-reduced-motion` no confete JavaScript;
+- reduzir redundância de progresso no MM e Onze sem mudar mecânica;
+- melhorar legibilidade dos labels do campo em 360–412 px sem alterar coordenadas.
+
+P2:
+- reduzir peso/necessidade dos dots do Foto;
+- tornar metadados da partida e lista `Fora` mais secundários;
+- simplificar resultados estáticos, especialmente Onze;
+- revisar transição de filtro/hover sob movimento reduzido;
+- reduzir labels auxiliares e caixa alta redundante.
+
+P3:
+- microajustes de gaps em desktop após validação real;
+- avaliar aumento moderado do Onze em desktop;
+- revisar casos extremos de títulos/nacionalidades do Clássico.
+
+### Plano recomendado da Fase D
+
+- **D.1 — CONCLUÍDA — acessibilidade compartilhada:** condicionar confete a movimento reduzido e revisar
+  somente transições não essenciais; entrega pequena e transversal;
+- **D.2 — CONCLUÍDA — Clássico:** compactação mobile conservadora e validação de textos extremos;
+- **D.3 — CONCLUÍDA — Foto:** hierarquia do progresso/dots e ação persistente de Compartilhar no
+  resultado estático;
+- **D.4 — CONCLUÍDA — Mais ou Menos:** neutralidade dos botões, redução de indicadores redundantes e
+  Compartilhar persistente, preservando integralmente o feedback de 1,5 s;
+- **D.5 — CONCLUÍDA — Onze Inicial:** hierarquia de contexto/progresso, legibilidade do campo, lista Fora
+  e simplificação do resultado estático;
+- **D.6 — CONCLUÍDA — validação integrada:** 360–480, 412×600, desktop, teclado, movimento reduzido,
+  F5, saves, histórico e regressão completa.
+
+Cada etapa deve possuir aprovação própria; não alterar os quatro modos simultaneamente.
+
+### Riscos e decisões pendentes
+
+- compactar Clássico pode prejudicar títulos/nacionalidades e comparação se for agressivo;
+- aumentar labels do Onze pode colidir em linhas densas ou alterar percepção das coordenadas;
+- remover indicadores de progresso sem teste pode reduzir entendimento de iniciantes;
+- adicionar Compartilhar estático deve reutilizar exatamente os formatos da Fase C;
+- neutralizar Mais/Menos não pode enfraquecer foco visível nem feedback correto/incorreto;
+- movimento reduzido deve impedir decoração, não eliminar feedback ou o atraso lógico do MM;
+- decidir em cada D.x se alteração de resultado estático pertence ao modo ou deve aguardar
+  uma correção pontual da Fase C; não reabrir o overlay compartilhado.
+
+Arquivos alterados nesta etapa:
+- somente `ROADMAP_TIMAODLE.md`;
+- HTML, CSS, JavaScript, JSONs, testes, seeds, saves, storage, histórico, Home e overlay final
+  permaneceram inalterados.
+
+Próximo passo:
+- aprovar a auditoria e iniciar D.1 em tarefa própria; não implementar D.2–D.5 em paralelo.
+
+## 22/08/2026 — v3.0 Fase D.1: acessibilidade compartilhada e movimento reduzido
+
+**Status: CONCLUÍDA**
+
+Implementado:
+- criado o helper compartilhado `prefereMovimentoReduzido()` para consultar
+  `prefers-reduced-motion: reduce` sem duplicar a detecção;
+- `dispararConfetes()` agora retorna antes de gerar o efeito decorativo quando movimento
+  reduzido está ativo, sem interferir em conclusão, save, histórico, streak, 4/4, resultado
+  final ou compartilhamento;
+- a celebração visual 4/4 da Home reutiliza o mesmo helper, preservando seu comportamento;
+- no Foto, transições do filtro/blur, do controle de contraste e dos dots passam a ser
+  instantâneas sob movimento reduzido; o blur, seus níveis e o `scale(1.15)` que protege as
+  bordas da imagem permanecem funcionais;
+- o hover decorativo do controle de contraste deixa de aplicar escala sob movimento reduzido;
+- Clássico, Mais ou Menos e Onze Inicial foram conferidos no bloco consolidado já existente;
+  suas animações relevantes continuam neutralizadas sem remoção de feedback textual;
+- o atraso funcional `ATRASO_AVANCO_MM` de 1,5 segundo foi preservado integralmente.
+
+Testado:
+- movimento reduzido ativo impede a chamada do confete;
+- movimento reduzido inativo mantém quantidade, dispersão e origem existentes do confete;
+- conclusão 4/4 continua calculada independentemente do efeito decorativo;
+- Mais ou Menos mantém o atraso lógico de 1,5 segundo;
+- o único bloco CSS de movimento reduzido cobre as transições decorativas relevantes do Foto
+  sem remover seu filtro ou escala funcional;
+- suíte geral, testes de storage e histórico, sintaxe JavaScript, integridade estrutural e
+  whitespace validados pelos comandos obrigatórios da etapa.
+
+Pendências:
+- nenhuma; validação manual aprovada.
+
+Próximo passo:
+- implementar e validar a D.2 isoladamente; não iniciar D.3 em paralelo.
+
+## 22/08/2026 — v3.0 Fase D.2: polimento do Clássico mobile
+
+**Status: CONCLUÍDA**
+
+Implementado:
+- compactação confinada ao breakpoint mobile de 480 px do Clássico;
+- gap entre tentativas reduzido de 12 px para 8 px;
+- gap da grade interna reduzido de 7 px para 5 px e padding do bloco de 8 px para 6 px;
+- células reduzidas de 66 px para 56 px de altura mínima, com padding de `9px 8px` para
+  `6px 7px` e distância entre label e valor de 5 px para 3 px;
+- line-height dos valores ajustado de 1,4 para 1,3 e o de Títulos de 1,45 para 1,35;
+- letter-spacing das labels reduzido discretamente de 0,65 px para 0,4 px;
+- altura base estimada de uma tentativa reduzida de aproximadamente 376 px para 314 px,
+  sem impor altura máxima; textos longos continuam expandindo a célula naturalmente.
+
+Preservado deliberadamente:
+- as oito propriedades, sua ordem semântica e suas labels completas no mobile;
+- Jogador e Títulos em largura integral, com o nome mantendo 14 px/peso 700;
+- valores gerais em 13 px, Títulos em 12 px e labels em 8 px;
+- quebra natural de títulos e nacionalidades, sem ellipsis, clamp ou ocultação;
+- setas funcionais, estados correto/parcial/incorreto, cores e lógica de comparação;
+- busca, autocomplete, sticky, touch targets, HTML, JavaScript, desktop e demais modos.
+
+Testado:
+- proteção estrutural mantém duas colunas intermediárias, Jogador/Títulos full width, oito
+  labels completas e Títulos sem truncamento;
+- grade desktop de oito colunas permanece com as mesmas proporções e gap;
+- suíte geral, storage, histórico, sintaxe JavaScript, CSS balanceado, IDs únicos e
+  whitespace validados pelos comandos obrigatórios da etapa.
+
+Pendências:
+- nenhuma; validação manual aprovada.
+
+Próximo passo:
+- D.3 é a próxima etapa, mas permanece não iniciada até tarefa própria.
+
+## 22/08/2026 — v3.0 Fase D.3: polimento do Modo Foto
+
+**Status: CONCLUÍDA**
+
+Implementado:
+- resultado estático de vitória ou derrota agora oferece o botão real `COMPARTILHAR` após
+  fechar o overlay, atualizar a página ou reentrar no modo concluído;
+- a visibilidade é derivada exclusivamente do status `won`/`lost` do save já existente, sem
+  nova persistência ou estado de apresentação;
+- overlay e resultado estático chamam a mesma `compartilharResultadoFoto()`, que continua
+  usando o mesmo builder anti-spoiler e a infraestrutura compartilhada de Web Share,
+  clipboard e fallback; somente o botão que recebe feedback visual é parametrizado;
+- dots preservados como indicador secundário, reduzidos de 10 px para 8 px, com gap de 8 px
+  para 5 px e estado vazio mais neutro; estados usados continuam perceptíveis e inalterados;
+- lista de tentativas preservada, com gap de 6 px para 5 px e padding de `9px 14px` para
+  `8px 12px`, sem esconder nomes ou criar novo container;
+- contador permanece a fonte principal de progresso e a lista continua informando as
+  tentativas concretas.
+
+Preservado deliberadamente:
+- fotografia de 320×320, proporção, crop, blur, níveis de revelação, escala funcional,
+  dificuldade, manifesto e jogador diário;
+- busca, sticky, controle de contraste, `aria-label`, `aria-pressed` e alvo de 44 px;
+- proteção de movimento reduzido da D.1, inclusive transições dos dots;
+- overlay da Fase C, Home, Clássico/D.2, Mais ou Menos, Onze Inicial, saves, histórico,
+  streak e formato textual aprovado do compartilhamento.
+
+Testado:
+- vitória e derrota exibem Compartilhar no resultado estático; estado em andamento o oculta;
+- restauração/F5 usa o status salvo para disponibilizar a ação sem reabrir o overlay;
+- ação estática reutiliza exatamente o builder e a infraestrutura do overlay;
+- anti-spoiler continua sem incluir tentativas ou resposta secreta;
+- botão é semântico, nomeado, acessível por teclado e mantém alvo mínimo compartilhado;
+- seis dots e seus estados estruturais permanecem renderizados.
+
+Pendências:
+- validação manual mobile em 360×800, 390×844, 412×915, 430×932, 480×900 e 412×600;
+- validação desktop em 1366×768, 1440×900 e 1920×1080;
+- validar vitória 1/6, vitória 6/6, derrota 6/6, fechamento do overlay, F5 e reentrada;
+- D.4 não iniciada.
+
+Próximo passo:
+- validar manualmente a D.3; iniciar D.4 somente após aprovação em tarefa própria.
+
+## 22/08/2026 — v3.0 Fase D.4: polimento do Mais ou Menos
+
+**Status: CONCLUÍDA**
+
+Implementado:
+- `MAIS` e `MENOS` agora recebem exatamente a mesma borda, fundo, cor, sombra, tipografia,
+  hover, active e foco pela classe compartilhada; removidas as duas regras que davam dourado
+  inicial ao `MAIS` e tratamento neutro separado ao `MENOS`;
+- feedback posterior preserva classes verde/vermelha, indicação textual, bloqueio dos dois
+  botões e revelação da resposta correta;
+- removida a label redundante `PROGRESSO`; rodada no cabeçalho, dez segmentos, acertos e meta
+  continuam presentes com funções distintas;
+- meta simplificada de `Objetivo: 7 acertos em 10 rodadas` para `Meta: 7 acertos`, pois a
+  quantidade de rodadas já está no cabeçalho e nos segmentos;
+- legenda permanente simplificada para apenas a regra essencial de empate e secundarizada
+  por cor, tamanho e peso, sem alterar que qualquer resposta conta;
+- resultado estático de vitória ou derrota agora mantém `COMPARTILHAR` após fechar o overlay,
+  F5 ou reentrada, derivado exclusivamente do status salvo;
+- overlay e resultado estático reutilizam `compartilharResultadoMM()`, o mesmo builder
+  anti-spoiler e a mesma infraestrutura de Web Share, clipboard e fallback, parametrizando
+  somente o botão de feedback.
+
+Preservado deliberadamente:
+- algoritmo v2, seed, plano 3/4/3, variedade, snapshots, saves, histórico, dez rodadas, meta
+  real de sete acertos e regra de empate;
+- atraso funcional `ATRASO_AVANCO_MM = 1500`, salvamento antes do feedback, bloqueio de nova
+  escolha e abertura do overlay somente depois do resultado estático;
+- dez segmentos com estados de acerto/erro, fotos, nomes, metadados, números de jogos,
+  fallbacks, duas linhas e escala responsiva 88→80→72→64;
+- largura aproximada de 520 px, overlay da Fase C, Home e demais modos.
+
+Testado:
+- neutralidade estrutural inicial de `MAIS`/`MENOS` e permanência dos estados de feedback;
+- atraso de 1,5 segundo e fluxo final após feedback;
+- Compartilhar estático em vitória e derrota, inclusive restauração sem reabrir overlay;
+- limites 6/10 derrota, 7/10 vitória e 10/10 vitória;
+- reutilização do builder e anti-spoiler sem jogadores, valores ou direções;
+- permanência de dez segmentos, acertos e meta.
+
+Pendências:
+- validação manual mobile em 360×800, 390×844, 412×915, 430×932, 480×900 e 412×600;
+- validação desktop em 1366×768, 1440×900 e 1920×1080;
+- validar neutralidade inicial, feedback correto/incorreto/empate, 6/10, 7/10, 10/10,
+  fechamento do overlay, F5, reentrada, teclado, foco e ausência de overflow;
+- D.5 não iniciada.
+
+Próximo passo:
+- validar manualmente a D.4; iniciar D.5 somente após aprovação em tarefa própria.
+
+## 22/08/2026 — v3.0 Fase D.5: polimento do Onze Inicial
+
+**Status: CONCLUÍDA**
+
+Implementado:
+- confronto e placar permanecem como contexto primário; competição, data, estádio e tag de
+  local foram secundarizados por menor contraste, peso, tamanho e espaçamento, removendo a
+  aparência dourada de pill do local sem retirar conteúdo histórico;
+- progresso principal passa a dizer explicitamente `X/3 JOGADORES`;
+- os três dots foram mantidos por cautela, reduzidos para 5 px e menor contraste/opacidade,
+  como apoio visual estritamente secundário;
+- `FALTAM` foi preservado porque suas pills informam as posições dos slots ocultos, dado que
+  não existe no contador; sua superfície foi removida e labels/pills ficaram discretas;
+- largura desktop do modo e painéis aumentada moderadamente de 440/430 px para 480/470 px,
+  com campo de até 410 px, melhorando labels sem alterar proporção ou coordenadas;
+- labels normais do campo passaram de 88/9,5 px para 92/10 px no desktop; linhas densas de
+  78/9 px para 82/9,5 px;
+- no mobile até 480 px, labels normais usam 80 px/9,5 px e densas 70 px/9,25 px; em 360 px,
+  usam 72 px/9,25 px e 64 px/9 px, eliminando o pior caso anterior de 8,25 px sem ampliar
+  a largura das linhas de quatro atletas;
+- padding lateral do card em 360 px foi reduzido de 11 px para 9 px para recuperar largura
+  útil sem diminuir ou distorcer o campo;
+- lista `Fora` e detalhe de erros ganharam fundo neutro, borda suave, padding/gap menores e
+  tipografia secundária, preservando todos os nomes e a contagem de erros;
+- resultado estático perdeu o subtítulo redundante e quatro caixas internas; placar real,
+  palpite, status, 3/3, erros, detalhe, countdown e Compartilhar continuam disponíveis em
+  uma única superfície resumida.
+
+Preservado deliberadamente:
+- nove partidas, onze titulares por partida, nomes, posições, `top`, `left`, formação,
+  partida/slots diários, seed, exatamente três ocultos e alvo 3/3;
+- placar real, palpite, saves, migrações, histórico, countdown e compartilhamento existente;
+- busca, autocomplete, teclado, foco, feedback textual e visual, revelação e movimento
+  reduzido da D.1;
+- overlay da Fase C, Home, Clássico, Foto e Mais ou Menos.
+
+Testado:
+- constante de três ocultos, onze titulares em cada partida e coordenadas numéricas dentro
+  do campo;
+- seleção copia diretamente `top`/`left` do JSON, sem transformação;
+- nomes longos reais `Ángel Romero`, `Jorge Henrique` e `Leandro Castán` permanecem na base;
+- busca/autocomplete, dots, FALTAM, compartilhamento e restauração do resultado continuam
+  estruturalmente disponíveis;
+- `X/3 JOGADORES` permanece como progresso principal e o subtítulo redundante não retorna.
+
+Pendências:
+- validação manual mobile em 360×800, 390×844, 412×915, 430×932, 480×900 e 412×600;
+- validação desktop em 1366×768, 1440×900 e 1920×1080;
+- conferir todas as nove partidas, linhas densas, nomes longos, três slots ocultos, lista
+  Fora extensa, zero/múltiplos erros, conclusão, F5, reentrada, countdown e Compartilhar;
+- D.6 não iniciada.
+
+Próximo passo:
+- validar manualmente a D.5; iniciar D.6 somente após aprovação em tarefa própria.
+
+## 22/08/2026 — v3.0 Fase D.6: validação integrada dos quatro modos
+
+**Status: CONCLUÍDA — VALIDAÇÃO MANUAL FINAL APROVADA**
+
+Estado validado:
+- D.1, D.2, D.3, D.4 e D.5 concluídas e aprovadas manualmente;
+- Fase D permanece em andamento até a validação manual final da D.6;
+- Fase E não iniciada.
+
+Matriz integrada:
+- Clássico: desktop de oito colunas preservado; mobile compacto mantém oito propriedades,
+  labels completas, setas, quebras naturais, estados semânticos, sticky, resultado e
+  Compartilhar;
+- Foto: fotografia, dificuldade, contador, seis dots secundários, lista, contraste, vitória,
+  derrota e compartilhamento persistente/restaurável permanecem protegidos;
+- Mais ou Menos: ações inicialmente equivalentes, feedback correto/incorreto/empate, dez
+  segmentos, acertos, meta, regra de empate, limites 6/7/10 e atraso de 1,5 s preservados;
+- Onze Inicial: nove partidas, onze titulares, três ocultos, coordenadas, confronto, placar,
+  metadados, progresso, dots, FALTAM, campo, busca, Fora, erros, resultado, countdown,
+  compartilhamento e restauração preservados.
+
+Regressão compartilhada:
+- Home/Fase B permanece estruturalmente protegida para estados 0/4–4/4, modos, Seu Timãodle,
+  Estatísticas, Histórico e Compartilhar Dia;
+- overlay/Fase C permanece único, acessível e protegido para resultado, continuidade, 4/4,
+  Home, Escape, fechar, backdrop, focus trap, compartilhamento e anti-spoiler;
+- movimento reduzido impede confete e transições decorativas do Foto sem retirar feedback;
+  timing funcional de 1,5 s do MM permanece independente de animação;
+- comboboxes/listboxes, teclado, foco, dialogs, retorno de foco e touch targets permanecem
+  cobertos pelos contratos estruturais existentes.
+
+Auditoria do diff:
+- nenhum dos três JSONs foi alterado;
+- seeds, sorteios, regras, saves, snapshots, migrações e histórico não receberam mudanças;
+- CSS balanceado e 168 IDs únicos confirmados;
+- removidos durante a auditoria somente resíduos sem uso introduzidos pelas simplificações:
+  classes individuais `mm-btn-mais`/`mm-btn-menos` e seletor do subtítulo removido do Onze;
+- nenhum builder de compartilhamento foi duplicado; Foto e MM reutilizam cada builder entre
+  overlay e resultado estático;
+- nenhum seletor ou ID órfão novo foi identificado após a limpeza;
+- frontend-contract atualizado e aprovado.
+
+Problemas encontrados:
+- P0: nenhum;
+- P1: nenhum;
+- P2: nenhum;
+- P3: nenhum pendente;
+- smoke responsivo automatizado não executado porque Chrome/Edge headless ficou indisponível
+  neste ambiente pelo processo GPU; isso não foi contabilizado como validação visual.
+
+Testado:
+- suíte completa: storage A–X, 39 cenários de regras/180 datas MM, 118 cenários de histórico,
+  13 cenários de resultado, cinco de movimento reduzido e 40 estruturais/168 IDs;
+- storage e histórico executados também isoladamente;
+- sintaxe de `script.js` e `storage-normalizers.js` aprovada;
+- `git diff --check` aprovado, apenas com avisos de normalização LF/CRLF;
+- tentativa adicional de `node tests/viewport-smoke.js` registrada como SKIP pelo ambiente.
+
+Checklist manual final:
+- prioridade: 412×600, 412×915 e 1440×900; complementar com 360×800, 390×844, 430×932,
+  480×900, 768×1024, 1366×768 e 1920×1080;
+- percorrer Clássico, Foto, Mais ou Menos e Onze Inicial em andamento e concluídos;
+- validar F5/reentrada, resultados estáticos, compartilhamentos e overlay em 1–3 modos
+  pendentes e 4/4;
+- validar Tab, Shift+Tab, Enter, Escape, foco visível, autocompletes, dialogs, retorno de foco
+  e touch targets;
+- ativar movimento reduzido e confirmar ausência de confete/transições decorativas, feedback
+  textual intacto e atraso funcional do MM.
+
+Pendências:
+- nenhuma; não restaram problemas P0, P1, P2 ou P3 conhecidos da Fase D;
+- Fase E não iniciada.
+
+Próximo passo:
+- iniciar em tarefa própria a v3.0 — Fase E: Histórico e Estatísticas.
+
+## 22/08/2026 — v3.0 Fase D: encerramento oficial
+
+**Status: CONCLUÍDA — VALIDAÇÃO MANUAL FINAL APROVADA**
+
+Validado manualmente:
+- viewports prioritários 412×600, 412×915 e 1440×900;
+- integração dos quatro modos, resultados estáticos, F5/reentrada e compartilhamentos;
+- Home da Fase B e overlay final da Fase C;
+- teclado, foco, dialogs, retorno de foco e movimento reduzido;
+- nenhuma regressão P0, P1, P2 ou P3 conhecida permaneceu após a validação final.
+
+Estado final:
+- D.1, D.2, D.3, D.4, D.5 e D.6 concluídas;
+- Fase D concluída;
+- Fase E não iniciada.
+
+Próximo passo:
+- v3.0 — Fase E: Histórico e Estatísticas, somente em tarefa própria.
