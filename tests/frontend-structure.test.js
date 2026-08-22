@@ -335,14 +335,44 @@ test("shell global preserva eixo, gutters e um único scroll vertical", () => {
     assert.match(cssRule(".header-inner"), /var\(--shell-gutter\)/);
     assert.match(cssRule(".app-shell .page-content"), /var\(--shell-inline-space\)/);
     assert.match(cssRule(".pokedle-footer"), /var\(--shell-inline-space\)/);
-    for (const selector of [".home-daily-info", ".mode-buttons-container", ".home-progress-card", ".home-stats-btn"]) {
-        assert.match(cssRule(selector), /max-width:\s*400px/, selector);
-    }
+    assert.match(cssRule(".home-menu"), /max-width:\s*920px/);
+    assert.match(cssRule(".mode-buttons-container"), /grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
     assert.match(cssRule(".home-menu"), /gap:\s*clamp\(/);
     assert.match(cssRule(".pokedle-btn"), /padding:\s*clamp\(/);
     assert.match(cssRule(".btn-title"), /font-size:\s*clamp\(/);
     assert.equal((css.match(/\.btn-title\s*\{/g) || []).length, 1);
     assert.equal((css.match(/\.pill-text\s*\{/g) || []).length, 1);
+});
+
+test("Fase B organiza Home em hoje, modos e jornada pessoal", () => {
+    const progressIndex = html.indexOf('id="homeDailyProgress"');
+    const classicIndex = html.indexOf('id="btnPlayDiario"');
+    const photoIndex = html.indexOf('id="btnPlayFoto"');
+    const moreLessIndex = html.indexOf('id="btnPlayMaisMenos"');
+    const lineupIndex = html.indexOf('id="btnPlayEscalacao"');
+    const contextIndex = html.indexOf('class="home-daily-info"');
+    const personalIndex = html.indexOf('id="homePersonalTitle"');
+    const statsIndex = html.indexOf('id="btnOpenIntegratedStats"');
+    const historyIndex = html.indexOf('id="btnOpenHistory"');
+
+    assert.ok([progressIndex, classicIndex, photoIndex, moreLessIndex, lineupIndex, contextIndex,
+        personalIndex, statsIndex, historyIndex].every(index => index >= 0));
+    assert.ok(progressIndex < classicIndex);
+    assert.ok(classicIndex < photoIndex && photoIndex < moreLessIndex && moreLessIndex < lineupIndex);
+    assert.ok(lineupIndex < contextIndex && contextIndex < personalIndex);
+    assert.ok(personalIndex < statsIndex && statsIndex < historyIndex);
+    assert.equal((html.match(/class="pokedle-btn active"/g) || []).length, 4);
+    assert.equal((html.match(/class="mode-entry"/g) || []).length, 4);
+    assert.match(css, /@media\s*\(max-width:\s*640px\)[\s\S]*?\.mode-buttons-container\s*\{[\s\S]*?grid-template-columns:\s*1fr/);
+});
+
+test("fechamento da Fase B oculta os modos somente no estado 4/4", () => {
+    assert.ok(script.includes('homeModesEl?.classList.toggle("hidden", progresso.complete)'));
+    assert.ok(script.includes('homeCompletionSummaryEl.classList.toggle("hidden", !progresso.complete)'));
+    assert.ok(script.includes('homeCompletionActionsEl.classList.toggle("hidden", !progresso.complete)'));
+    assert.ok(script.includes("shareDailyResultBtn.disabled = !progresso.complete"));
+    assert.match(cssRule(".pokedle-btn.is-completed"), /border-color:\s*var\(--line\)/);
+    assert.match(cssRule(".pokedle-btn.is-completed .mode-progress-status strong"), /color:\s*var\(--gold\)/);
 });
 
 test("polimento A.1 simplifica Home e hierarquia do Clássico", () => {

@@ -15,7 +15,8 @@ const essentialIds = {
     home: [
         "homeView", "homeDailyProgress", "homeProgressBar", "homeProgressValue",
         "homeStreakCurrent", "homeStreakBest", "homeCompletionSummary",
-        "homeCompletionActions", "shareDailyResultBtn", "btnOpenIntegratedStats", "btnOpenHistory"
+        "homeCompletionActions", "shareDailyResultBtn", "homeModes", "homeModesTitle", "homePersonalTitle",
+        "btnOpenIntegratedStats", "btnOpenHistory"
     ],
     classic: [
         "gameView", "searchInput", "autocompleteList", "attemptsContainer",

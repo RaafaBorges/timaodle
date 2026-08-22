@@ -8,7 +8,11 @@ Em cada largura:
 - [ ] `document.documentElement.scrollWidth <= window.innerWidth`.
 - [ ] Header centralizado; logo e ajuda acessíveis.
 - [ ] Footer não sobrepõe conteúdo; scroll permanece utilizável.
-- [ ] Home 0/4 e 4/4: cards alinhados, streak, estatísticas e compartilhar.
+- [ ] Home 0/4, parcial e 4/4: modos aparecem cedo; grade 2×2 no desktop e uma coluna no mobile.
+- [ ] Home com streak 0 e positivo: "Seu Timãodle" não compete com o progresso diário.
+- [ ] Estatísticas, Histórico e Compartilhar Dia: posições, foco, abertura e estados corretos.
+- [ ] Home 4/4: `Jogue Hoje` ausente sem espaço residual; resumo, compartilhar, contexto e `Seu Timãodle` preservados.
+- [ ] Novo dia incompleto após 4/4: `Jogue Hoje` volta a aparecer com os quatro modos.
 - [ ] Clássico: busca/autocomplete; uma e várias tentativas; textos e títulos legíveis.
 - [ ] Foto: imagem, tutorial, autocomplete e lista de tentativas.
 - [ ] Mais ou Menos: rodada, botões, overlay e resultado final.

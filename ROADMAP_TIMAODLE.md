@@ -3101,7 +3101,7 @@ Próximo passo:
 
 ## v3.0 — UX & VISUAL POLISH
 
-**Status: EM ANDAMENTO — FASE A CONCLUÍDA COM PENDÊNCIAS VISUAIS NÃO BLOQUEANTES / FASE B PRÓXIMA**
+**Status: EM ANDAMENTO — FASE A CONCLUÍDA / FASE B CONCLUÍDA / FASE C NÃO INICIADA**
 
 Objetivo:
 - refinar hierarquia, clareza, simplicidade, consistência e conforto responsivo sem
@@ -3151,11 +3151,11 @@ Prioridades da auditoria:
 - **P3 / risco baixo:** ajustar microespaçamentos, sombras, divisores e animações.
 
 Estado das fases:
-- [x] **Fase A — CONCLUÍDA COM PENDÊNCIAS VISUAIS NÃO BLOQUEANTES:** linguagem visual compartilhada, iconografia monocromática,
+- [x] **Fase A — CONCLUÍDA:** linguagem visual compartilhada, iconografia monocromática,
   navegação, cabeçalhos dos modos, buscas e comportamento sticky responsivo;
-- [ ] **Fase B — PRÓXIMA — Home:** reduzir informação simultânea, priorizar os quatro
-  modos, revisar progresso diário, streak, Estatísticas/Histórico e uso do desktop;
-- [ ] **Fase C — PLANEJADA — resultados finais e continuidade do dia:** linguagem compartilhada de
+- [x] **Fase B — CONCLUÍDA — Home:** informação diária
+  simplificada, quatro modos priorizados, jornada pessoal separada e desktop ampliado;
+- [ ] **Fase C — NÃO INICIADA — resultados finais e continuidade do dia:** linguagem compartilhada de
   conclusão, métrica principal, compartilhar, retorno à Home e acesso aos modos ainda
   não concluídos;
 - [ ] **Fase D — PLANEJADA — modos:** Clássico, Foto, Mais ou Menos e Onze Inicial em pequenas
@@ -3399,7 +3399,7 @@ Próximo passo:
 
 ## 22/08/2026 — v3.0 Fase A.3: centralização e cabeçalho do Clássico
 
-**Status: IMPLEMENTADA / AGUARDANDO VALIDAÇÃO VISUAL MANUAL**
+**Status: CONCLUÍDA — VALIDAÇÃO VISUAL FINAL APROVADA**
 
 Implementado:
 - os cabeçalhos dos quatro modos passaram a usar três colunas, com laterais simétricas no
@@ -3720,3 +3720,117 @@ Pendências visuais não bloqueantes para a Fase F:
 Próximo passo:
 - iniciar a Fase B — Home em tarefa própria, preservando a Fase C de resultados finais e
   continuidade do dia como etapa planejada posterior.
+
+
+## 22/08/2026 — v3.0 Fase B: nova hierarquia da Home
+
+**Status: CONCLUÍDA — VALIDAÇÃO VISUAL FINAL APROVADA**
+
+Estrutura anterior:
+- timer e jogador anterior, progresso diário com streak interno, Estatísticas/Histórico e
+  somente depois os quatro modos;
+- todos os blocos principais limitados a 400 px e os modos sempre em uma coluna;
+- progresso, jornada histórica e ações secundárias competiam no mesmo fluxo.
+
+Implementado:
+- a leitura passa a seguir `Timãodle do dia → quatro modos → contexto diário → Seu Timãodle`;
+- o painel diário usa uma superfície aberta com divisores e mantém 0/4–4/4, mensagens,
+  resumo de conclusão, celebração e Compartilhar Dia;
+- os modos preservam a ordem Clássico, Foto, Mais ou Menos e Onze Inicial, com título,
+  subtítulo, status, detalhe e chamada `Entrar no modo`;
+- a Home passou de 400 px para largura útil máxima de 920 px; os modos formam grade 2×2
+  no desktop e uma coluna até 640 px;
+- streak atual e recorde foram movidos para `Seu Timãodle`, junto de Estatísticas e
+  Histórico, em uma composição compacta sem subcards;
+- timer e jogador anterior aparecem somente depois dos modos, com cor e superfície
+  secundárias;
+- dourado foi reservado ao progresso, conclusão e interação; o widget e o footer não
+  precisaram de alterações para esta etapa;
+- IDs, listeners, ordem de Tab, modais, compartilhamento, saves, seeds, mecânicas, sticky
+  mobile e JSONs foram preservados.
+
+Proteção permanente:
+- o contrato da Home exige os quatro cards, sua ordem, progresso diário, área pessoal,
+  streak, Estatísticas, Histórico e compartilhamento;
+- o contrato responsivo protege a grade 2×2 e a mudança para uma coluna até 640 px sem
+  transformar o layout inteiro em snapshot rígido;
+- o checklist visual cobre estados 0/4, parcial, 4/4, streak zero/positivo e ações.
+
+Testado:
+- `node tests/run-tests.js` — suíte completa aprovada, incluindo 153 IDs únicos, CSS
+  balanceado e contrato estrutural;
+- `node tests/storage.test.js` — cenários A–X aprovados;
+- `node tests/history-calendar.test.js` — 118 cenários aprovados;
+- `node --check script.js` e `node --check storage-normalizers.js` — sintaxe aprovada;
+- `git diff --check` — aprovado, somente avisos de normalização LF/CRLF;
+- JSONs permaneceram fora do diff;
+- `node tests/viewport-smoke.js` foi iniciado, mas o teste foi ignorado porque o navegador
+  headless não conseguiu iniciar o processo GPU no ambiente atual.
+
+Checklist manual pendente:
+- estados 0/4, 1/4–3/4 e 4/4; streak zero e positivo; Compartilhar Dia disponível;
+- 360×800, 390×844, 412×915, 430×932, 480×900, 768×1024, 1366×768,
+  1440×900, 1920×1080 e 412×600;
+- conferir modos no início do fluxo, grade 2×2/uma coluna, ausência de overflow, foco e
+  Tab, modais de Estatísticas/Histórico, footer e widget de links úteis.
+
+Pendências:
+- validação visual e interativa em navegador real nos estados e viewports listados;
+- Fase C não iniciada.
+
+Próximo passo:
+- validar manualmente a Fase B em navegador real; após aprovação, abrir a Fase C em tarefa
+  separada, sem revisitar o sticky mobile nesta etapa.
+
+
+## 22/08/2026 — v3.0 Fase B: ajuste final do estado 4/4
+
+**Status: CONCLUÍDA — VALIDAÇÃO VISUAL FINAL APROVADA**
+
+Implementado:
+- a seção `Jogue Hoje` recebeu uma referência própria e agora é ocultada somente quando
+  `obterProgressoDiario().complete` retorna `true` na renderização normal da Home;
+- em 0/4–3/4, os quatro cards permanecem visíveis e funcionais, inclusive os já concluídos;
+- em 4/4, a grade inteira desaparece sem deixar espaço residual, enquanto resumo,
+  Compartilhar Dia, contexto diário e `Seu Timãodle` permanecem no fluxo aprovado;
+- a cada renderização, inclusive após F5, retorno de um modo ou mudança de dia, a mesma
+  fonte de verdade atualiza a visibilidade; um novo dia incompleto restaura a seção;
+- cards concluídos preservam fundo e status distintos, mas voltam a usar borda neutra;
+  somente `✓ CONCLUÍDO` permanece dourado;
+- desktop preserva largura, alinhamentos e grade 2×2 nos estados parciais; mobile preserva
+  a coluna única e ganha uma Home consideravelmente mais curta em 4/4;
+- compartilhamento, Estatísticas, Histórico, navegação, celebração, sticky, footer, widget,
+  mecânicas, storage, saves, seeds e JSONs não foram alterados.
+
+Proteção permanente:
+- o contrato inclui o ID da seção `homeModes` e verifica que sua visibilidade acompanha
+  diretamente `progresso.complete`;
+- resumo, ação de compartilhar e disponibilidade do botão continuam protegidos pela
+  condição complementar existente;
+- o contrato CSS exige borda neutra no card concluído e status concluído dourado;
+- o checklist visual cobre 4/4 sem espaço residual e restauração no novo dia.
+
+Testado:
+- `node tests/run-tests.js` — suíte completa aprovada, com 39 cenários estruturais e
+  154 IDs verificados;
+- `node tests/storage.test.js` — cenários A–X aprovados;
+- `node tests/history-calendar.test.js` — 118 cenários aprovados;
+- `node --check script.js` e `node --check storage-normalizers.js` — aprovados;
+- `git diff --check` — aprovado, somente avisos de normalização LF/CRLF;
+- JSONs, seeds e arquivos de storage permaneceram fora das alterações deste ajuste.
+
+Validação visual final aprovada:
+- a estrutura geral da Home foi aprovada em desktop e mobile;
+- 0/4 e 1/4–3/4 preservam `Jogue Hoje` e os quatro cards;
+- 4/4 preserva resumo, Compartilhar Dia, contexto e `Seu Timãodle`, sem a grade redundante
+  nem espaço residual;
+- a restauração no novo dia, a redução do dourado, o footer e o widget foram aprovados;
+- a Fase B está oficialmente concluída.
+
+Pendências:
+- nenhuma pendência da Fase B;
+- Fase C não iniciada.
+
+Próximo passo:
+- iniciar a Fase C somente em tarefa própria, partindo do checkpoint de encerramento da
+  Fase B.

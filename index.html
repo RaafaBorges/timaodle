@@ -67,11 +67,6 @@
             <div id="homeView" class="home-menu">
                 <p id="welcomeGreeting" class="welcome-greeting hidden"></p>
 
-                <div class="home-daily-info">
-                    <span class="home-daily-timer">Próximo desafio em <strong id="timerCountdownHome">--:--:--</strong></span>
-                    <span class="home-daily-yesterday">O jogador de ontem foi: <strong id="yesterdayPlayer">carregando...</strong></span>
-                </div>
-
                 <section id="homeDailyProgress" class="home-progress-card" aria-labelledby="homeProgressTitle">
                     <div class="home-progress-heading">
                         <div>
@@ -86,11 +81,6 @@
                     <div id="homeProgressBar" class="home-progress-track" role="progressbar" aria-label="Desafios concluídos hoje" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0">
                         <span id="homeProgressFill"></span>
                     </div>
-                    <div class="home-streak" aria-label="Sequência geral de dias completos" aria-live="polite">
-                        <span class="home-streak-label"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M13.4 2.8c.5 3-1.2 4.4-2.5 6.1-1.1 1.4-1.8 2.8-1.2 4.6.4-1.2 1.2-2 2.2-2.8-.1 2.1 1.8 3.1 1.8 5.3a4.2 4.2 0 0 1-8.4 0c0-4.6 3-7.2 8.1-11.2Z"/></svg> SEQUÊNCIA</span>
-                        <strong id="homeStreakCurrent">Comece sua sequência</strong>
-                        <small id="homeStreakBest">Recorde: 0 dias</small>
-                    </div>
                     <div id="homeCompletionSummary" class="home-completion-summary hidden" aria-label="Resumo dos desafios concluídos" aria-live="polite">
                         <div><span>CLÁSSICO</span><strong id="homeCompletionClassic">—</strong></div>
                         <div><span>FOTO</span><strong id="homeCompletionPhoto">—</strong></div>
@@ -104,18 +94,16 @@
                     </div>
                 </section>
 
-                <div class="home-secondary-actions" aria-label="Histórico e estatísticas">
-                    <button id="btnOpenIntegratedStats" class="home-stats-btn" type="button">Estatísticas</button>
-                    <button id="btnOpenHistory" class="home-stats-btn home-history-btn" type="button">Histórico</button>
-                </div>
-
-                <div class="mode-buttons-container">
+                <section id="homeModes" class="home-modes" aria-labelledby="homeModesTitle">
+                    <h2 id="homeModesTitle" class="home-section-title">JOGUE HOJE</h2>
+                    <div class="mode-buttons-container">
                     <button class="pokedle-btn active" id="btnPlayDiario" aria-describedby="homeStatusClassic">
-                        <span class="btn-title">MODO DIÁRIO</span>
+                        <span class="btn-title">CLÁSSICO</span>
                         <div class="btn-pill">
                             <span class="pill-text">Um novo desafio por dia</span>
                         </div>
                         <span id="homeStatusClassic" class="mode-progress-status"></span>
+                        <span class="mode-entry" aria-hidden="true">ENTRAR NO MODO →</span>
                     </button>
 
                     <button class="pokedle-btn active" id="btnPlayFoto" aria-describedby="homeStatusPhoto">
@@ -124,6 +112,7 @@
                             <span class="pill-text">Adivinhe o jogador pela foto</span>
                         </div>
                         <span id="homeStatusPhoto" class="mode-progress-status"></span>
+                        <span class="mode-entry" aria-hidden="true">ENTRAR NO MODO →</span>
                     </button>
 
                     <button class="pokedle-btn active" id="btnPlayMaisMenos" aria-describedby="homeStatusMoreLess">
@@ -132,6 +121,7 @@
                             <span class="pill-text">10 rodadas · Mais ou menos jogos</span>
                         </div>
                         <span id="homeStatusMoreLess" class="mode-progress-status"></span>
+                        <span class="mode-entry" aria-hidden="true">ENTRAR NO MODO →</span>
                     </button>
 
                     <button class="pokedle-btn active" id="btnPlayEscalacao" aria-describedby="homeStatusLineup">
@@ -140,8 +130,33 @@
                             <span class="pill-text">Complete a escalação</span>
                         </div>
                         <span id="homeStatusLineup" class="mode-progress-status"></span>
+                        <span class="mode-entry" aria-hidden="true">ENTRAR NO MODO →</span>
                     </button>
+                    </div>
+                </section>
+
+                <div class="home-daily-info" aria-label="Contexto do desafio diário">
+                    <span class="home-daily-timer">Próximo desafio em <strong id="timerCountdownHome">--:--:--</strong></span>
+                    <span class="home-daily-yesterday">O jogador de ontem foi: <strong id="yesterdayPlayer">carregando...</strong></span>
                 </div>
+
+                <section class="home-personal" aria-labelledby="homePersonalTitle">
+                    <h2 id="homePersonalTitle" class="home-section-title">SEU TIMÃODLE</h2>
+                    <div class="home-streak" aria-label="Sequência geral de dias completos" aria-live="polite">
+                        <div>
+                            <span class="home-streak-label"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M13.4 2.8c.5 3-1.2 4.4-2.5 6.1-1.1 1.4-1.8 2.8-1.2 4.6.4-1.2 1.2-2 2.2-2.8-.1 2.1 1.8 3.1 1.8 5.3a4.2 4.2 0 0 1-8.4 0c0-4.6 3-7.2 8.1-11.2Z"/></svg> SEQUÊNCIA ATUAL</span>
+                            <strong id="homeStreakCurrent">Comece sua sequência</strong>
+                        </div>
+                        <div>
+                            <span class="home-streak-label">RECORDE</span>
+                            <small id="homeStreakBest">0 dias</small>
+                        </div>
+                    </div>
+                    <div class="home-secondary-actions" aria-label="Histórico e estatísticas">
+                        <button id="btnOpenIntegratedStats" class="home-stats-btn" type="button">Estatísticas</button>
+                        <button id="btnOpenHistory" class="home-stats-btn home-history-btn" type="button">Histórico</button>
+                    </div>
+                </section>
             </div>
 
             <!-- TELA DO JOGO — MODO DIÁRIO -->

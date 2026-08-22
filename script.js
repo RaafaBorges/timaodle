@@ -64,6 +64,7 @@ const homeProgressValueEl = document.getElementById("homeProgressValue");
 const homeProgressUnitEl = document.getElementById("homeProgressUnit");
 const homeProgressBarEl = document.getElementById("homeProgressBar");
 const homeProgressFillEl = document.getElementById("homeProgressFill");
+const homeModesEl = document.getElementById("homeModes");
 const homeStreakCurrentEl = document.getElementById("homeStreakCurrent");
 const homeStreakBestEl = document.getElementById("homeStreakBest");
 const homeCompletionSummaryEl = document.getElementById("homeCompletionSummary");
@@ -1002,6 +1003,7 @@ function renderizarProgressoHome() {
     homeProgressFillEl.style.width = `${(progresso.completed / progresso.total) * 100}%`;
     homeProgressBarEl?.setAttribute("aria-valuenow", String(progresso.completed));
     homeDailyProgressEl.classList.toggle("is-complete", progresso.complete);
+    homeModesEl?.classList.toggle("hidden", progresso.complete);
     if (homeProgressTitleEl) homeProgressTitleEl.textContent = progresso.complete ? "TIMÃODLE DO DIA CONCLUÍDO" : "TIMÃODLE DO DIA";
     if (homeProgressUnitEl) homeProgressUnitEl.textContent = progresso.complete ? "DESAFIOS" : "CONCLUÍDOS";
 
@@ -1020,7 +1022,7 @@ function renderizarProgressoHome() {
             : "Comece sua sequência";
     }
     if (homeStreakBestEl) {
-        homeStreakBestEl.textContent = `Recorde: ${streak.best} ${streak.best === 1 ? "dia" : "dias"}`;
+        homeStreakBestEl.textContent = `${streak.best} ${streak.best === 1 ? "dia" : "dias"}`;
     }
 
     if (homeCompletionSummaryEl) {
