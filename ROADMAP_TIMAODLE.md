@@ -2538,7 +2538,8 @@ Candidatos naturais para uma versão futura, sem versão iniciada:
 Fases:
 - [x] Fase A — auditoria completa dos jogadores, fotos e pools atuais;
 - [x] Fase B — cobertura fotográfica concluída: 156/156 fotos (`100%`);
-- [ ] Fase C — validação externa e preenchimento responsável dos dados;
+- [x] Fase C — validação e preenchimento das assistências **CONCLUÍDA COM 3 NULLS
+  JUSTIFICADOS**: 8 valores confirmados gravados e 3 preservados sem evidência suficiente;
 - [ ] Fase D — validação histórica do Onze Inicial;
 - [ ] Fase E — auditoria final e fechamento.
 
@@ -2702,3 +2703,96 @@ Testado:
 Próximo passo:
 - **Fase C — validação externa das 11 assistências atualmente `null`**, sem inferir zero
   nem preencher valores sem fonte confiável.
+
+
+## 22/08/2026 — v2.9 Fase C: pesquisa das assistências em andamento
+
+Pesquisado:
+- identidades, posições e períodos no Corinthians dos 11 jogadores com
+  `assistencias: null`;
+- estatísticas detalhadas por clube, temporada e competição, priorizando Transfermarkt
+  e cruzando o resultado com oGol, Meu Timão e bases históricas complementares;
+- escopo de jogos oficiais e diferenças entre as contagens das fontes e os jogos totais
+  históricos mantidos pelo projeto;
+- zeros foram aceitos somente quando a fonte apresentou explicitamente `0`, sem converter
+  traço, campo ausente ou cobertura incompleta em zero.
+
+Resultado da pesquisa:
+- **8 confirmados**: Carlos Alberto (5), Coelho (4), Henrique (0), Rafael Moura (0),
+  Wallace (0), Wendel (0), William (1) e Willian (5);
+- **2 provisórios**: Lucca (3 nas temporadas cobertas, mas 2018 sem assistência
+  registrada pela fonte) e Uendel (divergência entre totais publicados);
+- **1 sem dado confiável**: Marinho, sem cobertura integral de assistências encontrada;
+- `jogadores.json` permaneceu inalterado; a Fase C não está concluída e nenhum valor foi
+  incorporado ao banco nesta etapa.
+
+Pendências:
+- obter uma fonte integral para Lucca, resolver a divergência de Uendel e localizar uma
+  base histórica confiável para Marinho;
+- somente depois de aprovação explícita, gravar os oito valores confirmados em
+  `jogadores.json` e manter `null` nos casos ainda não comprovados.
+
+Próximo passo:
+- revisar e aprovar o relatório da pesquisa; em uma etapa separada, preencher apenas os
+  valores confirmados e executar a auditoria completa dos dados.
+
+
+## 22/08/2026 — v2.9 Fase C: correção da foto de Willian
+
+Corrigido:
+- `fotos/willian.jpg` passou a representar Willian Gomes de Siqueira, o Willian Bigode,
+  atacante do Corinthians em 2011–2012, em substituição à imagem incompatível de Willian
+  Borges da Silva;
+- slug, nome no manifesto, ordem, referências e estrutura de `fotos-manifest.json`
+  permaneceram inalterados;
+- a Fase C continua **EM ANDAMENTO** e nenhum campo de `jogadores.json`, inclusive
+  assistências e a posição de Wallace, foi alterado.
+
+Validado:
+- nova imagem em JPEG válido e legível, 480×480, proporção 1:1 e sem conteúdo duplicado;
+- auditoria integral aprovada com 156 jogadores, 156 entradas únicas e 156 imagens em
+  correspondência exata, todas JPEG 480×480 e quadradas;
+- zero arquivo órfão, ausente ou duplicado, entrada sem jogador, colisão de slug ou
+  divergência de caixa/extensão;
+- pools preservados com 156 elegíveis no Modo Foto e 156 no Mais ou Menos;
+- suíte permanente, storage, histórico, sintaxe, três JSONs e whitespace aprovados.
+
+Próximo passo:
+- em etapa separada, gravar somente os oito valores de assistências confirmados e manter
+  `null` nos casos provisórios ou sem dado confiável.
+
+
+## 22/08/2026 — v2.9 Fase C: assistências confirmadas gravadas
+
+Implementado:
+- gravados exclusivamente os valores confirmados de assistências: Carlos Alberto (5),
+  Coelho (4), Henrique (0), Rafael Moura (0), Wallace (0), Wendel (0), William (1) e
+  Willian (5);
+- Lucca, Marinho e Uendel permaneceram com `assistencias: null`, pois a pesquisa não
+  produziu evidência suficiente para um valor definitivo;
+- zeros foram mantidos como números válidos, sem conversão para string ou fallback visual;
+- foto de Willian permanece corrigida para Willian Gomes de Siqueira;
+- posição de Wallace permaneceu `Volante` nesta etapa e segue como pendência separada.
+
+Auditoria do banco:
+- 156 jogadores, 153 completamente preenchidos e 3 com campo ausente;
+- os únicos valores ausentes são as 3 assistências justificadas;
+- 24 jogadores possuem `gols: 0` e 59 possuem `assistencias: 0`;
+- fallback `—` continua restrito a valores ausentes, enquanto zero é renderizado como `0`;
+- comparações com valor desconhecido continuam sem setas de maior/menor.
+
+Testado:
+- suíte permanente completa, storage, histórico, sintaxe de `script.js` e
+  `storage-normalizers.js` aprovados;
+- regressão específica de Henrique, Rafael Moura, Wallace, Wendel, Lucca, Marinho e Uendel;
+- três JSONs, 156 fotos, pools Foto/MM, contrato frontend, IDs, CSS balanceado e whitespace
+  validados;
+- nenhum HTML, CSS, JavaScript, manifesto, partida, foto, save, seed, histórico ou calendário
+  foi alterado nesta gravação.
+
+Estado da fase:
+- **Fase C — CONCLUÍDA COM 3 NULLS JUSTIFICADOS**.
+
+Próximo passo:
+- iniciar a Fase D com a validação histórica das partidas e formações 4-2-3-1; tratar a
+  posição de Wallace somente em uma tarefa de correção de dados explicitamente aprovada.
