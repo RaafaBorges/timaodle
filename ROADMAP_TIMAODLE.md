@@ -1,7 +1,7 @@
 # TIMÃODLE --- ROADMAP E CONTEXTO DO PROJETO
 
-**Versão do documento:** 2.8\
-**Data:** 21/08/2026\
+**Versão do documento:** 2.9\
+**Data:** 22/08/2026\
 **Projeto:** Timãodle\
 **Objetivo deste arquivo:** servir como documento de contexto para
 qualquer IA ou desenvolvedor que continuar o projeto (ChatGPT, Claude,
@@ -157,7 +157,7 @@ Mecânica:
 
 -   `jogadores.json`: aproximadamente 156 jogadores.
 -   Jogadores com foto: 136 de 156 (`87,18%`).
--   20 jogadores ainda não possuem foto e têm `jogos: null`.
+-   20 jogadores ainda não possuem foto; todos possuem `jogos` numérico e finito.
 
 ### Checklist
 
@@ -2531,3 +2531,136 @@ Candidatos naturais para uma versão futura, sem versão iniciada:
 - validação histórica das formações 4-2-3-1;
 - validação acessível com leitor de tela real e smoke headless;
 - evolução incremental de funcionalidades somente após definição explícita do próximo escopo.
+
+
+## 🚧 v2.9 — EM ANDAMENTO: CONTEÚDO E PRECISÃO
+
+Fases:
+- [x] Fase A — auditoria completa dos jogadores, fotos e pools atuais;
+- [ ] Fase B — cobertura fotográfica (9/20 integradas; em andamento);
+- [ ] Fase C — validação externa e preenchimento responsável dos dados;
+- [ ] Fase D — validação histórica do Onze Inicial;
+- [ ] Fase E — auditoria final e fechamento.
+
+Estado inicial confirmado pelo código e pelos dados em 22/08/2026:
+- `jogadores.json`: 156 jogadores, 145 completos e 11 com ao menos um campo ausente;
+- as 11 lacunas estão exclusivamente em `assistencias: null`; não existem mais valores
+  ausentes em `jogos`, diferentemente do contexto histórico anterior do roadmap;
+- todos os 156 valores de `jogos` são numéricos e finitos;
+- `fotos-manifest.json` é o manifesto efetivamente carregado pelo projeto;
+- `jogadores_foto.json` não existe no repositório atual;
+- manifesto e pasta `fotos/`: 136 entradas/arquivos, sem duplicidade, órfão, arquivo faltante,
+  colisão de slug ou divergência de caixa/extensão;
+- Modo Foto: 136 elegíveis e 20 excluídos somente por ausência de foto;
+- Mais ou Menos: 136 elegíveis e 20 excluídos somente por ausência de foto;
+- Clássico: todos os 156 permanecem elegíveis; lacunas são exibidas como `—` e zero continua válido.
+
+## 22/08/2026 — v2.9 Fase A: auditoria dos jogadores
+
+Auditado:
+- presença, nulidade e tipos de `nome`, `posicao`, `nacionalidade`, `estreia`, `jogos`,
+  `pe`, `titulos`, `gols` e `assistencias` em todos os 156 jogadores;
+- regra de ausência confirmou `null`, propriedade inexistente e string vazia, preservando
+  zero como valor válido;
+- 11 jogadores incompletos: Carlos Alberto, Coelho, Henrique, Lucca, Marinho,
+  Rafael Moura, Uendel, Wallace, Wendel, William e Willian, todos somente sem assistências;
+- resolução de fotos por `fotos/<slug-do-nome>.jpg`, manifesto, arquivos físicos,
+  correspondência exata com jogadores, acentos, hífens, caixa, extensão e colisões;
+- filtros reais do Modo Foto, Mais ou Menos e Clássico;
+- fallback `—` e comparações defensivas do Clássico confirmados sem alteração de mecânica.
+
+Fotos ausentes:
+- Alex, Bruno Henrique, Camacho, Carlos Alberto, Coelho, Edu Dracena, Fábio Costa,
+  Gustavo Nery, Henrique, Lucca, Marcelo Mattos, Marinho, Pedro Henrique, Rafael Moura,
+  Rosinei, Uendel, Wallace, Wendel, William e Willian.
+
+Próximas fases planejadas, ainda não executadas:
+- Fase B: validar e integrar fotos fornecidas localmente para os 20 jogadores restantes;
+- Fase C: pesquisar fontes confiáveis para as 11 assistências ausentes e preencher apenas
+  valores confirmados, sem converter ausência de fonte em zero;
+- Fase D: validar historicamente as quatro partidas/formações 4-2-3-1;
+- Fase E: repetir auditorias, executar suíte completa e preparar o fechamento da v2.9.
+
+Testado:
+- baseline completa aprovada com storage A–X, 39 cenários de regras, 118 cenários do
+  histórico e 27 cenários estruturais;
+- 151 IDs verificados sem duplicidade;
+- `script.js` e `storage-normalizers.js` aprovados por `node --check`;
+- `jogadores.json`, `partidas.json` e `fotos-manifest.json` validados;
+- contrato frontend, CSS balanceado e `git diff --check` aprovados;
+- nenhum JSON, arquivo de produção, foto, mecânica, seed, save ou histórico foi alterado.
+
+Próximo passo:
+- fornecer manualmente as fotos restantes no padrão JPEG 480×480 para continuidade da Fase B.
+
+
+## 22/08/2026 — v2.9 Fase B: inventário inicial da cobertura fotográfica
+
+Verificado:
+- calculados os 20 nomes esperados conforme o `slugify()` atual;
+- nenhum dos 20 arquivos-alvo foi encontrado em `fotos/`, inclusive sob variação de caixa
+  ou extensão com o mesmo slug;
+- nenhuma imagem foi criada, baixada, editada ou redimensionada;
+- `fotos-manifest.json` permaneceu com 136 entradas porque não havia nova foto válida para integrar;
+- as 136 fotos atuais continuam legíveis, em JPEG, 480×480 e proporção 1:1;
+- manifesto e pasta permanecem em correspondência exata, sem duplicidade, arquivo órfão,
+  entrada sem jogador, arquivo ausente ou colisão de slug;
+- todos os 156 jogadores possuem `jogos` numérico e finito, portanto cada nova foto válida
+  aumentará em uma unidade tanto o pool do Foto quanto o pool do Mais ou Menos.
+
+Impacto atual:
+- cobertura: 136/156 (`87,18%`), sem alteração;
+- Modo Foto: 136 elegíveis, sem alteração;
+- Mais ou Menos: 136 elegíveis, sem alteração;
+- 20 jogadores continuam excluídos dos dois modos exclusivamente pela ausência de foto.
+
+Estado da fase:
+- **Fase B permanece EM ANDAMENTO**;
+- 0 de 20 fotos encontradas e integradas nesta passagem;
+- continuação depende do fornecimento manual dos arquivos JPEG 480×480 esperados.
+
+Testado:
+- baseline completa, storage, histórico, sintaxe e `git diff --check` aprovados;
+- inventário técnico das 136 fotos atuais aprovado;
+- `jogadores.json`, `partidas.json` e mecânicas permaneceram inalterados.
+
+Próximo passo:
+- adicionar manualmente um lote dos arquivos esperados à pasta `fotos/` e repetir a validação
+  antes de modificar o manifesto.
+
+
+## 22/08/2026 — v2.9 Fase B: integração do primeiro lote de 9 fotos
+
+Integrado:
+- validadas e adicionadas ao manifesto as fotos de Alex, Bruno Henrique, Camacho,
+  Edu Dracena, Fábio Costa, Gustavo Nery, Marcelo Mattos, Pedro Henrique e Rosinei;
+- os nove arquivos são JPEG reais e legíveis, 480×480, proporção 1:1, com nomes
+  compatíveis com o `slugify()` atual e hashes distintos;
+- `fotos-manifest.json` passou de 136 para 145 entradas únicas;
+- cobertura ampliada de 136/156 (`87,18%`) para 145/156 (`92,95%`);
+- pool do Modo Foto ampliado de 136 para 145 jogadores;
+- pool do Mais ou Menos ampliado de 136 para 145 jogadores, todos com `jogos`
+  numérico e finito.
+
+Auditoria após a integração:
+- 145 arquivos físicos e 145 entradas no manifesto, em correspondência exata;
+- nenhuma duplicidade de nome ou conteúdo, entrada sem jogador, arquivo ausente ou órfão,
+  colisão de slug, divergência de caixa/extensão, imagem ilegível ou dimensão incorreta;
+- permanecem sem foto Carlos Alberto, Coelho, Henrique, Lucca, Marinho, Rafael Moura,
+  Uendel, Wallace, Wendel, William e Willian.
+
+Estado da fase:
+- **Fase B permanece EM ANDAMENTO**;
+- progresso acumulado: 9 de 20 fotos restantes validadas e integradas;
+- faltam 11 arquivos JPEG 480×480 para atingir cobertura fotográfica completa.
+
+Testado:
+- baseline e suíte final aprovadas com storage A–X, 39 cenários de regras, simulação do
+  Mais ou Menos v2 em 180 datas, 118 cenários de histórico e 27 cenários estruturais;
+- 151 IDs verificados, sintaxe de `script.js` e `storage-normalizers.js`, três JSONs,
+  contrato frontend, inventário integral das imagens e `git diff --check` aprovados;
+- nenhuma mecânica, seed, save, histórico, estatística ou dado de jogador foi alterado.
+
+Próximo passo:
+- fornecer e integrar as 11 fotos restantes antes de concluir a Fase B; depois avançar
+  à Fase C para validação externa das assistências ausentes.
