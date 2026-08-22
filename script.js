@@ -109,6 +109,18 @@ const historyHistoricalStreakText = document.getElementById("historyHistoricalSt
 const btnOpenHowToPlay = document.getElementById("btnOpenHowToPlay");
 const howToPlayModal = document.getElementById("howToPlayModal");
 const btnCloseHowToPlay = document.getElementById("btnCloseHowToPlay");
+const finalResultModal = document.getElementById("finalResultModal");
+const finalResultCloseBtn = document.getElementById("finalResultCloseBtn");
+const finalResultModeEl = document.getElementById("finalResultMode");
+const finalResultTitleEl = document.getElementById("finalResultTitle");
+const finalResultMetricEl = document.getElementById("finalResultMetric");
+const finalResultSecondaryEl = document.getElementById("finalResultSecondary");
+const finalResultShareBtn = document.getElementById("finalResultShareBtn");
+const finalResultPendingEl = document.getElementById("finalResultPending");
+const finalResultPendingModesEl = document.getElementById("finalResultPendingModes");
+const finalResultCompleteDayEl = document.getElementById("finalResultCompleteDay");
+const finalResultHomeBtn = document.getElementById("finalResultHomeBtn");
+let finalResultModeType = null;
 
 const searchInput = document.getElementById("searchInput");
 const autocompleteList = document.getElementById("autocompleteList");
@@ -1536,6 +1548,117 @@ function fecharComoJogar() {
     fecharModalAcessivel(howToPlayModal, btnOpenHowToPlay);
 }
 
+const FINAL_RESULT_MODES = {
+    classic: { label: "CLÁSSICO", buttonId: "btnPlayDiario", viewId: "gameView", backId: "backHomeBtn" },
+    photo: { label: "FOTO", buttonId: "btnPlayFoto", viewId: "photoView", backId: "backHomeBtnFoto" },
+    moreLess: { label: "MAIS OU MENOS", buttonId: "btnPlayMaisMenos", viewId: "maisMenosView", backId: "backHomeBtnMM" },
+    lineup: { label: "ONZE INICIAL", buttonId: "btnPlayEscalacao", viewId: "escalacaoView", backId: "backHomeBtnEsc" }
+};
+
+function pluralResultado(quantidade, singular, plural) {
+    return `${quantidade} ${quantidade === 1 ? singular : plural}`;
+}
+
+function dadosResultadoFinal(tipo) {
+    if (tipo === "classic") {
+        const tentativas = estadoDiario?.tentativas?.length || 0;
+        return { outcome: "won", title: "GANHOU", metric: pluralResultado(tentativas, "TENTATIVA", "TENTATIVAS") };
+    }
+    if (tipo === "photo") {
+        const tentativas = estadoFotoDiario?.tentativas?.length || 0;
+        const venceu = estadoFotoDiario?.status === "won";
+        return { outcome: venceu ? "won" : "lost", title: venceu ? "GANHOU" : "PERDEU", metric: `${tentativas} / ${MAX_TENTATIVAS_FOTO} TENTATIVAS` };
+    }
+    if (tipo === "moreLess") {
+        const venceu = estadoMMDiario?.status === "won";
+        return { outcome: venceu ? "won" : "lost", title: venceu ? "GANHOU" : "PERDEU", metric: `${acertosMM} / ${RODADAS_MM} ACERTOS` };
+    }
+    const total = dadosEscalacao?.jogadores_ocultos?.length || 3;
+    const erros = Number.isFinite(errosEscalacao) ? errosEscalacao : 0;
+    return {
+        outcome: "completed",
+        title: "CONCLUÍDO",
+        metric: `${total} / ${total} JOGADORES`,
+        secondary: `${pluralResultado(erros, "ERRO", "ERROS")}${estadoEscalacao?.exactScore === true ? " · PLACAR EXATO" : ""}`
+    };
+}
+
+function modosPendentesResultado(tipoAtual, progresso) {
+    return Object.keys(FINAL_RESULT_MODES)
+        .filter(tipo => tipo !== tipoAtual && progresso?.modes?.[tipo]?.completed !== true)
+        .map(tipo => ({
+            tipo,
+            label: FINAL_RESULT_MODES[tipo].label,
+            status: progresso.modes[tipo]?.started ? "EM ANDAMENTO" : "NÃO INICIADO"
+        }));
+}
+
+function renderizarModosPendentesResultado(tipoAtual, progresso) {
+    finalResultPendingModesEl.replaceChildren();
+    const pendentes = modosPendentesResultado(tipoAtual, progresso);
+
+    pendentes.forEach(({ tipo, label, status: textoStatus }) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "final-result-pending-mode";
+        const nome = document.createElement("strong");
+        nome.textContent = label;
+        const status = document.createElement("span");
+        status.textContent = textoStatus;
+        button.append(nome, status);
+        button.addEventListener("click", () => navegarDoResultadoParaModo(tipo));
+        finalResultPendingModesEl.appendChild(button);
+    });
+
+    finalResultPendingEl.classList.toggle("hidden", progresso.complete || pendentes.length === 0);
+    finalResultCompleteDayEl.classList.toggle("hidden", !progresso.complete);
+}
+
+function abrirResultadoFinal(tipo) {
+    const config = FINAL_RESULT_MODES[tipo];
+    if (!config || !finalResultModal) return;
+    const dados = dadosResultadoFinal(tipo);
+    const progresso = obterProgressoDiario();
+    finalResultModeType = tipo;
+    finalResultModeEl.textContent = config.label;
+    finalResultTitleEl.textContent = dados.title;
+    finalResultMetricEl.textContent = dados.metric;
+    finalResultSecondaryEl.textContent = dados.secondary || "";
+    finalResultSecondaryEl.classList.toggle("hidden", !dados.secondary);
+    finalResultModal.classList.remove("is-won", "is-lost", "is-completed");
+    finalResultModal.classList.add(`is-${dados.outcome}`);
+    renderizarModosPendentesResultado(tipo, progresso);
+    abrirModalAcessivel(finalResultModal, document.getElementById(config.backId), finalResultTitleEl);
+}
+
+function fecharResultadoFinal() {
+    const config = FINAL_RESULT_MODES[finalResultModeType];
+    fecharModalAcessivel(finalResultModal, config ? document.getElementById(config.backId) : null);
+}
+
+function ocultarViewsDeJogo() {
+    Object.values(FINAL_RESULT_MODES).forEach(config => document.getElementById(config.viewId)?.classList.add("hidden"));
+}
+
+function navegarDoResultadoParaModo(tipo) {
+    const button = document.getElementById(FINAL_RESULT_MODES[tipo]?.buttonId);
+    if (!button) return;
+    fecharResultadoFinal();
+    ocultarViewsDeJogo();
+    homeView.classList.remove("hidden");
+    button.click();
+}
+
+function voltarParaHomeDoResultado() {
+    fecharResultadoFinal();
+    cancelarAvancoAutomaticoMM();
+    ocultarViewsDeJogo();
+    homeView.classList.remove("hidden");
+    renderizarProgressoHome();
+    const progresso = obterProgressoDiario();
+    (progresso.complete ? shareDailyResultBtn : btnPlayDiario)?.focus({ preventScroll: true });
+}
+
 btnOpenIntegratedStats?.addEventListener("click", abrirEstatisticasIntegradas);
 btnCloseIntegratedStats?.addEventListener("click", fecharEstatisticasIntegradas);
 btnOpenHistory?.addEventListener("click", abrirHistorico);
@@ -1554,13 +1677,25 @@ historyModal?.addEventListener("click", event => {
 howToPlayModal?.addEventListener("click", event => {
     if (event.target === howToPlayModal) fecharComoJogar();
 });
+finalResultCloseBtn?.addEventListener("click", fecharResultadoFinal);
+finalResultHomeBtn?.addEventListener("click", voltarParaHomeDoResultado);
+finalResultShareBtn?.addEventListener("click", () => {
+    if (finalResultModeType === "classic") compartilharResultado();
+    else if (finalResultModeType === "photo") compartilharResultadoFoto();
+    else if (finalResultModeType === "moreLess") compartilharResultadoMM();
+    else if (finalResultModeType === "lineup") compartilharResultadoEscalacao();
+});
+finalResultModal?.addEventListener("click", event => {
+    if (event.target === finalResultModal) fecharResultadoFinal();
+});
 document.addEventListener("keydown", event => {
     const modalTutorialFoto = document.getElementById("photoTutorialModal");
-    const modalAtivo = [howToPlayModal, integratedStatsModal, historyModal, modalTutorialFoto]
+    const modalAtivo = [finalResultModal, howToPlayModal, integratedStatsModal, historyModal, modalTutorialFoto]
         .find(modal => modal && !modal.classList.contains("hidden"));
     if (!modalAtivo) return;
     if (event.key === "Escape") {
-        if (modalAtivo === howToPlayModal) fecharComoJogar();
+        if (modalAtivo === finalResultModal) fecharResultadoFinal();
+        else if (modalAtivo === howToPlayModal) fecharComoJogar();
         else if (modalAtivo === integratedStatsModal) fecharEstatisticasIntegradas();
         else if (modalAtivo === historyModal) fecharHistorico();
         else fecharTutorialFoto();
@@ -1993,6 +2128,55 @@ async function compartilharResultado() {
     }
 }
 
+async function compartilharTextoNovoModo(texto, botaoFeedback = finalResultShareBtn) {
+    if (navigator.share) {
+        try {
+            await navigator.share({ text: texto });
+            return true;
+        } catch (error) {
+            if (error?.name === "AbortError") return false;
+        }
+    }
+
+    try {
+        await navigator.clipboard.writeText(texto);
+        if (botaoFeedback) {
+            const original = botaoFeedback.innerText;
+            botaoFeedback.innerText = "COPIADO! ✓";
+            setTimeout(() => { botaoFeedback.innerText = original; }, 2000);
+        }
+        return true;
+    } catch {
+        alert(texto);
+        return false;
+    }
+}
+
+function gerarTextoCompartilhamentoFoto() {
+    const numero = numeroDoDesafio(getDataLocalString());
+    const tentativas = estadoFotoDiario?.tentativas?.length || 0;
+    const venceu = estadoFotoDiario?.status === "won";
+    const grade = Array.from({ length: MAX_TENTATIVAS_FOTO }, (_, indice) =>
+        indice < tentativas ? (venceu && indice === tentativas - 1 ? "🟨" : "⬛") : "▫️"
+    ).join("");
+    return `TIMÃODLE — FOTO #${numero}\n${venceu ? "GANHOU" : "PERDEU"} — ${tentativas}/${MAX_TENTATIVAS_FOTO}\n\n${grade}\n\n${URL_OFICIAL_TIMAODLE}`;
+}
+
+function compartilharResultadoFoto() {
+    return compartilharTextoNovoModo(gerarTextoCompartilhamentoFoto());
+}
+
+function gerarTextoCompartilhamentoMM() {
+    const numero = numeroDoDesafio(getDataLocalString());
+    const venceu = estadoMMDiario?.status === "won";
+    const grade = (estadoMMDiario?.historico || []).map(rodada => rodada.correto ? "🟨" : "⬛").join("");
+    return `TIMÃODLE — MAIS OU MENOS #${numero}\n${venceu ? "GANHOU" : "PERDEU"} — ${acertosMM}/${RODADAS_MM} ACERTOS\n\n${grade}\n\n${URL_OFICIAL_TIMAODLE}`;
+}
+
+function compartilharResultadoMM() {
+    return compartilharTextoNovoModo(gerarTextoCompartilhamentoMM());
+}
+
 shareResultBtn.addEventListener("click", compartilharResultado);
 shareDailyResultBtn?.addEventListener("click", compartilharResultadoDiario);
 
@@ -2008,6 +2192,7 @@ function mostrarFimDeJogo(comAnimacao) {
 
     if (comAnimacao) {
         dispararConfetes();
+        abrirResultadoFinal("classic");
     }
 }
 
@@ -2419,6 +2604,7 @@ function fazerPalpiteFoto(palpiteJogador) {
         photoEndMessageEl.classList.remove("hidden");
         photoEndMessageEl.innerHTML = `✓ Isso aí! Era o <strong>${jogadorSecretoFoto.nome}</strong> mesmo.`;
         dispararConfetes();
+        abrirResultadoFinal("photo");
     } else if (tentativasFoto.length >= MAX_TENTATIVAS_FOTO) {
         fotoAtiva = false;
         estadoFotoDiario.status = "lost";
@@ -2427,6 +2613,7 @@ function fazerPalpiteFoto(palpiteJogador) {
         photoImgEl.style.filter = "blur(0px) grayscale(0%)";
         photoEndMessageEl.classList.remove("hidden");
         photoEndMessageEl.innerHTML = `✕ Suas tentativas acabaram. Era o <strong>${jogadorSecretoFoto.nome}</strong>.`;
+        abrirResultadoFinal("photo");
     }
 }
 
@@ -3091,6 +3278,7 @@ function mostrarFimDeJogoMM(comAnimacao) {
         </div>
         <p class="mm-result-return">Novo desafio à meia-noite.</p>`;
     if (venceu && comAnimacao) dispararConfetes();
+    if (comAnimacao) abrirResultadoFinal("moreLess");
 }
 
 mmBtnMenos.addEventListener("click", () => responderMM("menos"));
@@ -3650,6 +3838,7 @@ function processarPalpiteEscalacao(nomeDigitado) {
             escalacaoEndMessageEl.classList.add("hidden");
             renderizarResultadoConclusaoEscalacao();
             dispararConfetes();
+            abrirResultadoFinal("lineup");
         }
     }, 500);
 }

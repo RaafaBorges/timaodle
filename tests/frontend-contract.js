@@ -36,12 +36,14 @@ const essentialIds = {
         "escalacaoFeedback", "escCompletionCard", "backHomeBtnEsc"
     ],
     modals: [
-        "welcomeModal", "photoTutorialModal", "integratedStatsModal", "historyModal", "howToPlayModal",
+        "welcomeModal", "photoTutorialModal", "integratedStatsModal", "historyModal", "howToPlayModal", "finalResultModal",
         "btnOpenHowToPlay", "btnCloseIntegratedStats", "btnCloseHistory", "btnCloseHowToPlay",
         "historyPreviousMonth", "historyNextMonth", "historyMonthTitle",
         "historyCalendarGrid", "historyDaySummary", "historySelectedDateTitle",
         "historyNoRecord", "historyDayDetails", "historyClassicSummary", "historyPhotoSummary",
-        "historyMoreLessSummary", "historyLineupSummary", "historyOverallProgress"
+        "historyMoreLessSummary", "historyLineupSummary", "historyOverallProgress",
+        "finalResultCloseBtn", "finalResultTitle", "finalResultMetric", "finalResultShareBtn",
+        "finalResultPending", "finalResultPendingModes", "finalResultCompleteDay", "finalResultHomeBtn"
     ],
     navigation: [
         "btnPlayDiario", "btnPlayFoto", "btnPlayMaisMenos", "btnPlayEscalacao",
@@ -77,7 +79,8 @@ const essentialCssSelectors = [
     ".result-status.errou", "body.modal-open .page-content", ".modal", ".autocomplete-active",
     ".history-modal-content", ".history-calendar-grid", ".history-day-cell.is-complete",
     ".history-day-cell.is-today", ".history-day-cell.is-selected", ".history-day-summary",
-    ".history-mode-summary", ".history-overall-progress.is-complete", ".history-no-record"
+    ".history-mode-summary", ".history-overall-progress.is-complete", ".history-no-record",
+    ".final-result-modal-content", ".final-result-pending-mode", ".final-result-complete-day"
 ];
 
 const decorativeClasses = [

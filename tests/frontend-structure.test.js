@@ -74,7 +74,7 @@ test("estados estruturais dos quatro modos têm contrato CSS", () => {
 });
 
 test("modais preservam semântica e bloqueio de scroll", () => {
-    for (const id of ["photoTutorialModal", "integratedStatsModal", "historyModal", "howToPlayModal"]) {
+    for (const id of ["photoTutorialModal", "integratedStatsModal", "historyModal", "howToPlayModal", "finalResultModal"]) {
         const tag = html.match(new RegExp(`<[^>]+id=["']${id}["'][^>]*>`, "i"))?.[0] || "";
         assert.match(tag, /role=["']dialog["']/i, id);
         assert.match(tag, /aria-modal=["']true["']/i, id);
@@ -82,6 +82,25 @@ test("modais preservam semântica e bloqueio de scroll", () => {
     }
     assert.ok(script.includes('classList.add("modal-open")'));
     assert.ok(script.includes('classList.remove("modal-open")'));
+});
+
+test("Fase C usa um único overlay final acessível e responsivo", () => {
+    const modal = html.match(/<div id="finalResultModal"[^>]*>/)?.[0] || "";
+    assert.match(modal, /role="dialog"/);
+    assert.match(modal, /aria-modal="true"/);
+    assert.match(modal, /aria-labelledby="finalResultTitle"/);
+    assert.match(html, /id="finalResultTitle"[^>]*tabindex="-1"/);
+    assert.match(cssRule(".final-result-modal-content"), /width:\s*min\(700px/);
+    assert.match(cssRule(".final-result-modal-content"), /max-height:\s*min\(calc\(100dvh - 32px\),\s*760px\)/);
+    assert.match(cssRule(".final-result-close"), /width:\s*44px/);
+    assert.match(cssRule(".final-result-close"), /height:\s*44px/);
+    assert.match(cssRule(".final-result-scroll"), /overflow-y:\s*auto/);
+    assert.match(cssRule(".final-result-pending-modes"), /repeat\(auto-fit,\s*minmax\(150px,\s*1fr\)\)/);
+    assert.match(css, /@media\s*\(max-width:\s*640px\)[\s\S]*?\.final-result-pending-modes\s*\{[\s\S]*?grid-template-columns:\s*1fr/);
+    assert.equal((html.match(/id="finalResultModal"/g) || []).length, 1);
+    for (const tipo of ["classic", "photo", "moreLess", "lineup"]) {
+        assert.ok(script.includes(`abrirResultadoFinal("${tipo}")`), tipo);
+    }
 });
 
 test("Histórico preserva modal, calendário e estados acessíveis", () => {

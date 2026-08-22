@@ -3101,7 +3101,7 @@ Próximo passo:
 
 ## v3.0 — UX & VISUAL POLISH
 
-**Status: EM ANDAMENTO — FASE A CONCLUÍDA / FASE B CONCLUÍDA / FASE C NÃO INICIADA**
+**Status: EM ANDAMENTO — FASE A CONCLUÍDA / FASE B CONCLUÍDA / FASE C CONCLUÍDA / FASE D NÃO INICIADA**
 
 Objetivo:
 - refinar hierarquia, clareza, simplicidade, consistência e conforto responsivo sem
@@ -3155,7 +3155,7 @@ Estado das fases:
   navegação, cabeçalhos dos modos, buscas e comportamento sticky responsivo;
 - [x] **Fase B — CONCLUÍDA — Home:** informação diária
   simplificada, quatro modos priorizados, jornada pessoal separada e desktop ampliado;
-- [ ] **Fase C — NÃO INICIADA — resultados finais e continuidade do dia:** linguagem compartilhada de
+- [x] **Fase C — CONCLUÍDA — resultados finais e continuidade do dia:** linguagem compartilhada de
   conclusão, métrica principal, compartilhar, retorno à Home e acesso aos modos ainda
   não concluídos;
 - [ ] **Fase D — PLANEJADA — modos:** Clássico, Foto, Mais ou Menos e Onze Inicial em pequenas
@@ -3834,3 +3834,348 @@ Pendências:
 Próximo passo:
 - iniciar a Fase C somente em tarefa própria, partindo do checkpoint de encerramento da
   Fase B.
+
+
+## 22/08/2026 — v3.0 Fase C: auditoria e especificação dos resultados finais
+
+**Status: ESPECIFICAÇÃO APROVADA — IMPLEMENTAÇÃO REGISTRADA NA ETAPA SEGUINTE**
+
+### Comportamento atual auditado
+
+Clássico:
+- conclui somente ao acertar o jogador; possui vitória, mas não derrota nem limite de
+  tentativas;
+- depois do flip final, salva `status: won`, sincroniza o histórico/progresso, atualiza a
+  estatística legada e, 400 ms depois, exibe mensagem integrada com a resposta e confete;
+- mostra quantidade de tentativas apenas no texto compartilhado, não como métrica visual;
+- possui Compartilhar próprio (`compartilharResultado`) com Web Share, clipboard e `alert`
+  como último recurso;
+- tabuleiro e tentativas permanecem visíveis; busca fica inativa; timer do cabeçalho continua;
+- não há modal/overlay; o retorno à Home usa o Voltar do cabeçalho;
+- ao reabrir ou recarregar, restaura tentativas e reapresenta mensagem/botão sem confete.
+
+Foto:
+- conclui ao acertar (`won`) ou consumir a sexta tentativa (`lost`);
+- salva o estado e sincroniza histórico antes de revelar a foto e a mensagem integrada com
+  a resposta; confete ocorre somente na vitória imediata;
+- cabeçalho mostra tentativas durante o jogo e passa a mostrar `Próximo em` após conclusão;
+- foto, dots e lista de tentativas permanecem visíveis; busca fica desabilitada;
+- não possui botão, função nem formato de compartilhamento individual atualmente;
+- não há modal/overlay; o retorno à Home usa o Voltar do cabeçalho;
+- ao reabrir ou recarregar, restaura vitória/derrota, foto revelada, tentativas e mensagem,
+  sem confete.
+
+Mais ou Menos:
+- conclui obrigatoriamente após 10 rodadas; vence com pelo menos 7 acertos e perde abaixo
+  dessa meta;
+- na rodada 10, revela comparação e feedback temporário, salva `won`/`lost` e sincroniza o
+  histórico imediatamente; após `ATRASO_AVANCO_MM` (1,5 s), substitui o jogo pelo resultado;
+- resultado atual é um card integrado com vitória/derrota, `X/10`, meta atingida/faltante e
+  aviso de novo desafio à meia-noite; o card da rodada é ocultado;
+- não possui botão, função nem formato de compartilhamento individual atualmente;
+- não há countdown numérico nem modal; o retorno à Home usa o Voltar do cabeçalho;
+- ao sair, o timer transitório é cancelado; ao reabrir ou recarregar concluído, o card final
+  aparece imediatamente, sem repetir feedback de 1,5 s ou confete.
+
+Onze Inicial:
+- conclui quando os 3 jogadores ocultos são descobertos; não possui derrota global;
+- salva `etapa: concluido`, `concluido: true`, nomes e erros antes de renderizar o card final
+  e disparar confete;
+- resultado integrado mostra placar real, palpite e seu status, `3/3`, erros, nomes errados,
+  countdown para o próximo desafio e Compartilhar;
+- possui Compartilhar próprio (`compartilharResultadoEscalacao`) com Web Share, clipboard e
+  fallback via `execCommand`;
+- partida, resultado do placar, campo completo e dica permanecem visíveis; busca desabilitada;
+- não há modal/overlay; o retorno à Home usa o Voltar do cabeçalho;
+- ao reabrir ou recarregar, restaura todo o estado e o card final, sem confete.
+
+### Inconsistências confirmadas
+
+- os quatro finais usam estruturas, títulos, métricas e densidades diferentes;
+- somente Clássico e Onze Inicial oferecem compartilhamento individual;
+- somente Onze Inicial inclui countdown no resultado; Clássico mantém timer no cabeçalho,
+  Foto converte o contador de tentativas, e Mais ou Menos usa apenas texto estático;
+- nenhum final oferece continuidade direta para modos pendentes ou Voltar à Home dentro do
+  próprio resultado;
+- Clássico e Foto acrescentam mensagem ao conteúdo; Mais ou Menos substitui seu card; Onze
+  Inicial acrescenta um resumo muito mais detalhado;
+- as respostas secretas do modo concluído são reveladas corretamente, mas a camada comum
+  futura não deve replicá-las nem consultar conteúdo de outros desafios.
+
+### Arquitetura recomendada
+
+Escolha: **overlay modal sobre a tela do modo**, compartilhado pelos quatro resultados.
+
+- modal central clássico: claro e acessível, mas isolado demais e propenso a aparência
+  genérica se tratado como infraestrutura utilitária comum;
+- overlay sobre o modo: mantém o contexto reconhecível atrás, dá hierarquia forte e permite
+  uma composição responsiva única com risco técnico moderado;
+- resultado integrado: menor risco inicial, porém mantém inconsistências, exige rolagem até
+  o final em alguns modos e não resolve foco/continuidade de forma uniforme.
+
+O overlay recomendado deve reutilizar `abrirModalAcessivel`, `fecharModalAcessivel`,
+`prenderFocoNoModal` e o bloqueio `modal-open`, ampliando a lista de modais reconhecidos em
+vez de criar uma segunda infraestrutura. A camada é somente apresentação: recebe o modo
+concluído e deriva todo o restante dos saves/histórico existentes.
+
+Estrutura visual proposta:
+- kicker com o nome do modo;
+- resultado dominante: `GANHOU`, `PERDEU` ou `CONCLUÍDO`;
+- uma métrica principal;
+- no máximo uma informação secundária segura;
+- Compartilhar quando houver ação individual definida;
+- `AINDA FALTA CONCLUIR` com ações compactas de modos pendentes;
+- `VOLTAR À HOME` como ação persistente;
+- botão Fechar monocromático; preto/superfície escura, branco para conteúdo, dourado para
+  conquista/ação/4/4 e verde/vermelho apenas como acento de resultado.
+
+### Contrato de resultado por modo
+
+- Clássico: `GANHOU`; métrica `X tentativa(s)`; nenhuma derrota inventada.
+- Foto: `GANHOU` ou `PERDEU`; métrica `X / 6` com label `TENTATIVAS`.
+- Mais ou Menos: `GANHOU` ou `PERDEU`; métrica `X / 10 ACERTOS`; meta de 7 apenas como
+  informação secundária quando útil.
+- Onze Inicial: `CONCLUÍDO`; métrica `3 / 3 JOGADORES`; `X erro(s)` secundário; `PLACAR
+  EXATO` somente quando verdadeiro. O overlay não deve listar nomes errados nem repetir o
+  placar completo como métrica dominante.
+
+### Continuidade e estado 4/4
+
+- fonte única: `obterProgressoDiario()` após o save final já ter chamado
+  `sincronizarProgressoDiario()`;
+- excluir o modo recém-concluído e qualquer modo já concluído;
+- incluir somente modos `started: false` (`NÃO INICIADO`) ou iniciados e incompletos
+  (`EM ANDAMENTO`), mostrando apenas nome e estado, sem spoilers;
+- ações devem acionar os mesmos botões/listeners atuais (`btnPlayDiario`, `btnPlayFoto`,
+  `btnPlayMaisMenos`, `btnPlayEscalacao`) depois de fechar o overlay e ocultar a view de
+  origem; não duplicar inicialização de modo;
+- em 4/4, substituir toda a continuidade por `TIMÃODLE DO DIA COMPLETO` e `4 / 4`, mantendo
+  Compartilhar individual disponível quando existir e Voltar à Home;
+- a Home continua sendo atualizada por `renderizarProgressoHome()` e preserva a regra da
+  Fase B que oculta `Jogue Hoje` em 4/4.
+
+### Compartilhamento
+
+- reutilizar sem alteração `compartilharResultado` no Clássico e
+  `compartilharResultadoEscalacao` no Onze Inicial;
+- Foto e Mais ou Menos não possuem compartilhamento individual para reutilizar. Antes da
+  implementação, decidir explicitamente se a Fase C autoriza criar formatos próprios e
+  seus testes; até essa decisão, o overlay desses modos não deve exibir uma ação falsa ou
+  reutilizar o compartilhamento diário 4/4 como substituto;
+- não alterar os textos existentes de Clássico, Onze Inicial ou Compartilhar Dia.
+
+### Fechamento, F5 e persistência
+
+- adotar Fechar e Escape. O overlay não é obrigatório: fechar devolve ao resultado estático
+  já existente do modo, preservando contexto e acesso ao Voltar do cabeçalho;
+- clique no backdrop pode fechar se mantiver o padrão dos modais atuais; não deve concluir,
+  desfazer ou alterar qualquer estado;
+- foco inicial recomendado: título/contêiner do resultado (`tabindex="-1"`), para anunciar
+  o resultado antes das ações; alternativa aceitável é Compartilhar somente após o título
+  estar associado corretamente;
+- ao fechar, devolver foco ao elemento seguro definido pela abertura; se o disparador era
+  um campo agora desabilitado, usar o Voltar do modo como fallback;
+- estratégia recomendada para reabertura: **B — mostrar automaticamente somente na
+  conclusão imediata**. Ao entrar novamente em modo concluído ou após F5, manter o resultado
+  estático atual sem reabrir o overlay; isso evita interrupção repetitiva e não exige salvar
+  um novo flag de apresentação;
+- o overlay nunca é persistido nem autoridade do resultado. Save e histórico precisam estar
+  concluídos antes de sua abertura, como já ocorre nos quatro fluxos atuais;
+- F5 durante o overlay equivale a reabrir o modo concluído: restaura o resultado estático,
+  não o overlay.
+
+### Ordem de interações específicas
+
+- Clássico: terminar flip → salvar vitória/sincronizar → atualizar estatística → renderizar
+  resultado estático → abrir overlay/confete uma única vez na conclusão imediata;
+- Foto: salvar tentativa → salvar `won`/`lost` e sincronizar → revelar foto/renderizar
+  mensagem → abrir overlay; confete somente na vitória, preservando a regra atual;
+- Mais ou Menos: salvar rodada 10 e sincronizar → manter feedback visual de 1,5 s →
+  renderizar resultado estático → abrir overlay. Nunca sobrepor o novo resultado ao feedback
+  temporário nem criar segundo timer; duplo clique continua bloqueado por
+  `transicaoMMAtiva` e botões desabilitados;
+- Onze Inicial: salvar conclusão/sincronizar → completar campo e card estático → abrir
+  overlay/confete. O countdown permanece no resultado estático por compatibilidade, mas não
+  deve ocupar a métrica dominante do overlay; pode ser omitido da nova camada.
+
+### Acessibilidade e responsividade especificadas
+
+- `role="dialog"`, `aria-modal="true"`, `aria-labelledby` apontando para título único e
+  descrição/métrica associada quando útil;
+- foco inicial anunciado, focus trap, Escape, botão Fechar de 44×44, retorno de foco seguro,
+  ordem de Tab: Fechar → Compartilhar → modos pendentes → Voltar à Home;
+- não usar `aria-live` no overlay inteiro em conjunto com movimento de foco; manter live
+  regions atuais somente para feedback transitório e evitar anúncio duplicado;
+- desktop: largura intermediária aproximada de 560–680 px, sem tela cheia, backdrop que
+  preserve a leitura do modo e até três ações pendentes em grade compacta;
+- mobile: uma coluna, gutters mínimos de 16 px, ações com pelo menos 44 px e resultado/
+  Compartilhar no primeiro bloco visual;
+- em 412×600, limitar altura ao viewport dinâmico e permitir scroll interno somente no corpo
+  de continuidade; cabeçalho do resultado e ações principais devem permanecer acessíveis;
+- validar 360×800, 390×844, 412×915, 430×932, 480×900, 412×600, 1366×768,
+  1440×900 e 1920×1080 sem overflow horizontal.
+
+### Riscos e decisões pendentes
+
+- alto: abrir o overlay antes do save/histórico produzir continuidade ou 4/4 obsoleto;
+- alto: criar compartilhamentos de Foto/MM sem aprovação de formato e alterar contrato de
+  texto fora do escopo;
+- médio: transição do MM competir com o overlay se o timer de 1,5 s não for respeitado;
+- médio: foco retornar a busca desabilitada ou a uma view ocultada ao trocar de modo/Home;
+- médio: listeners de navegação atuais esperam partir da Home; a implementação deve fechar
+  overlay, normalizar views e então reutilizar os listeners sem duplicar inicialização;
+- médio: resultados estáticos e overlay anunciarem conteúdo duas vezes para leitor de tela;
+- baixo: countdown do Onze Inicial competir visualmente com a nova métrica;
+- baixo: modal longo em 412×600 exigir scroll interno bem delimitado;
+- decisão necessária antes da implementação: formato e autorização de compartilhamento para
+  Foto e Mais ou Menos.
+
+Arquivos alterados nesta etapa:
+- somente `ROADMAP_TIMAODLE.md`;
+- HTML, CSS, JavaScript, JSONs, testes, saves, seeds, storage e mecânicas permaneceram
+  inalterados.
+
+Próximo passo:
+- aprovar esta especificação e decidir o compartilhamento de Foto/MM; somente depois dividir
+  a implementação da Fase C em entregas pequenas e testáveis.
+
+
+## 22/08/2026 — v3.0 Fase C: resultados finais e continuidade do dia
+
+**Status: CONCLUÍDA — VALIDAÇÃO MANUAL FINAL APROVADA**
+
+Arquitetura implementada:
+- um único overlay modal acessível atende Clássico, Foto, Mais ou Menos e Onze Inicial;
+- o overlay é somente uma camada de UX: saves, histórico, progresso e resultados estáticos
+  continuam sendo as fontes de verdade;
+- abre somente na conclusão imediata e não é persistido nem reaberto por F5/restauração;
+- reutiliza a infraestrutura existente de abertura/fechamento, focus trap, Escape, bloqueio
+  de scroll e retorno de foco.
+
+Resultados:
+- Clássico: `GANHOU` e `X TENTATIVA(S)`;
+- Foto: `GANHOU` ou `PERDEU` e `X / 6 TENTATIVAS`;
+- Mais ou Menos: `GANHOU` ou `PERDEU` e `X / 10 ACERTOS`;
+- Onze Inicial: `CONCLUÍDO`, `3 / 3 JOGADORES`, erros pluralizados e `PLACAR EXATO`
+  somente quando confirmado pelo estado atual;
+- resultados estáticos anteriores permanecem intactos sob o overlay.
+
+Continuidade e 4/4:
+- `obterProgressoDiario()` filtra o modo atual e todos os modos concluídos;
+- ações pendentes mostram somente nome e `NÃO INICIADO`/`EM ANDAMENTO`, sem respostas;
+- a navegação fecha o overlay e reutiliza os botões/listeners existentes dos quatro modos;
+- `VOLTAR À HOME` atualiza a Home e direciona foco para um alvo válido;
+- em 4/4, a lista pendente é substituída por `TIMÃODLE DO DIA COMPLETO` e `4 / 4`, sem
+  disparar uma segunda celebração diária.
+
+Compartilhamento:
+- Clássico preserva `compartilharResultado()` e seu formato atual;
+- Onze Inicial preserva `compartilharResultadoEscalacao()` e seu formato atual;
+- Foto ganhou texto compacto com número do desafio, vitória/derrota, `X/6`, grade sem nomes
+  e URL oficial;
+- Mais ou Menos ganhou texto compacto com número do desafio, vitória/derrota, `X/10`, grade
+  apenas de acerto/erro e URL oficial;
+- os dois novos formatos usam Web Share e fallback de clipboard/alert compartilhado;
+- testes impedem inclusão de jogador secreto, nomes tentados, sequência, jogadores ou
+  direções do Mais ou Menos.
+
+Ordem preservada:
+- Clássico salva/sincroniza, renderiza o resultado estático e só então abre o overlay;
+- Foto salva o resultado final, revela foto/mensagem e só então abre o overlay;
+- Mais ou Menos mantém integralmente o feedback de aproximadamente 1,5 s da rodada 10,
+  renderiza o card final e depois abre o overlay;
+- Onze Inicial salva/sincroniza, completa campo/card estático e depois abre o overlay; o
+  countdown permanece somente no resultado estático.
+
+Acessibilidade e responsividade:
+- `role="dialog"`, `aria-modal`, título associado, foco inicial no resultado, focus trap,
+  Escape, X e backdrop fecham sem alterar estado;
+- alvos interativos têm no mínimo 44 px e o retorno de foco usa Voltar, modo da Home ou
+  Compartilhar Dia como alvos seguros;
+- largura responsiva máxima de 640 px em desktop; mobile usa uma coluna e scroll interno
+  limitado por `100dvh`, incluindo o viewport baixo de 412×600;
+- não foi aplicado `aria-live` ao overlay inteiro, evitando anúncio duplicado.
+
+Testes adicionados:
+- novo `tests/final-result.test.js` cobre continuidade, estados não iniciado/em andamento,
+  4/4, formatos Foto/MM, anti-spoiler, abertura imediata e controles compartilhados;
+- contrato estrutural cobre IDs únicos, modal único, semântica, foco, 44×44, largura,
+  scroll interno e integração dos quatro modos;
+- checklist visual cobre overlay, continuidade, 4/4 e restauração após F5.
+
+Regressão executada:
+- `node tests/run-tests.js` — aprovado: storage A–X, 39 regras de jogo, 118 cenários de
+  histórico, 7 cenários de resultado e 40 cenários estruturais com 167 IDs;
+- `node tests/storage.test.js` e `node tests/history-calendar.test.js` — aprovados;
+- `node --check script.js` e `node --check storage-normalizers.js` — aprovados;
+- `git diff --check` — aprovado, somente avisos LF/CRLF;
+- JSONs permaneceram fora do diff; seeds, formatos de save, normalizadores, histórico e
+  Home da Fase B não foram alterados;
+- `node tests/viewport-smoke.js` foi executado, mas ignorado porque o navegador headless
+  não iniciou o processo GPU neste ambiente.
+
+Checklist manual pendente:
+- concluir cada modo em vitória/derrota aplicável e validar overlay, Compartilhar, Fechar,
+  Escape, backdrop, Home e cada destino pendente;
+- validar estados mistos e 4/4, inclusive ausência de spoilers e de celebração duplicada;
+- concluir, atualizar por F5 e reabrir para confirmar somente o resultado estático;
+- mobile 360×800, 390×844, 412×915, 430×932, 480×900 e 412×600;
+- desktop 1366×768, 1440×900 e 1920×1080;
+- teclado, foco inicial/retorno, focus trap, scroll interno e ausência de overflow.
+
+Arquivos alterados:
+- `index.html`, `style.css`, `script.js`, `ROADMAP_TIMAODLE.md`;
+- `tests/final-result.test.js`, `tests/run-tests.js`, `tests/frontend-contract.js`,
+  `tests/frontend-structure.test.js` e `tests/visual-checklist.md`.
+
+Pendências:
+- nenhuma pendência da Fase C;
+- Fase D não iniciada.
+
+Próximo passo:
+- validar manualmente a Fase C; somente após aprovação criar checkpoint e planejar a Fase D
+  em tarefa separada.
+
+
+## 22/08/2026 — v3.0 Fase C: proporcionalidade desktop da continuidade
+
+**Status: CONCLUÍDA — VALIDAÇÃO MANUAL FINAL APROVADA**
+
+Validação recebida:
+- arquitetura, hierarquia, cores, comportamento, desktop e mobile da implementação inicial
+  foram aprovados;
+- o único refinamento solicitado foi a proporcionalidade horizontal das ações pendentes em
+  desktop e um ganho moderado de largura útil.
+
+Implementado:
+- o overlay desktop passou de 640 px para largura máxima externa de 700 px, oferecendo
+  aproximadamente 620–640 px úteis sem alterar altura, backdrop ou comportamento;
+- a grade desktop usa `repeat(auto-fit, minmax(150px, 1fr))`: duas ações dividem a linha e
+  três ações ocupam três colunas equilibradas;
+- uma ação isolada é limitada a 280 px para não se esticar de forma desproporcional;
+- até 640 px, as ações voltam obrigatoriamente para uma coluna e a ação isolada usa 100%,
+  preservando o mobile aprovado e evitando compressão em larguras intermediárias;
+- nomes, estados, clique, navegação, foco, overlay, resultados, compartilhamentos, F5,
+  saves, histórico, 4/4 e resultados estáticos não mudaram;
+- nenhum HTML ou JavaScript foi alterado neste refinamento.
+
+Proteção estrutural:
+- o contrato verifica largura máxima de 700 px, grade `auto-fit/minmax` e retorno a uma
+  coluna no breakpoint de 640 px, sem snapshot visual rígido.
+
+Validação manual final aprovada:
+- estados `GANHOU`, `PERDEU` e `CONCLUÍDO`;
+- continuidade com 1, 2 e 3 modos pendentes;
+- estado diário 4/4;
+- viewport mobile 412×600;
+- restauração após F5 sem reabrir o overlay;
+- fechamento por Escape, botão X e backdrop;
+- retorno de foco seguro;
+- compartilhamentos individuais dos quatro modos.
+
+Pendências:
+- nenhuma pendência da Fase C;
+- Fase D não iniciada.
+
+Próximo passo:
+- criar o checkpoint de encerramento da Fase C; iniciar a Fase D somente em tarefa própria.

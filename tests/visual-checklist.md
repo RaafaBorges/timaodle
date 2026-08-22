@@ -13,6 +13,10 @@ Em cada largura:
 - [ ] Estatísticas, Histórico e Compartilhar Dia: posições, foco, abertura e estados corretos.
 - [ ] Home 4/4: `Jogue Hoje` ausente sem espaço residual; resumo, compartilhar, contexto e `Seu Timãodle` preservados.
 - [ ] Novo dia incompleto após 4/4: `Jogue Hoje` volta a aparecer com os quatro modos.
+- [ ] Overlay final nos quatro modos: resultado, métrica, Compartilhar, Home, Fechar e foco visíveis.
+- [ ] Continuidade: somente modos pendentes, estados corretos e navegação direta sem spoilers.
+- [ ] Overlay em 4/4: `Timãodle do dia completo`, 4/4 e nenhuma lista pendente.
+- [ ] F5 após conclusão: resultado estático restaurado e overlay não reaberto.
 - [ ] Clássico: busca/autocomplete; uma e várias tentativas; textos e títulos legíveis.
 - [ ] Foto: imagem, tutorial, autocomplete e lista de tentativas.
 - [ ] Mais ou Menos: rodada, botões, overlay e resultado final.

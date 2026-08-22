@@ -600,6 +600,35 @@
         </div>
     </div>
 
+    <div id="finalResultModal" class="modal final-result-modal hidden" role="dialog" aria-modal="true"
+        aria-labelledby="finalResultTitle" aria-describedby="finalResultMetric">
+        <div class="modal-content final-result-modal-content">
+            <button id="finalResultCloseBtn" class="final-result-close" type="button"
+                aria-label="Fechar resultado">×</button>
+            <div class="final-result-scroll">
+                <span id="finalResultMode" class="final-result-mode">TIMÃODLE</span>
+                <h2 id="finalResultTitle" class="final-result-title" tabindex="-1">RESULTADO</h2>
+                <p id="finalResultMetric" class="final-result-metric">—</p>
+                <p id="finalResultSecondary" class="final-result-secondary hidden"></p>
+
+                <button id="finalResultShareBtn" class="final-result-primary" type="button">COMPARTILHAR</button>
+
+                <section id="finalResultPending" class="final-result-pending" aria-labelledby="finalResultPendingTitle">
+                    <h3 id="finalResultPendingTitle">AINDA FALTA CONCLUIR</h3>
+                    <div id="finalResultPendingModes" class="final-result-pending-modes"></div>
+                </section>
+
+                <section id="finalResultCompleteDay" class="final-result-complete-day hidden"
+                    aria-labelledby="finalResultCompleteDayTitle">
+                    <span id="finalResultCompleteDayTitle">TIMÃODLE DO DIA COMPLETO</span>
+                    <strong>4 / 4</strong>
+                </section>
+
+                <button id="finalResultHomeBtn" class="final-result-home" type="button">VOLTAR À HOME</button>
+            </div>
+        </div>
+    </div>
+
     <script src="storage-normalizers.js"></script>
     <script src="script.js"></script>
 </body>
