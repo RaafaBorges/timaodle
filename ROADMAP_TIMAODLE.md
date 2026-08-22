@@ -3101,7 +3101,7 @@ Próximo passo:
 
 ## v3.0 — UX & VISUAL POLISH
 
-**Status: EM ANDAMENTO — FASE A CONCLUÍDA / FASE B CONCLUÍDA / FASE C CONCLUÍDA / FASE D CONCLUÍDA / FASE E CONCLUÍDA / FASE F NÃO INICIADA**
+**Status: CONCLUÍDA — FASES A, B, C, D, E E F CONCLUÍDAS / VALIDAÇÃO FINAL APROVADA**
 
 Objetivo:
 - refinar hierarquia, clareza, simplicidade, consistência e conforto responsivo sem
@@ -3162,7 +3162,7 @@ Estado das fases:
   entregas independentes;
 - [x] **Fase E — CONCLUÍDA — Histórico e Estatísticas:** E.1, E.2, E.3, E.4 e E.5 concluídas; validação manual final aprovada; divulgação progressiva e níveis de métricas,
   preservando todos os dados;
-- [ ] **Fase F — PLANEJADA — validação final:** navegador real nos viewports definidos, teclado,
+- [x] **Fase F — CONCLUÍDA — validação final:** navegador real nos viewports definidos, teclado,
   reduced motion, overflow, contraste e regressão integral.
 
 Objetivos consolidados da Fase B — Home:
@@ -5362,3 +5362,217 @@ Preservado:
 
 Próximo passo:
 - v3.0 — Fase F: validação final, somente em tarefa própria.
+
+## 22/08/2026 — v3.0 Fase F: primeira auditoria final e hardening
+
+**Status: AUDITORIA FINAL EM ANDAMENTO — NENHUMA CORREÇÃO IMPLEMENTADA**
+
+Diagnóstico geral:
+- checkpoint inicial `be9b9b8` confirmado em `main`, com working tree limpo e cinco commits
+  locais à frente de `origin/main`;
+- integração completa da Home, quatro modos, overlay final, compartilhamentos, Estatísticas,
+  Histórico, persistência, acessibilidade e movimento reduzido passou na suíte permanente;
+- nenhum problema funcional, regressão importante ou falha crítica de acessibilidade foi
+  identificado na auditoria automatizada e estática;
+- nenhuma alteração de produção foi realizada nesta primeira rodada da Fase F.
+
+Áreas revalidadas:
+- Home preserva estados 0/4–4/4, `JOGUE HOJE`, grade responsiva, resumo diário, Compartilhar
+  Dia e seção Seu Timãodle com streak, recorde, Estatísticas e Histórico;
+- Clássico preserva sorteio determinístico, autocomplete, oito atributos, setas, zero/null,
+  vitória, resultado, compartilhamento, persistência, desktop de oito colunas e mobile sticky;
+- Foto preserva dificuldade, progressão/contraste, seis tentativas, vitória/derrota, dots,
+  lista, resultado estático/overlay, compartilhamento, F5, anti-spoiler e movimento reduzido;
+- Mais ou Menos preserva snapshot, dez rodadas, plano 3/4/3, neutralidade inicial,
+  feedback/empate, atraso funcional de 1500 ms, meta sete, resultados e reentrada;
+- Onze Inicial preserva nove partidas com IDs únicos, onze titulares, três ocultos,
+  coordenadas, busca, erros, 3/3, placar exato, countdown, compartilhamento, save e migração;
+- Palmeiras 2011 preserva Paulo André como ZAG, Liedson como ATA, Wallace como VOL e Willian
+  como ATA; Wallace continua Zagueiro no banco, como identidade geral distinta da função na
+  partida;
+- overlay final preserva GANHOU/PERDEU/CONCLUÍDO, continuidade com um a três modos, estados
+  em andamento/não iniciado, 4/4, compartilhar, Home, fechar, Escape, backdrop, focus trap,
+  retorno de foco e regra de não reabrir após F5;
+- builders de compartilhamento e fallbacks permanecem cobertos para os quatro modos e o dia,
+  com pluralização, feedback e anti-spoiler;
+- Estatísticas preserva hierarquia global, zero real, estados sem amostra, quatro modos,
+  details fechados, 21 categorias e scroll;
+- Histórico preserva tracking, limites, semana iniciada na segunda, sete estados, legenda,
+  hoje/seleção, detalhe, exactScore, streak histórico e allowlist segura;
+- teclado do calendário preserva setas, Home/End, PageUp/PageDown, Enter, Espaço, foco
+  separado da seleção e cruzamento de mês/ano;
+- persistência preserva saves legados/atuais, F5, histórico integrado, trackingStartedAt,
+  completionCelebrated, snapshot MM, lineup, progresso e streak;
+- simulações de datas e contratos existentes preservam novo dia, escolha diária, histórico
+  anterior, sequência, snapshots e ausência de overlays persistidos.
+
+Dados e conteúdo:
+- três JSONs válidos e inalterados;
+- 157 jogadores, 157 nomes únicos, jogos numéricos/finitos e somente três assistências `null`
+  historicamente justificadas: Lucca, Marinho e Uendel;
+- 157 nomes no manifesto e 157 JPEGs físicos, cobertura 100%, sem entrada duplicada, slug em
+  colisão, arquivo ausente/órfão ou conteúdo fotográfico duplicado;
+- nove partidas com nove IDs únicos, onze titulares por partida e coordenadas numéricas;
+- Paulo André, Willian, William e Wallace possuem registros e slugs únicos; `willian.jpg` e
+  `william.jpg` permanecem distintos e coerentes com Willian Bigode e William Machado.
+
+Acessibilidade, responsividade e robustez:
+- contratos preservam dialogs, foco visível, touch targets, focus trap, retorno de foco,
+  combobox/listbox, aria-current, aria-selected, aria-pressed, headings e feedback textual
+  independente de cor;
+- bloco único de `prefers-reduced-motion` continua impedindo confete/transições decorativas
+  sem retirar feedback, mantendo o atraso funcional MM de 1500 ms;
+- CSS balanceado, 168 IDs únicos e classes dinâmicas protegidas; nenhum seletor órfão ou
+  override contraditório com impacto concreto foi encontrado;
+- JavaScript sem erro sintático, referência literal a ID inexistente, controle DEV,
+  `localStorage.clear()` ou resposta secreta em console; listeners/builders/timeouts revisados
+  sem duplicação ou vazamento concreto identificado;
+- conteúdo variável de interação usa leitura normalizada e/ou `textContent`; usos de
+  `innerHTML` restantes são templates controlados ou dados locais confiáveis já cobertos;
+- Estatísticas percorre apenas o histórico necessário, calendário renderiza somente um mês,
+  details não cria listeners e nenhum problema concreto de performance foi observado.
+
+Testado:
+- `node tests/run-tests.js`: storage A–X, 39 cenários de regras e 180 datas MM, 118 cenários
+  históricos, 13 de resultado final, cinco de movimento reduzido e 44 estruturais aprovados;
+- `node tests/storage.test.js` e `node tests/history-calendar.test.js` aprovados isoladamente;
+- `node --check script.js`, `node --check storage-normalizers.js` e `git diff --check`
+  aprovados;
+- smoke responsivo: **SKIP — ambiente incompatível**, pois Chrome/Edge headless continua
+  indisponível pelo processo GPU;
+- inspeção estática dos viewports e contratos concluída; navegação visual real nos viewports
+  prioritários continua reservada à validação manual final.
+
+Achados por prioridade:
+- **P0:** nenhum;
+- **P1:** nenhum;
+- **P2:** nenhum;
+- **P3:** documentação técnica histórica em `tests/frontend-contract.md` contém descrições
+  anteriores à v3.0 — por exemplo, quatro colunas gerais nas Estatísticas e limites antigos
+  do Onze Inicial; não afeta execução ou testes, deve ser sincronizada em uma tarefa curta
+  antes do fechamento documental definitivo ou registrada para manutenção futura.
+
+Pendências históricas não bloqueantes:
+- smoke headless continua indisponível pelo processo GPU do ambiente;
+- validação com leitor de tela real permanece recomendada, embora contratos de teclado/ARIA
+  estejam aprovados;
+- assistências de Lucca, Marinho e Uendel permanecem `null` pelas justificativas históricas
+  já documentadas, sem relação com a v3.0;
+- semântica histórica residual de `local_tag` permanece fora do escopo enquanto não houver
+  definição formal;
+- microdetalhes visuais antigos não foram promovidos a problema sem regressão observável.
+
+Decisão provisória de release:
+- **A — v3.0 PRONTA PARA FECHAMENTO**, condicionada somente à validação manual final nos
+  viewports e fluxos prioritários; nenhum P0, P1 ou P2 exige correção;
+- o P3 documental não bloqueia release e não autoriza mudança nesta auditoria.
+
+Próximo passo:
+- executar validação manual integrada em 412×600, 412×915 e 1440×900, percorrendo o fluxo
+  Home → quatro modos → overlays → 4/4 → compartilhar → Estatísticas → Histórico;
+- decidir em tarefa posterior se o P3 documental será corrigido antes do checkpoint final;
+- não marcar a v3.0 como concluída nem iniciar v3.1 nesta etapa.
+
+## 22/08/2026 — v3.0 Fase F.1: preparação da validação manual integrada final
+
+**Status: CONCLUÍDA — VALIDAÇÃO MANUAL INTEGRADA FINAL APROVADA**
+
+Estado aprovado:
+- auditoria técnica da Fase F aprovada;
+- decisão provisória mantida em **A — v3.0 PRONTA PARA FECHAMENTO**;
+- nenhum P0, P1 ou P2 conhecido;
+- P3 de descrições antigas em `tests/frontend-contract.md` aceito como backlog futuro não
+  bloqueante e deliberadamente não corrigido nesta etapa;
+- Fase F permanece em auditoria final e a v3.0 ainda não foi marcada como concluída.
+
+Matriz manual prioritária:
+- viewports obrigatórios: 412×600, 412×915 e 1440×900;
+- verificação complementar rápida: 360×800, 480×900 e 1920×1080;
+- fluxo principal: Home → concluir quatro modos usando a continuidade dos overlays → 4/4 →
+  Home → Compartilhar Dia → Estatísticas → Histórico → reentrada nos modos concluídos;
+- Home: 0/4, parcial, 4/4, visibilidade de `JOGUE HOJE`, grade, contexto diário, Seu Timãodle
+  e Compartilhar Dia;
+- Clássico: oito propriedades, setas, textos longos, sticky em 412×600, resultado, overlay,
+  compartilhar, F5 e reentrada;
+- Foto: fotografia dominante, dificuldade, blur/contraste, busca, progresso, dots, lista,
+  vitória/derrota, ambos os compartilhamentos, F5 e reentrada;
+- Mais ou Menos: ações neutras antes da escolha, feedback/empate, dez segmentos, meta,
+  resultado, overlay, compartilhar, F5 e reentrada;
+- Onze Inicial: contexto, placar, X/3, FALTAM, campo, linhas de quatro, nomes longos, busca,
+  Fora/erros, 3/3, countdown, overlay, compartilhar, F5 e ausência de sobreposição;
+- overlay: GANHOU, PERDEU, CONCLUÍDO, três/dois/um pendentes, 4/4, compartilhar, Home, fechar,
+  Escape, backdrop, foco e scroll;
+- Estatísticas: hierarquia geral, quatro modos, details fechados/abertos, distribuições,
+  estado vazio, teclado e scroll mobile;
+- Histórico: estados do calendário, legenda, hoje/seleção, detalhe, streak, navegação mensal,
+  teclado e scroll mobile;
+- teclado geral: Tab, Shift+Tab, Enter, Espaço e Escape; calendário também com setas,
+  Home/End, PageUp/PageDown e seleção explícita;
+- movimento reduzido: ausência de confete/transições decorativas, Foto funcional, feedback
+  íntegro e atraso MM de 1500 ms;
+- persistência: F5 durante jogo e após conclusão, reentrada, Home/Estatísticas/Histórico após
+  recarga, resultado estático e compartilhamento disponíveis, overlay sem reabertura.
+
+Critério de aprovação:
+- nenhum P0 ou P1 novo;
+- nenhum overflow ou sobreposição funcional;
+- jornada 0/4–4/4, persistência, overlays, Estatísticas, Histórico e teclado básico funcionais;
+- qualquer P2 deve ser avaliado individualmente; P3 não bloqueia.
+
+Limitações aceitas:
+- smoke headless indisponível pelo processo GPU;
+- leitor de tela real não executado neste ambiente;
+- P3 documental, três assistências historicamente desconhecidas e semântica residual de
+  `local_tag` permanecem backlog não bloqueante;
+- nenhum viewport foi declarado visualmente validado por automação ou inspeção estática.
+
+Nesta preparação:
+- nenhum arquivo de produção, teste, JSON ou contrato foi alterado;
+- somente o roadmap recebeu o roteiro de validação;
+- nenhum commit e nenhum push foram realizados.
+
+Próximo passo:
+- executar a matriz em navegador real e registrar aprovação ou, se houver problema, viewport,
+  tela, reprodução, comportamento atual/esperado e prioridade antes de qualquer correção;
+- encerrar Fase F e v3.0 somente após aprovação manual explícita.
+
+## 22/08/2026 — Encerramento oficial da v3.0
+
+**Status: v3.0 CONCLUÍDA — AUDITORIA TÉCNICA E VALIDAÇÃO MANUAL FINAL APROVADAS**
+
+Fases concluídas:
+- Fase A — fundação visual;
+- Fase B — Home;
+- Fase C — resultados finais e continuidade;
+- Fase D — polimento dos quatro modos;
+- Fase E — Estatísticas e Histórico;
+- Fase F — validação final e hardening.
+
+Estado final do produto:
+- Home redesenhada e linguagem visual preto/branco/dourado consolidada;
+- Clássico, Foto, Mais ou Menos e Onze Inicial refinados e responsivos;
+- resultados finais, continuidade do dia, compartilhamento individual e Compartilhar Dia;
+- persistência, F5/reentrada, saves compatíveis, histórico e estatísticas integradas;
+- acessibilidade por teclado, dialogs, foco, retornos, autocompletes e movimento reduzido;
+- suíte automatizada, auditoria técnica e validação manual integrada final aprovadas.
+
+Qualidade final:
+- P0: nenhum encontrado;
+- P1: nenhum encontrado;
+- P2: nenhum bloqueante permanece;
+- P3 documental em `tests/frontend-contract.md` permanece backlog não bloqueante;
+- smoke headless permanece SKIP por incompatibilidade do processo GPU no ambiente;
+- validação futura com leitor de tela real permanece recomendação não bloqueante.
+
+Backlog não bloqueante preservado:
+- sincronizar descrições históricas residuais de `tests/frontend-contract.md`;
+- reavaliar smoke headless quando houver ambiente compatível;
+- executar validação futura com leitor de tela real;
+- manter documentados os três dados históricos de assistências ainda desconhecidos;
+- formalizar a semântica residual de `local_tag`, se necessário;
+- avaliar microajustes cosméticos somente em versão futura com escopo próprio.
+
+Decisão de release:
+- **A — v3.0 PRONTA E OFICIALMENTE CONCLUÍDA**;
+- nenhum item do backlog bloqueia a versão;
+- não iniciar Fase G, v3.1 ou nova rodada de redesign neste encerramento.
