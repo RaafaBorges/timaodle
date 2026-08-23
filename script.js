@@ -2430,9 +2430,9 @@ async function carregarManifestoFotos() {
 // qualquer palpite; cada palpite avança um nível). Blur reduzido em
 // relação à primeira versão — ficava difícil demais no início.
 const NIVEIS_FOTO = [
-    { blur: 14, gray: 100 },
-    { blur: 10, gray: 80 },
-    { blur: 7, gray: 60 },
+    { blur: 12, gray: 100 },
+    { blur: 8, gray: 80 },
+    { blur: 6, gray: 60 },
     { blur: 4, gray: 40 },
     { blur: 2, gray: 20 },
     { blur: 0, gray: 0 },
