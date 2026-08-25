@@ -5,6 +5,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const storage = require("../storage-normalizers.js");
 const core = require("../core.js");
+const historyStats = require("../history-stats.js");
 const { scriptSource, compileFunctions } = require("./script-harness.js");
 
 let scenarios = 0;
@@ -40,16 +41,11 @@ const emptyDay = () => ({
 const normalizedHistory = days => storage.normalizeHistory({ version: 1, days });
 
 function historyApi(history) {
-    return compileFunctions([
-        "calcularProgressoDoResumo", "indiceDiaCivil", "obterProgressoDiario",
-        "obterStreakGeral", "mediaHistorica", "percentualHistorico",
-        "numeroHistoricoValido", "obterEstatisticasIntegradas"
-    ], {
-        dataHistoricoValida: storage.validDate,
-        carregarHistorico: () => history,
-        criarResumoDiaVazio: emptyDay,
-        getDataLocalString: () => "2026-08-21"
-    });
+    return {
+        obterProgressoDiario: data => historyStats.obterProgressoHistorico(history, data),
+        obterStreakGeral: data => historyStats.calcularStreakGeral(history, data),
+        obterEstatisticasIntegradas: data => historyStats.calcularEstatisticasIntegradas(history, data)
+    };
 }
 
 function assertStreak(days, reference, expected) {

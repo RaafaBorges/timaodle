@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 const storage = require("../storage-normalizers.js");
 const core = require("../core.js");
+const historyStats = require("../history-stats.js");
 const { scriptSource, compileFunctions } = require("./script-harness.js");
 
 const TODAY = "2026-08-21";
@@ -41,18 +42,19 @@ function dayWithCompleted(count) {
     return day;
 }
 
-const calendar = { ...core, ...compileFunctions([
-    "calcularProgressoDoResumo", "dataNavegavelHistorico",
+const calendar = { ...core, ...historyStats, ...compileFunctions([
+    "dataNavegavelHistorico",
     "limitarDataNavegavelHistorico", "obterDataFocoSemanaHistorico",
     "obterDataFocoMesHistorico", "resolverNavegacaoTecladoHistorico",
     "compararMesesCivis", "obterLimitesMesesHistorico",
     "limitarMesAoHistorico", "obterNavegacaoMesHistorico", "obterEstadoDiaHistorico",
-    "obterResumoHistoricoDia", "obterSequenciaHistoricaDoDia", "gerarGradeMensalHistorico", "obterDataFocoInicialHistorico",
+    "gerarGradeMensalHistorico", "obterDataFocoInicialHistorico",
     "obterTabIndexDiaHistorico"
 ], {
     dataHistoricoValida: storage.validDate,
     getDataLocalString: () => TODAY,
     criarResumoDiaVazio: emptyDay,
+    calcularProgressoDoResumo: historyStats.calcularProgressoDoResumo,
     ...core
 }) };
 

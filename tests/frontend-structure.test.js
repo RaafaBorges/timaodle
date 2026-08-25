@@ -8,6 +8,7 @@ const contract = require("./frontend-contract.js");
 const root = path.join(__dirname, "..");
 const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
 const script = fs.readFileSync(path.join(root, "script.js"), "utf8");
+const historyStats = fs.readFileSync(path.join(root, "history-stats.js"), "utf8");
 const css = fs.readFileSync(path.join(root, "style.css"), "utf8");
 const partidas = JSON.parse(fs.readFileSync(path.join(root, "partidas.json"), "utf8"));
 
@@ -40,6 +41,14 @@ test("core clássico carrega antes do script principal", () => {
     const scriptIndex = html.indexOf('<script src="script.js"></script>');
     assert.ok(coreIndex >= 0);
     assert.ok(scriptIndex > coreIndex);
+});
+
+test("derivação histórica carrega entre core e script principal", () => {
+    const coreIndex = html.indexOf('<script src="core.js"></script>');
+    const historyStatsIndex = html.indexOf('<script src="history-stats.js"></script>');
+    const scriptIndex = html.indexOf('<script src="script.js"></script>');
+    assert.ok(historyStatsIndex > coreIndex);
+    assert.ok(scriptIndex > historyStatsIndex);
 });
 
 test("IDs literais usados por getElementById existem no HTML", () => {
@@ -175,14 +184,14 @@ test("Resumo histórico preserva quatro modos, progresso e estado sem registro",
         assert.ok(html.includes(`data-history-mode="${mode}"`), mode);
     }
     assert.ok(!htmlIdSet.has("historyDayPlaceholder"));
-    assert.ok(script.includes("function obterResumoHistoricoDia(data, historico)"));
+    assert.ok(historyStats.includes("function obterResumoHistoricoDia(data, historico)"));
     assert.ok(script.includes("historyClassicSummary.textContent = resumo.classic.statusText"));
     assert.ok(script.includes("historyPhotoSummary.textContent = resumo.photo.statusText"));
     assert.ok(script.includes("historyMoreLessSummary.textContent = resumo.moreLess.statusText"));
     assert.ok(script.includes("historyLineupSummary.textContent = resumo.lineup.statusText"));
     assert.ok(script.includes('historyLineupExactScore?.classList.toggle("hidden", !resumo.lineup.exactScore)'));
     assert.ok(script.includes('historyOverallProgress.classList.toggle("is-complete", resumo.complete)'));
-    assert.ok(script.includes("function obterSequenciaHistoricaDoDia(data, historico"));
+    assert.ok(historyStats.includes("function obterSequenciaHistoricaDoDia(data, historico"));
     assert.ok(script.includes('historyHistoricalStreak?.classList.toggle("hidden", !mostrarSequencia)'));
     assert.ok(script.includes("sequencia.throughSelectedDate"));
     for (const selector of [

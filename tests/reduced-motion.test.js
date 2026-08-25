@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const { scriptSource, compileFunctions } = require("./script-harness.js");
+const { calcularProgressoDoResumo } = require("../history-stats.js");
 
 const css = fs.readFileSync(path.join(__dirname, "..", "style.css"), "utf8");
 
@@ -40,7 +41,6 @@ test("preferência normal preserva o confete existente", () => {
 });
 
 test("conclusão 4/4 independe do confete", () => {
-    const { calcularProgressoDoResumo } = compileFunctions(["calcularProgressoDoResumo"]);
     const concluido = { started: true, completed: true };
     const progresso = calcularProgressoDoResumo({
         classic: concluido,
