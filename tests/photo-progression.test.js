@@ -19,7 +19,7 @@ assert.ok(levelsSource, "NIVEIS_FOTO não encontrado");
 const levels = Function(`"use strict"; return ${levelsSource};`)();
 
 test("Foto usa seis estados de blur na progressão aprovada", () => {
-    assert.deepEqual(levels.map(level => level.blur), [12, 8, 6, 4, 2, 0]);
+    assert.deepEqual(levels.map(level => level.blur), [9, 7, 5, 3, 1, 0]);
 });
 
 test("blur diminui estritamente a cada tentativa e termina zerado", () => {
