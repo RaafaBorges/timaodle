@@ -268,11 +268,18 @@ test("Estatísticas por modo usam detalhes nativos fechados e preservam ordem e 
 test("Como Jogar preserva largura e grid responsivos próprios", () => {
     const modalRule = cssRule(".integrated-stats-modal-content.help-modal-content");
     const gridRule = cssRule(".help-mode-grid");
+    const helpModal = html.match(/<div id="howToPlayModal"[\s\S]*?<div id="finalResultModal"/)?.[0] || "";
     assert.match(modalRule, /width:\s*min\(700px/);
     assert.match(modalRule, /max-height:[^;]*100dvh/);
     assert.match(gridRule, /repeat\(auto-fit/);
     assert.match(gridRule, /min\(280px,\s*100%\)/);
     assert.ok(css.includes("word-break: normal"));
+    for (const mode of ["CLÁSSICO", "FOTO", "MAIS OU MENOS", "ONZE INICIAL"]) {
+        assert.ok(helpModal.includes(`<h3>${mode}</h3>`), mode);
+    }
+    assert.match(helpModal, /autocomplete/i);
+    assert.match(helpModal, /0\/4[\s\S]*?4\/4/);
+    assert.match(helpModal, /<h3>COMPARTILHAMENTO<\/h3>/);
 });
 
 test("componentes compartilhados preservam base e variantes", () => {

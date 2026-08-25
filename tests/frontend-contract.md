@@ -1,4 +1,4 @@
-# Contrato estrutural do frontend — v2.7
+# Contrato estrutural do frontend — v3.0
 
 Este mapa documenta estados que ligam `script.js`, `index.html` e `style.css`.
 O teste permanente correspondente é `frontend-structure.test.js`.
@@ -40,9 +40,9 @@ node tests/viewport-smoke.js
 ## Shell global
 
 - `body.app-shell` mantém a viewport travada; `.page-content` é o único scroll vertical principal.
-- `--shell-max-width`, `--shell-gutter` e `--shell-inline-space` alinham header, conteúdo e footer.
+- `--shell-max-width`, `--shell-gutter` e `--shell-inline-space` formam a grade global; o header editorial usa 760 px e o utility footer usa 820 px como limites coerentes com a Home.
 - O gutter varia fluidamente entre 12 e 16 px, sem salto estrutural em 480/481 px.
-- Os quatro grupos principais da Home usam o mesmo limite de 400 px nos dois lados de 480 px.
+- A Home usa limite de 920 px, cards em duas colunas no desktop e uma coluna até 640 px.
 
 ## Home
 
@@ -88,7 +88,7 @@ node tests/viewport-smoke.js
 ## Componentes compartilhados
 
 - `.search-box` e `.autocomplete-items` controlam aparência, foco, scroll e alvos de toque; cada modo mantém somente largura e posicionamento próprios.
-- Onze Inicial preserva a variante de busca com 52 px, avatar e lista mais alta; o autocomplete ARIA completo continua pendente.
+- Onze Inicial preserva a variante de busca com 52 px, avatar e lista mais alta, além do autocomplete ARIA completo compartilhado com Clássico e Foto.
 - `.daily-status-bar`, `.back-btn`, `.daily-end-message` e `.escalacao-feedback` compartilham estrutura sem apagar suas diferenças semânticas.
 - Em desktop, `.daily-status-bar` usa colunas laterais simétricas para manter o nome do
   modo geometricamente centralizado; em até 480 px, prioriza espaço útil sem colisões.
@@ -157,7 +157,7 @@ node tests/viewport-smoke.js
 
 ## Onze Inicial
 
-- `#escalacaoView` limita o modo a 440 px e seus painéis a `min(430px, 100%)`.
+- `#escalacaoView` limita o modo a 480 px e seus painéis a `min(470px, 100%)`.
 - `.pitch` preserva proporção 2/3; `.player-chip` continua absoluto, portanto `top` e `left`
   percentuais do JSON permanecem a fonte das coordenadas.
 - Labels de jogadores aceitam até duas linhas e usam quebra natural por palavras.
@@ -172,7 +172,8 @@ node tests/viewport-smoke.js
 - Existe um único bloco `prefers-reduced-motion`, cobrindo celebração 4/4, Clássico,
   Onze Inicial, widget e todas as animações temporais do Mais ou Menos.
 - O widget permanece fixo na lateral no desktop e migra para o canto inferior direito até
-  480 px; seu painel usa limites vinculados ao viewport e não participa da largura do shell.
+  480 px, afastado 128 px da base para não competir com o utility footer; seu painel usa
+  limites vinculados ao viewport e não participa da largura do shell.
 - Seletores confirmadamente mortos do modal estatístico antigo e das caixas inexistentes
   do campo não fazem mais parte do CSS.
 

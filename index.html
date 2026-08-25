@@ -4,8 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Timãodle - Adivinha o Jogador do Corinthians</title>
-    <meta name="description" content="Adivinhe o jogador secreto do Corinthians! Um desafio novo todo dia, estilo Wordle, feito por um torcedor pra torcedores do Timão.">
+    <title>Timãodle — Desafios diários do Corinthians</title>
+    <meta name="description" content="Jogue quatro desafios diários sobre o Corinthians no Timãodle: Clássico, Foto, Mais ou Menos e Onze Inicial.">
+    <meta name="theme-color" content="#0b0b0a">
+    <link rel="canonical" href="https://raafaborges.github.io/timaodle/">
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
@@ -16,19 +18,10 @@
     <!-- Open Graph (WhatsApp, Facebook, LinkedIn, etc.) -->
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Timãodle">
-    <meta property="og:title" content="Timãodle — Adivinhe o jogador secreto do Corinthians">
-    <meta property="og:description" content="Um desafio novo todo dia, estilo Wordle. Projeto de fã, feito por torcedor pra torcedor do Timão.">
-    <meta property="og:image" content="https://raafaborges.github.io/timaodle/assets/og-image.png">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
+    <meta property="og:title" content="Timãodle — Desafios diários do Corinthians">
+    <meta property="og:description" content="Jogue quatro desafios diários sobre o Corinthians: Clássico, Foto, Mais ou Menos e Onze Inicial.">
     <meta property="og:url" content="https://raafaborges.github.io/timaodle/">
     <meta property="og:locale" content="pt_BR">
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Timãodle — Adivinhe o jogador secreto do Corinthians">
-    <meta name="twitter:description" content="Um desafio novo todo dia, estilo Wordle. Projeto de fã, feito por torcedor pra torcedor do Timão.">
-    <meta name="twitter:image" content="https://raafaborges.github.io/timaodle/assets/og-image.png">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,7 +39,7 @@
                 <img class="logo-shield" src="assets/escudo.png" alt="Escudo do Corinthians">
                 <div class="header-copy">
                     <h1>TIMÃODLE</h1>
-                    <p class="subtitle">Adivinhe o jogador secreto do Corinthians!</p>
+                    <p class="subtitle">Todo dia é dia de Timão.</p>
                 </div>
             </div>
             <!-- Ajuda geral -->
@@ -106,7 +99,7 @@
                     </button>
 
                     <button class="pokedle-btn active" id="btnPlayFoto" aria-describedby="homeStatusPhoto">
-                        <span class="btn-title">MODO FOTO</span>
+                        <span class="btn-title">FOTO</span>
                         <div class="btn-pill">
                             <span class="pill-text">Adivinhe o jogador pela foto</span>
                         </div>
@@ -115,7 +108,7 @@
                     </button>
 
                     <button class="pokedle-btn active" id="btnPlayMaisMenos" aria-describedby="homeStatusMoreLess">
-                        <span class="btn-title">JOGOU MAIS OU MENOS</span>
+                        <span class="btn-title">MAIS OU MENOS</span>
                         <div class="btn-pill">
                             <span class="pill-text">10 rodadas · Mais ou menos jogos</span>
                         </div>
@@ -575,25 +568,30 @@
                 <div class="help-mode-grid">
                     <section class="help-mode-card">
                         <h3>CLÁSSICO</h3>
-                        <p>Adivinhe o jogador comparando oito atributos. Verde indica acerto, amarelo uma correspondência parcial e vermelho um valor diferente. As setas mostram se o número correto é maior ou menor.</p>
+                        <p>Use o autocomplete para descobrir o jogador secreto comparando posição, nacionalidade, estreia, jogos, pé, títulos, gols e assistências. Cores e setas orientam cada novo palpite.</p>
                     </section>
                     <section class="help-mode-card">
                         <h3>FOTO</h3>
-                        <p>Descubra o jogador pela imagem em até 6 tentativas. A foto fica progressivamente mais clara a cada palpite.</p>
+                        <p>Use o autocomplete para descobrir o jogador em até 6 tentativas. A foto começa desfocada e fica mais clara a cada palpite; dificuldade e controle de contraste ajudam na leitura.</p>
                     </section>
                     <section class="help-mode-card">
                         <h3>MAIS OU MENOS</h3>
-                        <p>Escolha se o próximo jogador fez mais ou menos jogos pelo Corinthians. São 10 rodadas e 7 acertos garantem a vitória.</p>
+                        <p>Em 10 rodadas, escolha se o próximo jogador fez mais ou menos jogos pelo Corinthians. O objetivo é alcançar 7 acertos; em caso de empate, qualquer resposta conta.</p>
                     </section>
                     <section class="help-mode-card">
                         <h3>ONZE INICIAL</h3>
-                        <p>Palpite o placar da partida histórica e depois descubra os 3 jogadores ocultos da escalação.</p>
+                        <p>Em uma partida histórica, palpite o placar e complete os 11 titulares encontrando os 3 jogadores ocultos pelo autocomplete. Os erros ficam registrados.</p>
                     </section>
                 </div>
 
                 <section class="help-progress-card">
-                    <h3>SEU DIA NO TIMÃODLE</h3>
-                    <p>A Home acompanha o progresso de 0/4 a 4/4. Dias completos alimentam sua sequência, o painel de estatísticas resume o desempenho e, ao concluir tudo, você pode compartilhar o dia sem revelar respostas.</p>
+                    <h3>PROGRESSO DO DIA</h3>
+                    <p>Os quatro modos formam o Timãodle do Dia. A Home acompanha o progresso de 0/4 a 4/4, e cada resultado oferece continuidade para os desafios ainda pendentes. Completar 4/4 fecha o dia.</p>
+                </section>
+
+                <section class="help-progress-card">
+                    <h3>COMPARTILHAMENTO</h3>
+                    <p>Cada modo oferece seu próprio compartilhamento. Ao completar 4/4, você também pode usar Compartilhar Dia. Os textos são preparados para evitar spoilers.</p>
                 </section>
             </div>
         </div>
