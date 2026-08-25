@@ -33,6 +33,12 @@ const {
     gerarTextoCompartilhamentoOnze: construirTextoCompartilhamentoOnze,
     compartilharTexto
 } = globalThis.TimaodleSharing;
+const infraestruturaDialogs = globalThis.TimaodleUI.criarInfraestruturaDialogs(document);
+const {
+    abrirDialog: abrirModalAcessivel,
+    fecharDialog: fecharModalAcessivel,
+    prenderFocoNoDialog: prenderFocoNoModal
+} = infraestruturaDialogs;
 
 function lerJsonLocalStorage(chave) {
     try {
@@ -1070,52 +1076,6 @@ function fecharHistorico() {
     fecharModalAcessivel(historyModal, btnOpenHistory);
 }
 
-const focoAnteriorPorModal = new WeakMap();
-
-function elementosFocaveisDoModal(modal) {
-    if (!modal) return [];
-    return Array.from(modal.querySelectorAll(
-        'button:not([disabled]):not([tabindex="-1"]), summary:not([tabindex="-1"]), [href]:not([tabindex="-1"]), input:not([disabled]):not([tabindex="-1"]), select:not([disabled]):not([tabindex="-1"]), textarea:not([disabled]):not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])'
-    )).filter(elemento => elemento.getClientRects().length > 0);
-}
-
-function abrirModalAcessivel(modal, origem, focoInicial) {
-    if (!modal) return;
-    focoAnteriorPorModal.set(modal, origem || document.activeElement);
-    modal.classList.remove("hidden");
-    document.body.classList.add("modal-open");
-    (focoInicial || elementosFocaveisDoModal(modal)[0] || modal).focus();
-}
-
-function fecharModalAcessivel(modal, focoAlternativo) {
-    if (!modal) return;
-    modal.classList.add("hidden");
-    if (!document.querySelector(".modal:not(.hidden)")) document.body.classList.remove("modal-open");
-    const origem = focoAnteriorPorModal.get(modal) || focoAlternativo;
-    focoAnteriorPorModal.delete(modal);
-    if (origem && !origem.closest?.(".hidden")) origem.focus();
-    else focoAlternativo?.focus();
-}
-
-function prenderFocoNoModal(event, modal) {
-    if (event.key !== "Tab" || !modal || modal.classList.contains("hidden")) return;
-    const focaveis = elementosFocaveisDoModal(modal);
-    if (focaveis.length === 0) {
-        event.preventDefault();
-        modal.focus();
-        return;
-    }
-    const primeiro = focaveis[0];
-    const ultimo = focaveis[focaveis.length - 1];
-    if (event.shiftKey && document.activeElement === primeiro) {
-        event.preventDefault();
-        ultimo.focus();
-    } else if (!event.shiftKey && document.activeElement === ultimo) {
-        event.preventDefault();
-        primeiro.focus();
-    }
-}
-
 function abrirEstatisticasIntegradas() {
     renderizarEstatisticasIntegradas();
     abrirModalAcessivel(integratedStatsModal, btnOpenIntegratedStats, btnCloseIntegratedStats);
@@ -1253,15 +1213,6 @@ historyNextMonth?.addEventListener("click", () => navegarMesHistorico(1));
 historyCalendarGrid?.addEventListener("keydown", navegarCalendarioHistoricoPorTeclado);
 btnOpenHowToPlay?.addEventListener("click", abrirComoJogar);
 btnCloseHowToPlay?.addEventListener("click", fecharComoJogar);
-integratedStatsModal?.addEventListener("click", event => {
-    if (event.target === integratedStatsModal) fecharEstatisticasIntegradas();
-});
-historyModal?.addEventListener("click", event => {
-    if (event.target === historyModal) fecharHistorico();
-});
-howToPlayModal?.addEventListener("click", event => {
-    if (event.target === howToPlayModal) fecharComoJogar();
-});
 finalResultCloseBtn?.addEventListener("click", fecharResultadoFinal);
 finalResultHomeBtn?.addEventListener("click", voltarParaHomeDoResultado);
 finalResultShareBtn?.addEventListener("click", () => {
@@ -1270,25 +1221,6 @@ finalResultShareBtn?.addEventListener("click", () => {
     else if (finalResultModeType === "moreLess") compartilharResultadoMM();
     else if (finalResultModeType === "lineup") compartilharResultadoEscalacao();
 });
-finalResultModal?.addEventListener("click", event => {
-    if (event.target === finalResultModal) fecharResultadoFinal();
-});
-document.addEventListener("keydown", event => {
-    const modalTutorialFoto = document.getElementById("photoTutorialModal");
-    const modalAtivo = [finalResultModal, howToPlayModal, integratedStatsModal, historyModal, modalTutorialFoto]
-        .find(modal => modal && !modal.classList.contains("hidden"));
-    if (!modalAtivo) return;
-    if (event.key === "Escape") {
-        if (modalAtivo === finalResultModal) fecharResultadoFinal();
-        else if (modalAtivo === howToPlayModal) fecharComoJogar();
-        else if (modalAtivo === integratedStatsModal) fecharEstatisticasIntegradas();
-        else if (modalAtivo === historyModal) fecharHistorico();
-        else fecharTutorialFoto();
-        return;
-    }
-    prenderFocoNoModal(event, modalAtivo);
-});
-
 // Escolhe o jogador secreto do dia com base na data — determinístico:
 // a mesma data sempre resulta no mesmo jogador, para todo mundo.
 function sortearJogadorDoDia(dataStr) {
@@ -2288,6 +2220,14 @@ function fecharTutorialFoto() {
 }
 
 photoTutorialCloseBtn.addEventListener("click", fecharTutorialFoto);
+
+infraestruturaDialogs.registrarDialogs([
+    { dialog: finalResultModal, onClose: fecharResultadoFinal, fecharNoBackdrop: true },
+    { dialog: howToPlayModal, onClose: fecharComoJogar, fecharNoBackdrop: true },
+    { dialog: integratedStatsModal, onClose: fecharEstatisticasIntegradas, fecharNoBackdrop: true },
+    { dialog: historyModal, onClose: fecharHistorico, fecharNoBackdrop: true },
+    { dialog: photoTutorialModal, onClose: fecharTutorialFoto, fecharNoBackdrop: false }
+]);
 
 /* ==========================================================================
    TIMÃODLE — JOGOU MAIS OU MENOS

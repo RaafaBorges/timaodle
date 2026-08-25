@@ -4,7 +4,7 @@ const { spawnSync } = require("node:child_process");
 const path = require("node:path");
 
 const startedAt = process.hrtime.bigint();
-const files = ["storage.test.js", "daily-core.test.js", "history-stats.test.js", "sharing.test.js", "game-rules.test.js", "daily-determinism.test.js", "history-calendar.test.js", "final-result.test.js", "photo-progression.test.js", "reduced-motion.test.js", "frontend-structure.test.js"];
+const files = ["storage.test.js", "daily-core.test.js", "history-stats.test.js", "sharing.test.js", "ui.test.js", "game-rules.test.js", "daily-determinism.test.js", "history-calendar.test.js", "final-result.test.js", "photo-progression.test.js", "reduced-motion.test.js", "frontend-structure.test.js"];
 
 for (const file of files) {
     const result = spawnSync(process.execPath, [path.join(__dirname, file)], {

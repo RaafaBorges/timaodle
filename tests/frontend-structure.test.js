@@ -9,6 +9,7 @@ const root = path.join(__dirname, "..");
 const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
 const script = fs.readFileSync(path.join(root, "script.js"), "utf8");
 const historyStats = fs.readFileSync(path.join(root, "history-stats.js"), "utf8");
+const ui = fs.readFileSync(path.join(root, "ui.js"), "utf8");
 const css = fs.readFileSync(path.join(root, "style.css"), "utf8");
 const partidas = JSON.parse(fs.readFileSync(path.join(root, "partidas.json"), "utf8"));
 
@@ -59,6 +60,15 @@ test("sharing clássico carrega depois das derivações e antes do script princi
     assert.ok(scriptIndex > sharingIndex);
 });
 
+test("infraestrutura de UI carrega depois de sharing e antes do script principal", () => {
+    const sharingIndex = html.indexOf('<script src="sharing.js"></script>');
+    const uiIndex = html.indexOf('<script src="ui.js"></script>');
+    const scriptIndex = html.indexOf('<script src="script.js"></script>');
+    assert.ok(uiIndex > sharingIndex);
+    assert.ok(scriptIndex > uiIndex);
+    assert.ok(ui.includes("TimaodleUI"));
+});
+
 test("IDs literais usados por getElementById existem no HTML", () => {
     const referenced = [...script.matchAll(/getElementById\(\s*["']([^"']+)["']\s*\)/g)]
         .map(match => match[1]);
@@ -85,7 +95,7 @@ test("CSS permanece estruturalmente balanceado", () => {
 
 test("classes dinâmicas relevantes permanecem ligadas ao JS", () => {
     const all = [...new Set(Object.values(contract.dynamicClasses).flat())];
-    const missing = all.filter(className => !script.includes(className));
+    const missing = all.filter(className => !script.includes(className) && !ui.includes(className));
     assert.deepEqual(missing, []);
 });
 
@@ -99,14 +109,22 @@ test("estados estruturais dos quatro modos têm contrato CSS", () => {
 });
 
 test("modais preservam semântica e bloqueio de scroll", () => {
-    for (const id of ["photoTutorialModal", "integratedStatsModal", "historyModal", "howToPlayModal", "finalResultModal"]) {
+    const dialogs = {
+        photoTutorialModal: "photoTutorialCloseBtn",
+        integratedStatsModal: "btnCloseIntegratedStats",
+        historyModal: "btnCloseHistory",
+        howToPlayModal: "btnCloseHowToPlay",
+        finalResultModal: "finalResultCloseBtn"
+    };
+    for (const [id, closeId] of Object.entries(dialogs)) {
         const tag = html.match(new RegExp(`<[^>]+id=["']${id}["'][^>]*>`, "i"))?.[0] || "";
         assert.match(tag, /role=["']dialog["']/i, id);
         assert.match(tag, /aria-modal=["']true["']/i, id);
         assert.match(tag, /aria-labelledby=/i, id);
+        assert.ok(htmlIdSet.has(closeId), closeId);
     }
-    assert.ok(script.includes('classList.add("modal-open")'));
-    assert.ok(script.includes('classList.remove("modal-open")'));
+    assert.ok(ui.includes('classList.add("modal-open")'));
+    assert.ok(ui.includes('classList.remove("modal-open")'));
 });
 
 test("Fase C usa um único overlay final acessível e responsivo", () => {
@@ -156,7 +174,7 @@ test("Histórico preserva modal, calendário e estados acessíveis", () => {
         "historyNextMonth.disabled = !grade.navigation.canGoNext",
         "abrirModalAcessivel(historyModal", "fecharModalAcessivel(historyModal"
     ]) assert.ok(script.includes(token), token);
-    assert.match(script, /button:not\(\[disabled\]\):not\(\[tabindex="-1"\]\)/);
+    assert.match(ui, /button:not\(\[disabled\]\):not\(\[tabindex="-1"\]\)/);
     assert.match(cssRule(".history-day-button:focus-visible"), /outline:/);
 });
 
@@ -282,7 +300,7 @@ test("Estatísticas por modo usam detalhes nativos fechados e preservam ordem e 
     for (const distribution of ["classic.distribution", "photo.distribution", "moreLess.distribution"]) {
         assert.ok(statsRender.includes(`formatarDistribuicao(${distribution})`), distribution);
     }
-    assert.ok(script.includes('summary:not([tabindex="-1"])'));
+    assert.ok(ui.includes('summary:not([tabindex="-1"])'));
     assert.match(cssRule(".integrated-mode-details summary"), /min-height:\s*44px/);
     assert.match(css, /\.integrated-mode-details summary:focus-visible\s*\{[^}]*outline:/);
     assert.match(cssRule(".distribution-chip"), /border-bottom:/);

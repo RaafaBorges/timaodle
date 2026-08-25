@@ -196,8 +196,8 @@ test("fechar, Home, Escape e navegação pendente usam infraestrutura compartilh
         'finalResultCloseBtn?.addEventListener("click", fecharResultadoFinal)',
         'finalResultHomeBtn?.addEventListener("click", voltarParaHomeDoResultado)',
         'button.addEventListener("click", () => navegarDoResultadoParaModo(tipo))',
-        'modalAtivo === finalResultModal',
-        'prenderFocoNoModal(event, modalAtivo)'
+        'infraestruturaDialogs.registrarDialogs([',
+        '{ dialog: finalResultModal, onClose: fecharResultadoFinal, fecharNoBackdrop: true }'
     ]) assert.ok(scriptSource.includes(token), token);
 });
 
