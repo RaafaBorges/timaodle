@@ -10,6 +10,7 @@ const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
 const script = fs.readFileSync(path.join(root, "script.js"), "utf8");
 const historyStats = fs.readFileSync(path.join(root, "history-stats.js"), "utf8");
 const ui = fs.readFileSync(path.join(root, "ui.js"), "utf8");
+const autocomplete = fs.readFileSync(path.join(root, "autocomplete.js"), "utf8");
 const css = fs.readFileSync(path.join(root, "style.css"), "utf8");
 const partidas = JSON.parse(fs.readFileSync(path.join(root, "partidas.json"), "utf8"));
 
@@ -60,13 +61,16 @@ test("sharing clássico carrega depois das derivações e antes do script princi
     assert.ok(scriptIndex > sharingIndex);
 });
 
-test("infraestrutura de UI carrega depois de sharing e antes do script principal", () => {
+test("infraestruturas de UI carregam depois de sharing e antes do script principal", () => {
     const sharingIndex = html.indexOf('<script src="sharing.js"></script>');
     const uiIndex = html.indexOf('<script src="ui.js"></script>');
+    const autocompleteIndex = html.indexOf('<script src="autocomplete.js"></script>');
     const scriptIndex = html.indexOf('<script src="script.js"></script>');
     assert.ok(uiIndex > sharingIndex);
-    assert.ok(scriptIndex > uiIndex);
+    assert.ok(autocompleteIndex > uiIndex);
+    assert.ok(scriptIndex > autocompleteIndex);
     assert.ok(ui.includes("TimaodleUI"));
+    assert.ok(autocomplete.includes("TimaodleAutocomplete"));
 });
 
 test("IDs literais usados por getElementById existem no HTML", () => {
@@ -95,7 +99,9 @@ test("CSS permanece estruturalmente balanceado", () => {
 
 test("classes dinâmicas relevantes permanecem ligadas ao JS", () => {
     const all = [...new Set(Object.values(contract.dynamicClasses).flat())];
-    const missing = all.filter(className => !script.includes(className) && !ui.includes(className));
+    const missing = all.filter(className =>
+        !script.includes(className) && !ui.includes(className) && !autocomplete.includes(className)
+    );
     assert.deepEqual(missing, []);
 });
 
@@ -514,14 +520,15 @@ test("autocompletes preservam contrato combobox, listbox e options ARIA", () => 
         'setAttribute("role", "option")', 'setAttribute("aria-selected", "false")',
         'setAttribute("aria-selected", ativo ? "true" : "false")',
         'setAttribute("aria-expanded"', 'setAttribute("aria-activedescendant"',
-        'removeAttribute("aria-activedescendant")', '"classic"', '"photo"', '"lineup"'
+        'removeAttribute("aria-activedescendant")'
     ]) {
+        assert.ok(autocomplete.includes(token), token);
+    }
+    for (const token of ['prefixo: "classic"', 'prefixo: "photo"', 'prefixo: "lineup"']) {
         assert.ok(script.includes(token), token);
     }
-    assert.ok(script.includes('e.key === "Escape"'));
-    assert.ok(script.includes("if (selectedIndex < 0) return"));
-    assert.ok(script.includes("if (selectedIndexFoto < 0) return"));
-    assert.ok(script.includes("if (selectedIndexEsc < 0) return"));
+    assert.ok(autocomplete.includes('event.key === "Escape"'));
+    assert.ok(autocomplete.includes("if (indiceAtivo < 0) return"));
 });
 
 test("viewports canônicos da v2.7 permanecem formalizados", () => {
