@@ -11,14 +11,30 @@
     <link rel="stylesheet" href="style.css">
 </head>
 
-<body>
-    <div class="main-wrapper">
-        <div class="legal-page">
-            <a href="index.html" class="nav-btn legal-back">⬅ Voltar</a>
+<body class="legal-shell">
+    <header class="legal-site-header">
+        <a href="index.html" class="legal-brand" aria-label="Timãodle — página inicial">
+            <img src="assets/escudo.png" alt="">
+            <span>TIMÃODLE</span>
+        </a>
+        <a href="index.html" class="legal-back">← Voltar ao jogo</a>
+    </header>
 
-            <h1>Fale Conosco</h1>
-            <p class="legal-updated">Sugestões, reclamações ou bugs — manda pra gente.</p>
+    <main class="legal-page">
+        <div class="legal-intro">
+            <p class="legal-kicker">CONTATO</p>
+            <h1>Fale com o Timãodle</h1>
+            <p class="legal-lead">Encontrou um problema ou tem algo para acrescentar? Sua mensagem ajuda a manter o jogo melhor e a história mais precisa.</p>
+        </div>
 
+        <section class="legal-section">
+            <h2>Quando entrar em contato</h2>
+            <p>Este canal é adequado para bugs, sugestões, feedback, correções históricas, problemas com dados e outras questões relacionadas ao Timãodle.</p>
+            <p>Se preferir, escreva diretamente para <a href="mailto:contato@timaodle.net" class="inline-link">contato@timaodle.net</a>.</p>
+        </section>
+
+        <section class="legal-section" aria-labelledby="contactFormTitle">
+            <h2 id="contactFormTitle">Prepare sua mensagem</h2>
             <form class="contact-form" id="contactForm">
                 <div class="form-field">
                     <label for="tipo">Assunto</label>
@@ -50,13 +66,18 @@
                 <button type="submit" class="form-submit-btn">Enviar mensagem</button>
 
                 <p class="form-note">
-                    Ao clicar em enviar, seu aplicativo de e-mail padrão vai abrir com a mensagem já preenchida,
-                    pronta pra você mandar. O Timãodle não tem servidor próprio — por isso o envio acontece direto
-                    do seu e-mail.
+                    Ao enviar, seu aplicativo de e-mail padrão abrirá com a mensagem preenchida. Revise o conteúdo e confirme o envio por lá.
                 </p>
             </form>
+        </section>
+    </main>
+
+    <footer class="legal-footer utility-footer">
+        <div class="footer-inner">
+            <p class="footer-identity"><strong>Timãodle © 2026</strong><span>Projeto de fã sem vínculo oficial com o Corinthians.</span></p>
+            <nav class="footer-nav" aria-label="Links institucionais"><ul><li><a href="contato.html" aria-current="page">Contato</a></li><li><a href="privacidade.html">Política de Privacidade</a></li><li><a href="cookies.html">Cookies</a></li><li><a href="termos.html">Termos de Uso</a></li></ul></nav>
         </div>
-    </div>
+    </footer>
 
     <script>
         document.getElementById('contactForm').addEventListener('submit', function (e) {

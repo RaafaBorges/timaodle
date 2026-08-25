@@ -42,19 +42,18 @@
     <!-- CABEÇALHO — barra de largura total, fixa no topo -->
     <header class="pokedle-header">
         <div class="header-inner">
-            <div class="top-nav-icons">
-                <div class="logo-box">
-                    <img class="logo-shield" src="assets/escudo.png" alt="Escudo do Corinthians">
+            <div class="header-branding">
+                <img class="logo-shield" src="assets/escudo.png" alt="Escudo do Corinthians">
+                <div class="header-copy">
                     <h1>TIMÃODLE</h1>
-                </div>
-
-                <!-- Ajuda geral -->
-                <div class="help-container">
-                    <button id="btnOpenHowToPlay" class="icon-btn help-btn" type="button"
-                        title="Como jogar" aria-label="Como jogar">?</button>
+                    <p class="subtitle">Adivinhe o jogador secreto do Corinthians!</p>
                 </div>
             </div>
-            <p class="subtitle">Adivinhe o jogador secreto do Corinthians!</p>
+            <!-- Ajuda geral -->
+            <div class="help-container">
+                <button id="btnOpenHowToPlay" class="icon-btn help-btn" type="button"
+                    title="Como jogar" aria-label="Como jogar"><span aria-hidden="true">?</span><span class="help-label">Como jogar</span></button>
+            </div>
         </div>
     </header>
 
@@ -423,24 +422,18 @@
         </main>
 
         <!-- RODAPÉ FIXO NA BASE -->
-        <footer class="pokedle-footer">
-            <div class="footer-box">
-                <p>O Quiz do Bando de Loucos!</p>
-                <div class="social-links">
-                    <span class="badge">🦅 Corinthians</span>
-                    <span class="badge">🖤 Vai Corinthians!</span>
-                </div>
+        <footer class="pokedle-footer utility-footer">
+            <div class="footer-inner">
+                <p class="footer-identity"><strong>Timãodle © 2026</strong><span>Projeto de fã sem vínculo oficial com o Corinthians.</span></p>
+                <nav class="footer-nav" aria-label="Links institucionais">
+                    <ul>
+                        <li><a href="contato.html">Contato</a></li>
+                        <li><a href="privacidade.html">Política de Privacidade</a></li>
+                        <li><a href="cookies.html">Cookies</a></li>
+                        <li><a href="termos.html">Termos de Uso</a></li>
+                    </ul>
+                </nav>
             </div>
-            <p class="copyright">timaodle.net — 2026<br>Este é um projeto de fã sem vínculo oficial com o clube.</p>
-            <nav class="legal-links">
-                <a href="contato.html">Contato</a>
-                <span class="legal-sep">·</span>
-                <a href="privacidade.html">Política de Privacidade</a>
-                <span class="legal-sep">·</span>
-                <a href="cookies.html">Cookies</a>
-                <span class="legal-sep">·</span>
-                <a href="termos.html">Termos de Uso</a>
-            </nav>
         </footer>
 
     </div>

@@ -11,41 +11,40 @@
     <link rel="stylesheet" href="style.css">
 </head>
 
-<body>
-    <div class="main-wrapper">
-        <div class="legal-page">
-            <a href="index.html" class="nav-btn legal-back">⬅ Voltar</a>
-
-            <h1>Política de Cookies</h1>
+<body class="legal-shell">
+    <header class="legal-site-header">
+        <a href="index.html" class="legal-brand" aria-label="Timãodle — página inicial"><img src="assets/escudo.png" alt=""><span>TIMÃODLE</span></a>
+        <a href="index.html" class="legal-back">← Voltar ao jogo</a>
+    </header>
+    <main class="legal-page">
+        <div class="legal-intro">
+            <p class="legal-kicker">ARMAZENAMENTO</p>
+            <h1>Cookies e dados locais</h1>
             <p class="legal-updated">Última atualização: agosto de 2026</p>
+            <p class="legal-lead">Cookies e armazenamento local são tecnologias diferentes. Veja o que o Timãodle realmente utiliza.</p>
+        </div>
 
             <div class="legal-section">
                 <h2>Resumo rápido</h2>
-                <p>O Timãodle <strong>não usa cookies próprios</strong> — nem de rastreamento, nem de publicidade,
-                    nem de analytics. Não há nenhum banner de consentimento "chato" porque simplesmente não
-                    precisamos disso: o site não perfila, não rastreia e não vende dados de ninguém.</p>
+                <p>O Timãodle <strong>não cria cookies próprios</strong> e não possui analytics, publicidade ou rastreadores implementados no projeto.</p>
             </div>
 
             <div class="legal-section">
                 <h2>Armazenamento local (localStorage)</h2>
-                <p>Em vez de cookies, usamos o <strong>localStorage</strong> do navegador — uma tecnologia parecida,
-                    mas que fica só no seu dispositivo e nunca é enviada para nenhum servidor — para guardar suas
-                    estatísticas de jogo (jogos, vitórias, sequência). Você pode apagar isso a qualquer momento
-                    limpando os dados de navegação do site nas configurações do seu navegador.</p>
+                <p>O <strong>localStorage não é um cookie</strong>. Ele guarda dados no navegador sem ser enviado automaticamente em requisições web. No Timãodle, é usado para progresso e resultados dos desafios, Histórico, Estatísticas, streak, preferências e outros estados necessários para restaurar o jogo.</p>
+                <p>Você pode remover essas informações limpando os dados do site nas configurações do navegador. Isso também apaga o progresso salvo naquele navegador.</p>
             </div>
 
             <div class="legal-section">
                 <h2>Cookies de terceiros</h2>
-                <p>Alguns recursos externos carregados pelo site podem definir cookies próprios, fora do nosso
-                    controle direto:</p>
+                <p>O navegador também solicita arquivos de serviços externos:</p>
                 <ul>
                     <li><strong>Google Fonts</strong> (fonts.googleapis.com / fonts.gstatic.com) — usado para
                         carregar as fontes do site</li>
                     <li><strong>jsDelivr</strong> (cdn.jsdelivr.net) — usado para carregar a biblioteca de confete
                         animado</li>
                 </ul>
-                <p>Recomendamos consultar as políticas de privacidade desses provedores caso queira saber
-                    exatamente o que eles armazenam.</p>
+                <p>Esses serviços seguem suas próprias políticas e podem tratar dados técnicos da requisição. O código do Timãodle não cria cookies em nome deles nem adiciona um banner artificial para o armazenamento local.</p>
             </div>
 
             <div class="legal-section">
@@ -53,8 +52,13 @@
                 <p>Dúvidas? Escreva para
                     <a href="mailto:contato@timaodle.net" class="inline-link">contato@timaodle.net</a>.</p>
             </div>
+    </main>
+    <footer class="legal-footer utility-footer">
+        <div class="footer-inner">
+            <p class="footer-identity"><strong>Timãodle © 2026</strong><span>Projeto de fã sem vínculo oficial com o Corinthians.</span></p>
+            <nav class="footer-nav" aria-label="Links institucionais"><ul><li><a href="contato.html">Contato</a></li><li><a href="privacidade.html">Política de Privacidade</a></li><li><a href="cookies.html" aria-current="page">Cookies</a></li><li><a href="termos.html">Termos de Uso</a></li></ul></nav>
         </div>
-    </div>
+    </footer>
 </body>
 
 </html>

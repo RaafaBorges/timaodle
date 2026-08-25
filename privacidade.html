@@ -11,13 +11,18 @@
     <link rel="stylesheet" href="style.css">
 </head>
 
-<body>
-    <div class="main-wrapper">
-        <div class="legal-page">
-            <a href="index.html" class="nav-btn legal-back">⬅ Voltar</a>
-
+<body class="legal-shell">
+    <header class="legal-site-header">
+        <a href="index.html" class="legal-brand" aria-label="Timãodle — página inicial"><img src="assets/escudo.png" alt=""><span>TIMÃODLE</span></a>
+        <a href="index.html" class="legal-back">← Voltar ao jogo</a>
+    </header>
+    <main class="legal-page">
+        <div class="legal-intro">
+            <p class="legal-kicker">PRIVACIDADE</p>
             <h1>Política de Privacidade</h1>
             <p class="legal-updated">Última atualização: agosto de 2026</p>
+            <p class="legal-lead">Esta página explica, em linguagem direta, como o Timãodle usa dados no navegador e quais serviços externos fazem parte do site.</p>
+        </div>
 
             <div class="legal-section">
                 <h2>O que é o Timãodle</h2>
@@ -26,29 +31,30 @@
             </div>
 
             <div class="legal-section">
-                <h2>Dados que coletamos</h2>
-                <p>O Timãodle <strong>não possui servidor de backend, banco de dados de usuários nem sistema de
-                        login</strong>. Não coletamos nome, e-mail, localização ou qualquer dado pessoal.</p>
-                <p>As únicas informações guardadas são as suas estatísticas de jogo (número de partidas, vitórias e
-                    sequência), salvas localmente no seu próprio navegador através do <strong>localStorage</strong>.
-                    Esses dados:</p>
+                <h2>Conta e progresso</h2>
+                <p>O Timãodle <strong>não possui conta de usuário nem backend próprio para armazenar seu progresso</strong>. Os estados dos quatro desafios diários, resultados, Histórico, Estatísticas, sequência e preferências necessárias ao funcionamento ficam no <strong>localStorage</strong> do navegador.</p>
+                <p>Esses dados locais:</p>
                 <ul>
-                    <li>Ficam apenas no seu dispositivo — nunca são enviados para nenhum servidor</li>
-                    <li>Não são compartilhados com terceiros</li>
-                    <li>São apagados automaticamente se você limpar os dados de navegação do site</li>
+                    <li>permanecem no navegador e dispositivo em que você jogou;</li>
+                    <li>servem para restaurar desafios após o F5 e calcular Histórico, Estatísticas e streak;</li>
+                    <li>podem ser removidos ao limpar os dados do site no navegador.</li>
                 </ul>
             </div>
 
             <div class="legal-section">
+                <h2>Compartilhamentos</h2>
+                <p>Resultados individuais e o resumo do dia só são compartilhados quando você aciona o botão correspondente. O Timãodle prepara o texto, e o envio ou a cópia dependem da ação e dos recursos disponíveis no seu dispositivo.</p>
+            </div>
+
+            <div class="legal-section">
                 <h2>Serviços de terceiros</h2>
-                <p>O site carrega recursos externos para funcionar corretamente:</p>
+                <p>A Home carrega recursos externos:</p>
                 <ul>
                     <li><strong>Google Fonts</strong> — para exibir as fontes do site</li>
                     <li><strong>jsDelivr (CDN)</strong> — para a biblioteca de animação de confete usada ao acertar o
                         jogador</li>
                 </ul>
-                <p>Esses provedores podem registrar dados técnicos básicos de acesso (como endereço IP) conforme
-                    suas próprias políticas de privacidade, fora do nosso controle. Veja mais detalhes na página de
+                <p>Ao solicitar esses arquivos, o navegador se comunica diretamente com os provedores, que podem tratar dados técnicos, como endereço IP, conforme suas próprias políticas. As páginas informativas carregam o Google Fonts, mas não carregam a biblioteca de confete. Veja também a página de
                     <a href="cookies.html" class="inline-link">Cookies</a>.</p>
             </div>
 
@@ -57,8 +63,13 @@
                 <p>Dúvidas sobre esta política podem ser enviadas para
                     <a href="mailto:contato@timaodle.net" class="inline-link">contato@timaodle.net</a>.</p>
             </div>
+    </main>
+    <footer class="legal-footer utility-footer">
+        <div class="footer-inner">
+            <p class="footer-identity"><strong>Timãodle © 2026</strong><span>Projeto de fã sem vínculo oficial com o Corinthians.</span></p>
+            <nav class="footer-nav" aria-label="Links institucionais"><ul><li><a href="contato.html">Contato</a></li><li><a href="privacidade.html" aria-current="page">Política de Privacidade</a></li><li><a href="cookies.html">Cookies</a></li><li><a href="termos.html">Termos de Uso</a></li></ul></nav>
         </div>
-    </div>
+    </footer>
 </body>
 
 </html>
