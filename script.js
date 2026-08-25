@@ -12,6 +12,11 @@ const CHAVE_HISTORICO = "timaodle_history_v1";
 const VERSAO_HISTORICO = 1;
 const URL_OFICIAL_TIMAODLE = "timaodle.net";
 const NormalizadoresStorage = globalThis.TimaodleStorage;
+const {
+    formatarDataLocal, componentesDataCivil, criarDataCivilString,
+    compararDatasCivis, diasNoMesCivil, deslocamentoPrimeiraSemanaCivil,
+    moverMesCivil, moverDataCivil, hashString
+} = globalThis.TimaodleCore;
 
 function lerJsonLocalStorage(chave) {
     try {
@@ -189,11 +194,7 @@ welcomeNameInput.addEventListener("keydown", (e) => {
 
 // Data local no formato AAAA-MM-DD (não usa UTC, respeita o fuso do jogador)
 function getDataLocalString() {
-    const d = new Date();
-    const ano = d.getFullYear();
-    const mes = String(d.getMonth() + 1).padStart(2, "0");
-    const dia = String(d.getDate()).padStart(2, "0");
-    return `${ano}-${mes}-${dia}`;
+    return formatarDataLocal(new Date());
 }
 
 // ==========================================================================
@@ -308,48 +309,6 @@ function calcularProgressoDoResumo(dia) {
         progress: `${completed}/4`,
         complete: completed === 4
     };
-}
-
-function componentesDataCivil(data) {
-    if (!dataHistoricoValida(data)) return null;
-    const [year, month, day] = data.split("-").map(Number);
-    return { year, month, day };
-}
-
-function criarDataCivilString(year, month, day) {
-    if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) return null;
-    const data = `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    return dataHistoricoValida(data) ? data : null;
-}
-
-function compararDatasCivis(dataA, dataB) {
-    if (!dataHistoricoValida(dataA) || !dataHistoricoValida(dataB)) return null;
-    return dataA === dataB ? 0 : dataA < dataB ? -1 : 1;
-}
-
-function diasNoMesCivil(year, month) {
-    if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) return 0;
-    return new Date(Date.UTC(year, month, 0)).getUTCDate();
-}
-
-function deslocamentoPrimeiraSemanaCivil(year, month) {
-    if (diasNoMesCivil(year, month) === 0) return null;
-    const diaDaSemana = new Date(Date.UTC(year, month - 1, 1)).getUTCDay();
-    return (diaDaSemana + 6) % 7;
-}
-
-function moverMesCivil(year, month, deslocamento) {
-    if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12
-        || !Number.isInteger(deslocamento)) return null;
-    const data = new Date(Date.UTC(year, month - 1 + deslocamento, 1));
-    return { year: data.getUTCFullYear(), month: data.getUTCMonth() + 1 };
-}
-
-function moverDataCivil(data, deslocamento) {
-    const civil = componentesDataCivil(data);
-    if (!civil || !Number.isInteger(deslocamento)) return null;
-    const destino = new Date(Date.UTC(civil.year, civil.month - 1, civil.day + deslocamento));
-    return criarDataCivilString(destino.getUTCFullYear(), destino.getUTCMonth() + 1, destino.getUTCDate());
 }
 
 function dataNavegavelHistorico(data, historico, hoje = getDataLocalString()) {
@@ -1770,15 +1729,6 @@ document.addEventListener("keydown", event => {
     }
     prenderFocoNoModal(event, modalAtivo);
 });
-
-// Hash simples e determinístico (mesma string sempre gera o mesmo número)
-function hashString(str) {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-        hash = (hash * 31 + str.charCodeAt(i)) >>> 0; // mantém unsigned 32-bit
-    }
-    return hash;
-}
 
 // Escolhe o jogador secreto do dia com base na data — determinístico:
 // a mesma data sempre resulta no mesmo jogador, para todo mundo.

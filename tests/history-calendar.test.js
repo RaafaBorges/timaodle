@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 const storage = require("../storage-normalizers.js");
+const core = require("../core.js");
 const { scriptSource, compileFunctions } = require("./script-harness.js");
 
 const TODAY = "2026-08-21";
@@ -40,10 +41,8 @@ function dayWithCompleted(count) {
     return day;
 }
 
-const calendar = compileFunctions([
-    "calcularProgressoDoResumo", "componentesDataCivil", "criarDataCivilString",
-    "compararDatasCivis", "diasNoMesCivil", "deslocamentoPrimeiraSemanaCivil",
-    "moverMesCivil", "moverDataCivil", "dataNavegavelHistorico",
+const calendar = { ...core, ...compileFunctions([
+    "calcularProgressoDoResumo", "dataNavegavelHistorico",
     "limitarDataNavegavelHistorico", "obterDataFocoSemanaHistorico",
     "obterDataFocoMesHistorico", "resolverNavegacaoTecladoHistorico",
     "compararMesesCivis", "obterLimitesMesesHistorico",
@@ -53,8 +52,9 @@ const calendar = compileFunctions([
 ], {
     dataHistoricoValida: storage.validDate,
     getDataLocalString: () => TODAY,
-    criarResumoDiaVazio: emptyDay
-});
+    criarResumoDiaVazio: emptyDay,
+    ...core
+}) };
 
 function normalized(days = {}, trackingStartedAt) {
     const value = { version: 1, days };

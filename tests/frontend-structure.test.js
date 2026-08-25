@@ -35,6 +35,13 @@ test("IDs do HTML são únicos", () => {
     assert.deepEqual([...new Set(duplicates)], []);
 });
 
+test("core clássico carrega antes do script principal", () => {
+    const coreIndex = html.indexOf('<script src="core.js"></script>');
+    const scriptIndex = html.indexOf('<script src="script.js"></script>');
+    assert.ok(coreIndex >= 0);
+    assert.ok(scriptIndex > coreIndex);
+});
+
 test("IDs literais usados por getElementById existem no HTML", () => {
     const referenced = [...script.matchAll(/getElementById\(\s*["']([^"']+)["']\s*\)/g)]
         .map(match => match[1]);

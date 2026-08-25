@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const storage = require("../storage-normalizers.js");
+const core = require("../core.js");
 const { scriptSource, compileFunctions } = require("./script-harness.js");
 
 let scenarios = 0;
@@ -144,7 +145,7 @@ const mmPool = players.filter(player => photoNames.has(player.nome)
     && Object.prototype.hasOwnProperty.call(player, "jogos")
     && typeof player.jogos === "number" && Number.isFinite(player.jogos));
 const mmApi = compileFunctions([
-    "hashString", "gerarPRNG", "embaralharComRngMM", "maiorSequenciaIgualMM",
+    "gerarPRNG", "embaralharComRngMM", "maiorSequenciaIgualMM",
     "maiorSequenciaAlternadaMM", "gerarPlanoDirecoesMM", "direcaoComparacaoMM",
     "dificuldadeComparacaoMM", "atendeDificuldadeExpandidaMM",
     "construirSequenciaExataMM", "construirSequenciaComFallbackMM", "gerarDesafioMMV2"
@@ -152,7 +153,8 @@ const mmApi = compileFunctions([
     CAMPO_STAT_MM: "jogos",
     RODADAS_MM: 10,
     PLANO_DIFICULDADES_MM: ["facil", "facil", "facil", "media", "media", "media", "media", "dificil", "dificil", "dificil"],
-    jogadoresElegiveisMM: () => mmPool
+    jogadoresElegiveisMM: () => mmPool,
+    hashString: core.hashString
 });
 
 function isoDateFromOffset(offset) {

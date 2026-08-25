@@ -4,6 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const assert = require("node:assert/strict");
 const { scriptSource, compileFunctions } = require("./script-harness");
+const core = require("../core.js");
 
 const root = path.join(__dirname, "..");
 const jogadores = JSON.parse(fs.readFileSync(path.join(root, "jogadores.json"), "utf8"));
@@ -15,12 +16,12 @@ const poolMM = poolFoto.filter(jogador => typeof jogador.jogos === "number" && N
 
 const datas = ["2025-01-01", "2025-07-09", "2026-08-25", "2027-03-12", "2028-12-31"];
 
-const classicApi = compileFunctions(["hashString", "sortearJogadorDoDia"], { jogadores });
+const classicApi = compileFunctions(["sortearJogadorDoDia"], { jogadores, hashString: core.hashString });
 const photoApi = compileFunctions([
-    "hashString", "jogadoresComFotoObjetos", "sortearJogadorFotoDoDia"
-], { jogadores, JOGADORES_COM_FOTO: nomesComFoto });
+    "jogadoresComFotoObjetos", "sortearJogadorFotoDoDia"
+], { jogadores, JOGADORES_COM_FOTO: nomesComFoto, hashString: core.hashString });
 const mmApi = compileFunctions([
-    "hashString", "gerarPRNG", "embaralharComSemente", "embaralharComRngMM",
+    "gerarPRNG", "embaralharComSemente", "embaralharComRngMM",
     "maiorSequenciaIgualMM", "maiorSequenciaAlternadaMM", "gerarPlanoDirecoesMM",
     "direcaoComparacaoMM", "dificuldadeComparacaoMM", "atendeDificuldadeExpandidaMM",
     "construirSequenciaExataMM", "construirSequenciaComFallbackMM", "gerarDesafioMMV2",
@@ -29,11 +30,12 @@ const mmApi = compileFunctions([
     CAMPO_STAT_MM: "jogos",
     RODADAS_MM: 10,
     PLANO_DIFICULDADES_MM: ["facil", "facil", "facil", "media", "media", "media", "media", "dificil", "dificil", "dificil"],
-    jogadoresElegiveisMM: () => poolMM
+    jogadoresElegiveisMM: () => poolMM,
+    hashString: core.hashString
 });
 const lineupApi = compileFunctions([
-    "hashString", "gerarPRNG", "embaralharComSemente", "selecionarPartidaDoDia"
-], { PARTIDAS_ESCALACAO: partidas, MAX_OCULTOS_ESCALACAO: 3 });
+    "gerarPRNG", "embaralharComSemente", "selecionarPartidaDoDia"
+], { PARTIDAS_ESCALACAO: partidas, MAX_OCULTOS_ESCALACAO: 3, hashString: core.hashString });
 
 function fnv1a(text) {
     let hash = 0x811c9dc5;
@@ -57,7 +59,7 @@ function observeDate(data) {
     const v2 = mmApi.gerarDesafioMMV2(data);
     const lineup = lineupApi.selecionarPartidaDoDia(data);
     return {
-        hash: classicApi.hashString(data),
+        hash: core.hashString(data),
         classic: classicApi.sortearJogadorDoDia(data).nome,
         photo: photoApi.sortearJogadorFotoDoDia(data).nome,
         mmV1: mmApi.gerarSequenciaMMV1(data).map(jogador => jogador.nome).join(" > "),
