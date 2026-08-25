@@ -6,6 +6,7 @@ const path = require("node:path");
 const storage = require("../storage-normalizers.js");
 const core = require("../core.js");
 const historyStats = require("../history-stats.js");
+const sharing = require("../sharing.js");
 const { scriptSource, compileFunctions } = require("./script-harness.js");
 
 let scenarios = 0;
@@ -302,18 +303,12 @@ test("estatísticas: dados malformados normalizados não geram NaN/Infinity", ()
 
 // COMPARTILHAMENTO UNIFICADO E ANTI-SPOILER.
 function shareText(day, streakCurrent = 1) {
-    const api = compileFunctions([
-        "pluralizarQuantidade", "formatarDataCompartilhamento", "complementoResultadoCompartilhamento",
-        "gerarTextoCompartilhamentoDiario"
-    ], {
-        dataHistoricoValida: storage.validDate,
-        numeroHistoricoValido: (value, min = 0, max = Number.MAX_SAFE_INTEGER) => Number.isFinite(value) && value >= min && value <= max,
-        obterProgressoDiario: data => ({ data, completed: 4, total: 4, complete: true, modes: day }),
-        obterStreakGeral: () => ({ current: streakCurrent, best: streakCurrent, totalCompleteDays: streakCurrent, lastCompleteDate: "2026-08-21" }),
-        getDataLocalString: () => "2026-08-21",
-        URL_OFICIAL_TIMAODLE: "timaodle.net"
+    return sharing.gerarTextoCompartilhamentoDiario({
+        data: "2026-08-21",
+        progresso: { data: "2026-08-21", completed: 4, total: 4, complete: true, modes: day },
+        streak: { current: streakCurrent, best: streakCurrent, totalCompleteDays: streakCurrent, lastCompleteDate: "2026-08-21" },
+        url: "timaodle.net"
     });
-    return api.gerarTextoCompartilhamentoDiario("2026-08-21");
 }
 test("compartilhamento: quatro vitórias e singular", () => {
     const text = shareText(completeDay({ classic: classic(1), lineup: lineup(1) }), 1);

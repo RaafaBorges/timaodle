@@ -51,6 +51,14 @@ test("derivação histórica carrega entre core e script principal", () => {
     assert.ok(scriptIndex > historyStatsIndex);
 });
 
+test("sharing clássico carrega depois das derivações e antes do script principal", () => {
+    const historyStatsIndex = html.indexOf('<script src="history-stats.js"></script>');
+    const sharingIndex = html.indexOf('<script src="sharing.js"></script>');
+    const scriptIndex = html.indexOf('<script src="script.js"></script>');
+    assert.ok(sharingIndex > historyStatsIndex);
+    assert.ok(scriptIndex > sharingIndex);
+});
+
 test("IDs literais usados por getElementById existem no HTML", () => {
     const referenced = [...script.matchAll(/getElementById\(\s*["']([^"']+)["']\s*\)/g)]
         .map(match => match[1]);

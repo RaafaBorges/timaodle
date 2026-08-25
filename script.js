@@ -24,6 +24,15 @@ const {
     obterSequenciaHistoricaDoDia, numeroHistoricoValido,
     obterProgressoHistorico, calcularStreakGeral, calcularEstatisticasIntegradas
 } = globalThis.TimaodleHistoryStats;
+const {
+    pluralizarQuantidade,
+    gerarTextoCompartilhamentoDiario: construirTextoCompartilhamentoDiario,
+    gerarTextoCompartilhamentoClassico: construirTextoCompartilhamentoClassico,
+    gerarTextoCompartilhamentoFoto: construirTextoCompartilhamentoFoto,
+    gerarTextoCompartilhamentoMM: construirTextoCompartilhamentoMM,
+    gerarTextoCompartilhamentoOnze: construirTextoCompartilhamentoOnze,
+    compartilharTexto
+} = globalThis.TimaodleSharing;
 
 function lerJsonLocalStorage(chave) {
     try {
@@ -452,58 +461,10 @@ function marcarConclusaoCelebrada(data) {
     return true;
 }
 
-function pluralizarQuantidade(valor, singular, plural) {
-    return `${valor} ${valor === 1 ? singular : plural}`;
-}
-
-function formatarDataCompartilhamento(data) {
-    if (!dataHistoricoValida(data)) return "";
-    const [ano, mes, dia] = data.split("-");
-    return `${dia}/${mes}/${ano}`;
-}
-
-function complementoResultadoCompartilhamento(modo) {
-    if (modo?.outcome === "won") return " · vitória";
-    if (modo?.outcome === "lost") return " · derrota";
-    return "";
-}
-
 function gerarTextoCompartilhamentoDiario(data = getDataLocalString()) {
     const progresso = obterProgressoDiario(data);
-    if (!progresso.complete) return null;
-
-    const { classic, photo, moreLess, lineup } = progresso.modes;
     const streak = obterStreakGeral(data);
-    const dataFormatada = formatarDataCompartilhamento(data);
-    const linhaClassic = numeroHistoricoValido(classic?.attempts, 1)
-        ? `✅ Clássico — ${pluralizarQuantidade(classic.attempts, "tentativa", "tentativas")}`
-        : "✅ Clássico — concluído";
-    const linhaFoto = numeroHistoricoValido(photo?.attempts, 1, 6)
-        ? `✅ Foto — ${photo.attempts}/6${complementoResultadoCompartilhamento(photo)}`
-        : `✅ Foto — concluído${complementoResultadoCompartilhamento(photo)}`;
-    const linhaMaisMenos = numeroHistoricoValido(moreLess?.hits, 0, 10)
-        ? `✅ Mais ou Menos — ${moreLess.hits}/10${complementoResultadoCompartilhamento(moreLess)}`
-        : `✅ Mais ou Menos — concluído${complementoResultadoCompartilhamento(moreLess)}`;
-    const linhaOnzeInicial = numeroHistoricoValido(lineup?.errors, 0)
-        ? `✅ Onze Inicial — 3/3 · ${pluralizarQuantidade(lineup.errors, "erro", "erros")}`
-        : "✅ Onze Inicial — 3/3";
-    const linhaStreak = streak.current > 0
-        ? `🔥 Sequência: ${pluralizarQuantidade(streak.current, "dia", "dias")}`
-        : null;
-
-    return [
-        `TIMÃODLE — ${dataFormatada} 🖤🤍`,
-        "",
-        linhaClassic,
-        linhaFoto,
-        linhaMaisMenos,
-        linhaOnzeInicial,
-        "",
-        linhaStreak,
-        "🏁 4/4 desafios concluídos",
-        "",
-        URL_OFICIAL_TIMAODLE
-    ].filter(linha => linha !== null).join("\n");
+    return construirTextoCompartilhamentoDiario({ data, progresso, streak, url: URL_OFICIAL_TIMAODLE });
 }
 
 let timerFeedbackCompartilhamentoDiario = null;
@@ -520,27 +481,17 @@ function mostrarFeedbackCompartilhamentoDiario(texto, duracao = 2000) {
 async function compartilharResultadoDiario() {
     const texto = gerarTextoCompartilhamentoDiario();
     if (!texto) return false;
-
-    if (typeof navigator.share === "function") {
-        try {
-            await navigator.share({ text: texto });
-            return true;
-        } catch (error) {
-            if (error?.name === "AbortError") return false;
-            console.warn("Falha ao compartilhar o resumo diário:", error);
-        }
+    const resultado = await compartilharTexto(texto);
+    if (resultado.shareError && resultado.shareError.name !== "AbortError") {
+        console.warn("Falha ao compartilhar o resumo diário:", resultado.shareError);
     }
-
-    if (typeof navigator.clipboard?.writeText === "function") {
-        try {
-            await navigator.clipboard.writeText(texto);
-            mostrarFeedbackCompartilhamentoDiario("COPIADO! ✓");
-            return true;
-        } catch (error) {
-            console.warn("Falha ao copiar o resumo diário:", error);
-        }
+    if (resultado.status === "shared") return true;
+    if (resultado.status === "cancelled") return false;
+    if (resultado.status === "copied") {
+        mostrarFeedbackCompartilhamentoDiario("COPIADO! ✓");
+        return true;
     }
-
+    if (resultado.copyError) console.warn("Falha ao copiar o resumo diário:", resultado.copyError);
     mostrarFeedbackCompartilhamentoDiario("NÃO FOI POSSÍVEL COPIAR", 2600);
     return false;
 }
@@ -1735,63 +1686,45 @@ function gerarTextoCompartilhamento() {
     const tentativas = estadoDiario.tentativas.length;
     const grid = gerarGridEmojis();
 
-    return `Timãodle #${numero} — ${tentativas}/∞ 🖤\n\n${grid}\n\n${URL_OFICIAL_TIMAODLE}`;
+    return construirTextoCompartilhamentoClassico({ numero, tentativas, grid, url: URL_OFICIAL_TIMAODLE });
 }
 
 async function compartilharResultado() {
     const texto = gerarTextoCompartilhamento();
-
-    if (navigator.share) {
-        try {
-            await navigator.share({ text: texto });
-            return;
-        } catch {
-            // Usuário cancelou o compartilhamento nativo — tenta copiar como alternativa
-        }
-    }
-
-    try {
-        await navigator.clipboard.writeText(texto);
+    const resultado = await compartilharTexto(texto, { copiarAoCancelar: true });
+    if (resultado.status === "shared") return;
+    if (resultado.status === "copied") {
         const textoOriginal = shareResultBtn.innerText;
         shareResultBtn.innerText = "Copiado! ✓";
         setTimeout(() => { shareResultBtn.innerText = textoOriginal; }, 2000);
-    } catch {
-        alert(texto); // Último recurso — mostra o texto pra copiar manualmente
+        return;
     }
+    alert(texto); // Último recurso — mostra o texto pra copiar manualmente
 }
 
 async function compartilharTextoNovoModo(texto, botaoFeedback = finalResultShareBtn) {
-    if (navigator.share) {
-        try {
-            await navigator.share({ text: texto });
-            return true;
-        } catch (error) {
-            if (error?.name === "AbortError") return false;
-        }
-    }
-
-    try {
-        await navigator.clipboard.writeText(texto);
+    const resultado = await compartilharTexto(texto);
+    if (resultado.status === "shared") return true;
+    if (resultado.status === "cancelled") return false;
+    if (resultado.status === "copied") {
         if (botaoFeedback) {
             const original = botaoFeedback.innerText;
             botaoFeedback.innerText = "COPIADO! ✓";
             setTimeout(() => { botaoFeedback.innerText = original; }, 2000);
         }
         return true;
-    } catch {
-        alert(texto);
-        return false;
     }
+    alert(texto);
+    return false;
 }
 
 function gerarTextoCompartilhamentoFoto() {
     const numero = numeroDoDesafio(getDataLocalString());
     const tentativas = estadoFotoDiario?.tentativas?.length || 0;
     const venceu = estadoFotoDiario?.status === "won";
-    const grade = Array.from({ length: MAX_TENTATIVAS_FOTO }, (_, indice) =>
-        indice < tentativas ? (venceu && indice === tentativas - 1 ? "🟨" : "⬛") : "▫️"
-    ).join("");
-    return `TIMÃODLE — FOTO #${numero}\n${venceu ? "GANHOU" : "PERDEU"} — ${tentativas}/${MAX_TENTATIVAS_FOTO}\n\n${grade}\n\n${URL_OFICIAL_TIMAODLE}`;
+    return construirTextoCompartilhamentoFoto({
+        numero, tentativas, venceu, maxTentativas: MAX_TENTATIVAS_FOTO, url: URL_OFICIAL_TIMAODLE
+    });
 }
 
 function compartilharResultadoFoto(botaoFeedback = finalResultShareBtn) {
@@ -1801,8 +1734,10 @@ function compartilharResultadoFoto(botaoFeedback = finalResultShareBtn) {
 function gerarTextoCompartilhamentoMM() {
     const numero = numeroDoDesafio(getDataLocalString());
     const venceu = estadoMMDiario?.status === "won";
-    const grade = (estadoMMDiario?.historico || []).map(rodada => rodada.correto ? "🟨" : "⬛").join("");
-    return `TIMÃODLE — MAIS OU MENOS #${numero}\n${venceu ? "GANHOU" : "PERDEU"} — ${acertosMM}/${RODADAS_MM} ACERTOS\n\n${grade}\n\n${URL_OFICIAL_TIMAODLE}`;
+    return construirTextoCompartilhamentoMM({
+        numero, venceu, acertos: acertosMM, rodadas: RODADAS_MM,
+        resultados: estadoMMDiario?.historico || [], url: URL_OFICIAL_TIMAODLE
+    });
 }
 
 function compartilharResultadoMM(botaoFeedback = finalResultShareBtn) {
@@ -3526,50 +3461,36 @@ function montarTextoCompartilhamentoEscalacao() {
     const real = dadosEscalacao.placar_real;
     const palpiteM = estadoEscalacao.palpiteMandante;
     const palpiteV = estadoEscalacao.palpiteVisitante;
-    const acertouPlacar = palpiteM === real.mandante && palpiteV === real.visitante;
     const total = dadosEscalacao.jogadores_ocultos.length;
-    const indicadorPlacar = acertouPlacar ? "🟨" : "⬛";
-    const jogadores = "🟨".repeat(acertosEscalacao) + "⬛".repeat(Math.max(0, total - acertosEscalacao));
-
-    return [
-        "TIMÃODLE — ONZE INICIAL ⚽",
-        `${dadosEscalacao.mandante} ${real.mandante}–${real.visitante} ${dadosEscalacao.visitante}`,
-        `${indicadorPlacar} Palpite: ${palpiteM}–${palpiteV}`,
-        `${jogadores} Jogadores: ${acertosEscalacao}/${total}`,
-        `❌ Erros: ${errosEscalacao}`,
-        "Vai Corinthians! 🖤🤍"
-    ].join("\n");
+    return construirTextoCompartilhamentoOnze({
+        mandante: dadosEscalacao.mandante,
+        visitante: dadosEscalacao.visitante,
+        placarReal: real,
+        palpite: { mandante: palpiteM, visitante: palpiteV },
+        acertos: acertosEscalacao,
+        total,
+        erros: errosEscalacao
+    });
 }
 
 async function compartilharResultadoEscalacao() {
     const texto = montarTextoCompartilhamentoEscalacao();
-    let copiado = false;
-
-    if (navigator.share) {
-        try {
-            await navigator.share({ text: texto });
-            return;
-        } catch (error) {
-            if (error?.name !== "AbortError") console.warn("Falha ao compartilhar resultado do Onze Inicial:", error);
-            if (error?.name === "AbortError") return;
-        }
-    }
-
-    try {
-        await navigator.clipboard.writeText(texto);
-        copiado = true;
-    } catch {
+    const copiarFallback = textoFallback => {
         const area = document.createElement("textarea");
-        area.value = texto;
+        area.value = textoFallback;
         area.style.position = "fixed";
         area.style.opacity = "0";
         document.body.appendChild(area);
         area.select();
-        copiado = document.execCommand("copy");
+        const copiado = document.execCommand("copy");
         area.remove();
+        return copiado;
+    };
+    const resultado = await compartilharTexto(texto, { copiarFallback });
+    if (resultado.shareError && resultado.shareError.name !== "AbortError") {
+        console.warn("Falha ao compartilhar resultado do Onze Inicial:", resultado.shareError);
     }
-
-    if (copiado) {
+    if (resultado.status === "copied") {
         const original = escShareLineupBtn.innerText;
         escShareLineupBtn.innerText = "Copiado! ✓";
         setTimeout(() => { escShareLineupBtn.innerText = original; }, 1800);

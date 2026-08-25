@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 const { scriptSource, compileFunctions } = require("./script-harness.js");
+const sharing = require("../sharing.js");
 
 let scenarios = 0;
 function test(name, callback) {
@@ -46,13 +47,13 @@ test("4/4 não oferece continuidade", () => {
 });
 
 function apiFoto(estado) {
-    return compileFunctions(["gerarTextoCompartilhamentoFoto"], {
-        numeroDoDesafio: () => 235,
-        getDataLocalString: () => "2026-08-22",
-        estadoFotoDiario: estado,
-        MAX_TENTATIVAS_FOTO: 6,
-        URL_OFICIAL_TIMAODLE: "https://timaodle.net"
-    });
+    return { gerarTextoCompartilhamentoFoto: () => sharing.gerarTextoCompartilhamentoFoto({
+        numero: 235,
+        tentativas: estado.tentativas.length,
+        venceu: estado.status === "won",
+        maxTentativas: 6,
+        url: "https://timaodle.net"
+    }) };
 }
 
 test("compartilhamento Foto cobre vitória sem spoiler", () => {
@@ -90,17 +91,16 @@ test("resultado estático do Foto oferece Compartilhar em vitória e derrota", (
 test("Compartilhar estático reutiliza builder e infraestrutura do overlay", () => {
     const botao = { innerText: "COMPARTILHAR" };
     const recebidos = [];
-    const api = compileFunctions(["gerarTextoCompartilhamentoFoto", "compartilharResultadoFoto"], {
-        numeroDoDesafio: () => 235,
-        getDataLocalString: () => "2026-08-22",
-        estadoFotoDiario: { status: "won", tentativas: ["Tentativa", "Resposta secreta"] },
-        MAX_TENTATIVAS_FOTO: 6,
-        URL_OFICIAL_TIMAODLE: "https://timaodle.net",
+    const texto = sharing.gerarTextoCompartilhamentoFoto({
+        numero: 235, tentativas: 2, venceu: true, maxTentativas: 6, url: "https://timaodle.net"
+    });
+    const api = compileFunctions(["compartilharResultadoFoto"], {
+        gerarTextoCompartilhamentoFoto: () => texto,
         compartilharTextoNovoModo: (texto, feedback) => recebidos.push({ texto, feedback }),
         finalResultShareBtn: null
     });
     api.compartilharResultadoFoto(botao);
-    assert.deepEqual(recebidos, [{ texto: api.gerarTextoCompartilhamentoFoto(), feedback: botao }]);
+    assert.deepEqual(recebidos, [{ texto, feedback: botao }]);
     assert.ok(!recebidos[0].texto.includes("Resposta secreta"));
 });
 
@@ -111,14 +111,10 @@ test("restauração do Foto concluído mostra ação estática sem reabrir overl
 });
 
 function apiMM(estado, acertos = 7) {
-    return compileFunctions(["gerarTextoCompartilhamentoMM"], {
-        numeroDoDesafio: () => 235,
-        getDataLocalString: () => "2026-08-22",
-        estadoMMDiario: estado,
-        acertosMM: acertos,
-        RODADAS_MM: 10,
-        URL_OFICIAL_TIMAODLE: "https://timaodle.net"
-    });
+    return { gerarTextoCompartilhamentoMM: () => sharing.gerarTextoCompartilhamentoMM({
+        numero: 235, venceu: estado.status === "won", acertos, rodadas: 10,
+        resultados: estado.historico, url: "https://timaodle.net"
+    }) };
 }
 
 test("compartilhamento MM resume rodadas sem jogadores ou respostas", () => {
@@ -162,18 +158,17 @@ test("Compartilhar estático do MM reutiliza builder e preserva limites", () => 
             correto: indice < acertos,
             direcao: indice % 2 ? "mais" : "menos"
         }));
-        const api = compileFunctions(["gerarTextoCompartilhamentoMM", "compartilharResultadoMM"], {
-            numeroDoDesafio: () => 235,
-            getDataLocalString: () => "2026-08-22",
-            estadoMMDiario: { status, historico },
-            acertosMM: acertos,
-            RODADAS_MM: 10,
-            URL_OFICIAL_TIMAODLE: "https://timaodle.net",
+        const texto = sharing.gerarTextoCompartilhamentoMM({
+            numero: 235, venceu: status === "won", acertos, rodadas: 10,
+            resultados: historico, url: "https://timaodle.net"
+        });
+        const api = compileFunctions(["compartilharResultadoMM"], {
+            gerarTextoCompartilhamentoMM: () => texto,
             compartilharTextoNovoModo: (texto, feedback) => recebidos.push({ texto, feedback }),
             finalResultShareBtn: null
         });
         api.compartilharResultadoMM(botao);
-        assert.deepEqual(recebidos, [{ texto: api.gerarTextoCompartilhamentoMM(), feedback: botao }]);
+        assert.deepEqual(recebidos, [{ texto, feedback: botao }]);
         assert.match(recebidos[0].texto, new RegExp(`${esperado} — ${acertos}/10 ACERTOS`));
         assert.ok(!recebidos[0].texto.includes(segredo));
         assert.ok(!recebidos[0].texto.includes("mais\n"));
