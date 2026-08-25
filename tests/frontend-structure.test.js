@@ -11,6 +11,7 @@ const script = fs.readFileSync(path.join(root, "script.js"), "utf8");
 const historyStats = fs.readFileSync(path.join(root, "history-stats.js"), "utf8");
 const ui = fs.readFileSync(path.join(root, "ui.js"), "utf8");
 const autocomplete = fs.readFileSync(path.join(root, "autocomplete.js"), "utf8");
+const classic = fs.readFileSync(path.join(root, "classic-mode.js"), "utf8");
 const css = fs.readFileSync(path.join(root, "style.css"), "utf8");
 const partidas = JSON.parse(fs.readFileSync(path.join(root, "partidas.json"), "utf8"));
 
@@ -65,12 +66,15 @@ test("infraestruturas de UI carregam depois de sharing e antes do script princip
     const sharingIndex = html.indexOf('<script src="sharing.js"></script>');
     const uiIndex = html.indexOf('<script src="ui.js"></script>');
     const autocompleteIndex = html.indexOf('<script src="autocomplete.js"></script>');
+    const classicIndex = html.indexOf('<script src="classic-mode.js"></script>');
     const scriptIndex = html.indexOf('<script src="script.js"></script>');
     assert.ok(uiIndex > sharingIndex);
     assert.ok(autocompleteIndex > uiIndex);
-    assert.ok(scriptIndex > autocompleteIndex);
+    assert.ok(classicIndex > autocompleteIndex);
+    assert.ok(scriptIndex > classicIndex);
     assert.ok(ui.includes("TimaodleUI"));
     assert.ok(autocomplete.includes("TimaodleAutocomplete"));
+    assert.ok(classic.includes("TimaodleClassic"));
 });
 
 test("IDs literais usados por getElementById existem no HTML", () => {
@@ -100,7 +104,8 @@ test("CSS permanece estruturalmente balanceado", () => {
 test("classes dinâmicas relevantes permanecem ligadas ao JS", () => {
     const all = [...new Set(Object.values(contract.dynamicClasses).flat())];
     const missing = all.filter(className =>
-        !script.includes(className) && !ui.includes(className) && !autocomplete.includes(className)
+        !script.includes(className) && !ui.includes(className)
+            && !autocomplete.includes(className) && !classic.includes(className)
     );
     assert.deepEqual(missing, []);
 });
@@ -524,9 +529,8 @@ test("autocompletes preservam contrato combobox, listbox e options ARIA", () => 
     ]) {
         assert.ok(autocomplete.includes(token), token);
     }
-    for (const token of ['prefixo: "classic"', 'prefixo: "photo"', 'prefixo: "lineup"']) {
-        assert.ok(script.includes(token), token);
-    }
+    assert.ok(classic.includes('prefixo: "classic"'));
+    for (const token of ['prefixo: "photo"', 'prefixo: "lineup"']) assert.ok(script.includes(token), token);
     assert.ok(autocomplete.includes('event.key === "Escape"'));
     assert.ok(autocomplete.includes("if (indiceAtivo < 0) return"));
 });

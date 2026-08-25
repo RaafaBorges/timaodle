@@ -5,6 +5,7 @@ const path = require("node:path");
 const assert = require("node:assert/strict");
 const { scriptSource, compileFunctions } = require("./script-harness");
 const core = require("../core.js");
+const classic = require("../classic-mode.js");
 
 const root = path.join(__dirname, "..");
 const jogadores = JSON.parse(fs.readFileSync(path.join(root, "jogadores.json"), "utf8"));
@@ -16,7 +17,9 @@ const poolMM = poolFoto.filter(jogador => typeof jogador.jogos === "number" && N
 
 const datas = ["2025-01-01", "2025-07-09", "2026-08-25", "2027-03-12", "2028-12-31"];
 
-const classicApi = compileFunctions(["sortearJogadorDoDia"], { jogadores, hashString: core.hashString });
+const classicApi = {
+    sortearJogadorDoDia: data => classic.selecionarJogadorDiario(jogadores, data, core.hashString)
+};
 const photoApi = compileFunctions([
     "jogadoresComFotoObjetos", "sortearJogadorFotoDoDia"
 ], { jogadores, JOGADORES_COM_FOTO: nomesComFoto, hashString: core.hashString });

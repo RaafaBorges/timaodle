@@ -65,8 +65,7 @@ function persistirNormalizacaoSegura(chave, original, normalizado) {
 }
 
 let jogadores = [];
-let jogadorSecreto = null;
-let jogoAtivo = true;
+let classicMode = null;
 
 // Estatísticas legadas do Clássico. Não representam o streak geral e são
 // mantidas somente por compatibilidade com instalações existentes.
@@ -1109,7 +1108,7 @@ function pluralResultado(quantidade, singular, plural) {
 
 function dadosResultadoFinal(tipo) {
     if (tipo === "classic") {
-        const tentativas = estadoDiario?.tentativas?.length || 0;
+        const tentativas = classicMode?.getState()?.tentativas?.length || 0;
         return { outcome: "won", title: "GANHOU", metric: pluralResultado(tentativas, "TENTATIVA", "TENTATIVAS") };
     }
     if (tipo === "photo") {
@@ -1224,14 +1223,6 @@ finalResultShareBtn?.addEventListener("click", () => {
     else if (finalResultModeType === "moreLess") compartilharResultadoMM();
     else if (finalResultModeType === "lineup") compartilharResultadoEscalacao();
 });
-// Escolhe o jogador secreto do dia com base na data — determinístico:
-// a mesma data sempre resulta no mesmo jogador, para todo mundo.
-function sortearJogadorDoDia(dataStr) {
-    const hash = hashString(dataStr);
-    const index = hash % jogadores.length;
-    return jogadores[index];
-}
-
 // ==========================================================================
 // CONTAGEM REGRESSIVA ATÉ A MEIA-NOITE (PRÓXIMO DESAFIO)
 // ==========================================================================
@@ -1283,7 +1274,7 @@ function carregarEstadoDiario() {
     const nomes = jogadores.length ? jogadores.map(jogador => jogador.nome) : null;
     const normalizado = NormalizadoresStorage.normalizeClassic(salvo, {
         playerNames: nomes,
-        secretName: jogadorSecreto?.nome || null
+        secretName: classicMode?.getSecretPlayer()?.nome || null
     });
     return persistirNormalizacaoSegura(CHAVE_ESTADO_DIARIO, salvo, normalizado);
 }
@@ -1292,10 +1283,6 @@ function salvarEstadoDiario(estado) {
     localStorage.setItem(CHAVE_ESTADO_DIARIO, JSON.stringify(estado));
     sincronizarProgressoDiario();
 }
-
-// Estado atual do desafio de hoje, mantido em memória e sincronizado
-// com o localStorage a cada tentativa.
-let estadoDiario = null;
 
 // ==========================================================================
 // NAVEGAÇÃO — TELA INICIAL ⇄ MODO DIÁRIO
@@ -1306,9 +1293,9 @@ btnPlayDiario.addEventListener("click", () => {
     homeView.classList.add("hidden");
     gameView.classList.remove("hidden");
     if (jogadores.length === 0) {
-        carregarJogadores().then(() => iniciarDesafioDiario());
+        carregarJogadores().then(() => classicMode.start());
     } else {
-        iniciarDesafioDiario();
+        classicMode.start();
     }
 });
 
@@ -1330,145 +1317,6 @@ async function carregarJogadores() {
         console.error("Erro ao carregar o JSON:", error);
         alert("Erro ao carregar a base de jogadores. Verifique se o servidor local está rodando.");
     }
-}
-
-function iniciarDesafioDiario() {
-    if (jogadores.length === 0) return;
-
-    const hoje = getDataLocalString();
-    jogadorSecreto = sortearJogadorDoDia(hoje);
-
-    const salvo = carregarEstadoDiario();
-
-    if (salvo?.data) sincronizarProgressoDiario();
-
-    if (salvo && salvo.data === hoje) {
-        // Mesmo dia — restaura tentativas e status salvos
-        estadoDiario = salvo;
-        attemptsContainer.innerHTML = "";
-        (estadoDiario.tentativas || []).forEach(nomeTentativa => {
-            const jogadorTentativa = jogadores.find(j => j.nome === nomeTentativa);
-            if (jogadorTentativa) renderizarTentativa(jogadorTentativa, { instantaneo: true });
-        });
-        if (pageContentEl) pageContentEl.scrollTop = 0;
-        jogoAtivo = estadoDiario.status === "playing";
-        if (estadoDiario.status === "won") {
-            mostrarFimDeJogo(false);
-        }
-    } else {
-        // Novo dia — reseta o desafio
-        estadoDiario = { data: hoje, tentativas: [], status: "playing" };
-        salvarEstadoDiario(estadoDiario);
-        attemptsContainer.innerHTML = "";
-        jogoAtivo = true;
-        dailyEndMessageEl.classList.add("hidden");
-        shareResultBtn.classList.add("hidden");
-        searchInput.disabled = false;
-    }
-
-    searchInput.value = "";
-    fecharAutocomplete();
-}
-
-// ==========================================================================
-// AUTOCOMPLETE
-// ==========================================================================
-
-function fecharAutocomplete() {
-    autocompleteClassico.fechar();
-}
-
-const autocompleteClassico = criarAutocomplete({
-    documentApi: document,
-    input: searchInput,
-    listbox: autocompleteList,
-    prefixo: "classic",
-    getLabel: jogador => jogador.nome,
-    estaAtivo: () => jogoAtivo,
-    rolarOpcaoAtiva: true,
-    obterSugestoes: busca => filtrarSugestoes(jogadores, busca, {
-        getLabel: jogador => jogador.nome,
-        incluir: jogador => !(estadoDiario?.tentativas || []).includes(jogador.nome)
-    }),
-    renderizarOpcao: (item, jogador) => {
-        item.innerText = jogador.nome;
-    },
-    onSelect: jogador => {
-        fazerPalpite(jogador);
-        searchInput.value = "";
-        fecharAutocomplete();
-    }
-});
-
-// ==========================================================================
-// COMPARAÇÃO DE ATRIBUTOS
-// ==========================================================================
-
-function atributoAusente(valor) {
-    return valor === null
-        || valor === undefined
-        || (typeof valor === "string" && valor.trim() === "");
-}
-
-function formatarAtributoClassico(valor) {
-    return atributoAusente(valor) ? "—" : String(valor);
-}
-
-function compararTexto(palpite, correto) {
-    const palpiteAusente = atributoAusente(palpite);
-    const corretoAusente = atributoAusente(correto);
-    const classe = (palpiteAusente && corretoAusente) || palpite === correto ? "correct" : "wrong";
-    return { classe, texto: formatarAtributoClassico(palpite) };
-}
-
-function compararNumero(palpite, correto) {
-    const palpiteAusente = atributoAusente(palpite);
-    const corretoAusente = atributoAusente(correto);
-    if (palpiteAusente || corretoAusente) {
-        return {
-            classe: palpiteAusente && corretoAusente ? "correct" : "wrong",
-            texto: formatarAtributoClassico(palpite)
-        };
-    }
-
-    if (palpite === correto) {
-        return { classe: "correct", texto: formatarAtributoClassico(palpite) };
-    } else if (palpite < correto) {
-        return { classe: "wrong", texto: `${palpite} ↑` };
-    } else {
-        return { classe: "wrong", texto: `${palpite} ↓` };
-    }
-}
-
-function extrairNomesTitulos(textoTitulos) {
-    if (!textoTitulos) return [];
-    return textoTitulos
-        .split(',')
-        .map(item => item.replace(/\d+x\s*/gi, '').trim().toLowerCase())
-        .filter(item => item.length > 0);
-}
-
-function compararTitulos(palpiteTitulos, corretoTitulos) {
-    const palpiteAusente = atributoAusente(palpiteTitulos);
-    const corretoAusente = atributoAusente(corretoTitulos);
-    if (palpiteAusente || corretoAusente) {
-        return {
-            classe: palpiteAusente && corretoAusente ? "correct" : "wrong",
-            texto: formatarAtributoClassico(palpiteTitulos)
-        };
-    }
-
-    if (palpiteTitulos === corretoTitulos) {
-        return { classe: "correct", texto: formatarAtributoClassico(palpiteTitulos) };
-    }
-
-    const nomesPalpite = extrairNomesTitulos(palpiteTitulos);
-    const nomesCorreto = extrairNomesTitulos(corretoTitulos);
-
-    const temCoincidencia = nomesPalpite.some(titulo => nomesCorreto.includes(titulo));
-    if (temCoincidencia) return { classe: "partial", texto: formatarAtributoClassico(palpiteTitulos) };
-
-    return { classe: "wrong", texto: formatarAtributoClassico(palpiteTitulos) };
 }
 
 function dispararConfetes() {
@@ -1513,50 +1361,45 @@ function numeroDoDesafio(dataStr) {
     return diffDias + 1;
 }
 
-// Recria o grid de emojis a partir dos nomes já tentados hoje, sem
-// depender de nada além do que já está salvo no estado diário.
-function gerarGridEmojis() {
-    const emojiPorClasse = { correct: "🟩", partial: "🟨", wrong: "🟥" };
+classicMode = globalThis.TimaodleClassic.createClassicMode({
+    documentApi: document,
+    elements: {
+        searchInput,
+        autocompleteList,
+        attemptsContainer,
+        endMessage: dailyEndMessageEl,
+        shareButton: shareResultBtn,
+        pageContent: pageContentEl
+    },
+    getPlayers: () => jogadores,
+    getDate: getDataLocalString,
+    hashString,
+    autocomplete: {
+        create: criarAutocomplete,
+        filter: filtrarSugestoes
+    },
+    storage: {
+        load: () => {
+            const salvo = carregarEstadoDiario();
+            if (salvo?.data) sincronizarProgressoDiario();
+            return salvo;
+        },
+        save: salvarEstadoDiario
+    },
+    sharing: {
+        build: construirTextoCompartilhamentoClassico,
+        share: compartilharTexto
+    },
+    getChallengeNumber: numeroDoDesafio,
+    officialUrl: URL_OFICIAL_TIMAODLE,
+    onWin: salvarEstatisticaVitoria,
+    onComplete: () => abrirResultadoFinal("classic"),
+    celebrate: dispararConfetes,
+    alertApi: texto => alert(texto)
+});
 
-    return estadoDiario.tentativas.map(nomeTentativa => {
-        const palpite = jogadores.find(j => j.nome === nomeTentativa);
-        if (!palpite) return "";
-
-        const colunas = [
-            { classe: palpite.nome === jogadorSecreto.nome ? "correct" : "wrong" },
-            compararTexto(palpite.posicao, jogadorSecreto.posicao),
-            compararTexto(palpite.nacionalidade, jogadorSecreto.nacionalidade),
-            compararNumero(palpite.estreia, jogadorSecreto.estreia),
-            compararTexto(palpite.pe, jogadorSecreto.pe),
-            compararTitulos(palpite.titulos, jogadorSecreto.titulos),
-            compararNumero(palpite.gols, jogadorSecreto.gols),
-            compararNumero(palpite.assistencias, jogadorSecreto.assistencias),
-        ];
-
-        return colunas.map(c => emojiPorClasse[c.classe]).join("");
-    }).join("\n");
-}
-
-function gerarTextoCompartilhamento() {
-    const hoje = getDataLocalString();
-    const numero = numeroDoDesafio(hoje);
-    const tentativas = estadoDiario.tentativas.length;
-    const grid = gerarGridEmojis();
-
-    return construirTextoCompartilhamentoClassico({ numero, tentativas, grid, url: URL_OFICIAL_TIMAODLE });
-}
-
-async function compartilharResultado() {
-    const texto = gerarTextoCompartilhamento();
-    const resultado = await compartilharTexto(texto, { copiarAoCancelar: true });
-    if (resultado.status === "shared") return;
-    if (resultado.status === "copied") {
-        const textoOriginal = shareResultBtn.innerText;
-        shareResultBtn.innerText = "Copiado! ✓";
-        setTimeout(() => { shareResultBtn.innerText = textoOriginal; }, 2000);
-        return;
-    }
-    alert(texto); // Último recurso — mostra o texto pra copiar manualmente
+function compartilharResultado() {
+    return classicMode.compartilharResultado();
 }
 
 async function compartilharTextoNovoModo(texto, botaoFeedback = finalResultShareBtn) {
@@ -1601,106 +1444,7 @@ function compartilharResultadoMM(botaoFeedback = finalResultShareBtn) {
     return compartilharTextoNovoModo(gerarTextoCompartilhamentoMM(), botaoFeedback);
 }
 
-shareResultBtn.addEventListener("click", compartilharResultado);
 shareDailyResultBtn?.addEventListener("click", compartilharResultadoDiario);
-
-
-
-function mostrarFimDeJogo(comAnimacao) {
-    jogoAtivo = false;
-    fecharAutocomplete();
-
-    dailyEndMessageEl.classList.remove("hidden");
-    dailyEndMessageEl.innerHTML = `✓ Você acertou! O jogador de hoje era <strong>${jogadorSecreto.nome}</strong>. Volte amanhã para um novo desafio.`;
-    shareResultBtn.classList.remove("hidden");
-
-    if (comAnimacao) {
-        dispararConfetes();
-        abrirResultadoFinal("classic");
-    }
-}
-
-// ==========================================================================
-// RENDERIZAÇÃO DE UMA TENTATIVA (linha do tabuleiro)
-// ==========================================================================
-
-// options.instantaneo = true -> usado ao restaurar tentativas salvas
-// (sem animação de flip, aparece já revelado)
-function renderizarTentativa(palpite, options = {}) {
-    const instantaneo = options.instantaneo === true;
-
-    const row = document.createElement("div");
-    row.className = "attempt-row";
-
-    const cNome = { classe: palpite.nome === jogadorSecreto.nome ? "correct" : "wrong", texto: palpite.nome };
-    const cPosicao = compararTexto(palpite.posicao, jogadorSecreto.posicao);
-    const cNac = compararTexto(palpite.nacionalidade, jogadorSecreto.nacionalidade);
-    const cEstreia = compararNumero(palpite.estreia, jogadorSecreto.estreia);
-    const cPe = compararTexto(palpite.pe, jogadorSecreto.pe);
-    const cTitulos = compararTitulos(palpite.titulos, jogadorSecreto.titulos);
-    const cGols = compararNumero(palpite.gols, jogadorSecreto.gols);
-    const cAssists = compararNumero(palpite.assistencias, jogadorSecreto.assistencias);
-
-    const colunas = [cNome, cPosicao, cNac, cEstreia, cPe, cTitulos, cGols, cAssists];
-
-    colunas.forEach((col, index) => {
-        const cell = document.createElement("div");
-        cell.className = "cell";
-        cell.title = col.texto;
-
-        const cellText = document.createElement("span");
-        cellText.className = "cell-text";
-        cellText.innerText = col.texto;
-        cell.appendChild(cellText);
-
-        if (instantaneo) {
-            cell.classList.add("reveal", col.classe);
-        } else {
-            setTimeout(() => {
-                cell.classList.add("reveal");
-                setTimeout(() => cell.classList.add(col.classe), 300);
-            }, index * 200);
-        }
-
-        row.appendChild(cell);
-    });
-
-    // Palpite mais recente sempre no topo — tanto ao vivo quanto ao
-    // restaurar o estado salvo (mesmo comportamento nos dois casos).
-    attemptsContainer.insertBefore(row, attemptsContainer.firstChild);
-    if (!instantaneo) {
-        if (pageContentEl) pageContentEl.scrollTop = 0;
-    }
-
-    return { row, ehAcerto: palpite.nome === jogadorSecreto.nome, totalColunas: colunas.length };
-}
-
-// ==========================================================================
-// FAZER UM PALPITE (tentativas ilimitadas até acertar)
-// ==========================================================================
-
-function fazerPalpite(palpite) {
-    if (!jogoAtivo) return;
-
-    const { row, ehAcerto, totalColunas } = renderizarTentativa(palpite, { instantaneo: false });
-
-    // Persiste a tentativa no estado diário
-    estadoDiario.tentativas.push(palpite.nome);
-    salvarEstadoDiario(estadoDiario);
-
-    const tempoTotalAnimacao = (totalColunas * 200) + 400;
-
-    setTimeout(() => {
-        if (ehAcerto) {
-            estadoDiario.status = "won";
-            salvarEstadoDiario(estadoDiario);
-            salvarEstatisticaVitoria();
-            setTimeout(() => mostrarFimDeJogo(true), 400);
-        } else {
-            row.classList.add("shake");
-        }
-    }, tempoTotalAnimacao);
-}
 
 // ==========================================================================
 // WIDGET DE LINKS ÚTEIS
@@ -3327,7 +3071,7 @@ carregarJogadores().then(() => {
         const hoje = new Date();
         const ontem = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() - 1);
         const ontemStr = `${ontem.getFullYear()}-${String(ontem.getMonth() + 1).padStart(2, "0")}-${String(ontem.getDate()).padStart(2, "0")}`;
-        const jogadorOntem = sortearJogadorDoDia(ontemStr);
+        const jogadorOntem = classicMode.getPlayerForDate(ontemStr);
         yesterdayPlayerEl.innerText = jogadorOntem.nome;
     }
 });

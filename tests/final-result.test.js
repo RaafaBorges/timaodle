@@ -3,6 +3,9 @@
 const assert = require("node:assert/strict");
 const { scriptSource, compileFunctions } = require("./script-harness.js");
 const sharing = require("../sharing.js");
+const fs = require("node:fs");
+const path = require("node:path");
+const classicSource = fs.readFileSync(path.join(__dirname, "..", "classic-mode.js"), "utf8");
 
 let scenarios = 0;
 function test(name, callback) {
@@ -185,9 +188,10 @@ test("restauração do MM concluído mostra ação estática após o feedback", 
 });
 
 test("overlay abre somente em conclusões imediatas", () => {
-    assert.match(scriptSource, /mostrarFimDeJogo\(comAnimacao\)[\s\S]*?if \(comAnimacao\)[\s\S]*?abrirResultadoFinal\("classic"\)/);
+    assert.match(classicSource, /mostrarFimDeJogo\(comAnimacao\)[\s\S]*?if \(comAnimacao\)[\s\S]*?onComplete\(\)/);
+    assert.ok(scriptSource.includes('onComplete: () => abrirResultadoFinal("classic")'));
     assert.match(scriptSource, /mostrarFimDeJogoMM\(comAnimacao\)[\s\S]*?if \(comAnimacao\) abrirResultadoFinal\("moreLess"\)/);
-    assert.ok(!/iniciarDesafioDiario\(\)[\s\S]{0,1200}abrirResultadoFinal/.test(scriptSource));
+    assert.ok(!/function start\(\)[\s\S]{0,1800}onComplete\(\)/.test(classicSource));
     assert.ok(!/iniciarDesafioFotoDoDia\(\)[\s\S]{0,2200}abrirResultadoFinal/.test(scriptSource));
 });
 
