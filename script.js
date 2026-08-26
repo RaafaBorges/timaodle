@@ -66,6 +66,7 @@ function persistirNormalizacaoSegura(chave, original, normalizado) {
 
 let jogadores = [];
 let classicMode = null;
+let photoMode = null;
 
 // Estatísticas legadas do Clássico. Não representam o streak geral e são
 // mantidas somente por compatibilidade com instalações existentes.
@@ -1112,9 +1113,10 @@ function dadosResultadoFinal(tipo) {
         return { outcome: "won", title: "GANHOU", metric: pluralResultado(tentativas, "TENTATIVA", "TENTATIVAS") };
     }
     if (tipo === "photo") {
-        const tentativas = estadoFotoDiario?.tentativas?.length || 0;
-        const venceu = estadoFotoDiario?.status === "won";
-        return { outcome: venceu ? "won" : "lost", title: venceu ? "GANHOU" : "PERDEU", metric: `${tentativas} / ${MAX_TENTATIVAS_FOTO} TENTATIVAS` };
+        const estado = photoMode?.getState();
+        const tentativas = estado?.tentativas?.length || 0;
+        const venceu = estado?.status === "won";
+        return { outcome: venceu ? "won" : "lost", title: venceu ? "GANHOU" : "PERDEU", metric: `${tentativas} / ${TimaodlePhotoMode.MAX_TENTATIVAS_FOTO} TENTATIVAS` };
     }
     if (tipo === "moreLess") {
         const venceu = estadoMMDiario?.status === "won";
@@ -1219,7 +1221,7 @@ finalResultCloseBtn?.addEventListener("click", fecharResultadoFinal);
 finalResultHomeBtn?.addEventListener("click", voltarParaHomeDoResultado);
 finalResultShareBtn?.addEventListener("click", () => {
     if (finalResultModeType === "classic") compartilharResultado();
-    else if (finalResultModeType === "photo") compartilharResultadoFoto();
+    else if (finalResultModeType === "photo") photoMode.share();
     else if (finalResultModeType === "moreLess") compartilharResultadoMM();
     else if (finalResultModeType === "lineup") compartilharResultadoEscalacao();
 });
@@ -1250,9 +1252,7 @@ function atualizarTimer() {
 
     // No Modo Foto, depois que o desafio do dia termina (ganhou ou
     // perdeu), o rótulo de tentativas vira a contagem pro próximo dia.
-    if (photoAttemptsLabelEl && estadoFotoDiario && estadoFotoDiario.status !== "playing") {
-        photoAttemptsLabelEl.innerText = `Próximo em ${texto}`;
-    }
+    photoMode?.atualizarContagemRegressiva(texto);
 
     if (typeof mmRoundLabelEl !== "undefined" && mmRoundLabelEl && estadoMMDiario && estadoMMDiario.status !== "playing") {
         mmRoundLabelEl.innerText = `Próximo em ${texto}`;
@@ -1418,19 +1418,6 @@ async function compartilharTextoNovoModo(texto, botaoFeedback = finalResultShare
     return false;
 }
 
-function gerarTextoCompartilhamentoFoto() {
-    const numero = numeroDoDesafio(getDataLocalString());
-    const tentativas = estadoFotoDiario?.tentativas?.length || 0;
-    const venceu = estadoFotoDiario?.status === "won";
-    return construirTextoCompartilhamentoFoto({
-        numero, tentativas, venceu, maxTentativas: MAX_TENTATIVAS_FOTO, url: URL_OFICIAL_TIMAODLE
-    });
-}
-
-function compartilharResultadoFoto(botaoFeedback = finalResultShareBtn) {
-    return compartilharTextoNovoModo(gerarTextoCompartilhamentoFoto(), botaoFeedback);
-}
-
 function gerarTextoCompartilhamentoMM() {
     const numero = numeroDoDesafio(getDataLocalString());
     const venceu = estadoMMDiario?.status === "won";
@@ -1485,7 +1472,6 @@ shareDailyResultBtn?.addEventListener("click", compartilharResultadoDiario);
    arquivo (não precisa mexer neste script.js).
    ========================================================================== */
 
-const MAX_TENTATIVAS_FOTO = 6;
 const CHAVE_ESTADO_FOTO = "timaodle_foto_daily_state";
 const CHAVE_TUTORIAL_FOTO = "timaodle_foto_tutorial_visto";
 
@@ -1513,18 +1499,6 @@ async function carregarManifestoFotos() {
         JOGADORES_COM_FOTO = catalogoFotos.nomes();
     }
 }
-
-// Níveis de blur/preto-e-branco por tentativa (índice 0 = antes de
-// qualquer palpite; cada palpite avança um nível). Blur reduzido em
-// relação à primeira versão — ficava difícil demais no início.
-const NIVEIS_FOTO = [
-    { blur: 9, gray: 100 },
-    { blur: 7, gray: 80 },
-    { blur: 5, gray: 60 },
-    { blur: 3, gray: 40 },
-    { blur: 1, gray: 20 },
-    { blur: 0, gray: 0 },
-];
 
 const FOTO_INDISPONIVEL_DATA_URI = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" role="img" aria-label="Foto indisponível">
@@ -1567,12 +1541,6 @@ const photoGrayscaleToggle = document.getElementById("photoGrayscaleToggle");
 const photoTutorialModal = document.getElementById("photoTutorialModal");
 const photoTutorialCloseBtn = document.getElementById("photoTutorialCloseBtn");
 
-let jogadorSecretoFoto = null;
-let tentativasFoto = [];
-let fotoAtiva = true;
-let pretoEBrancoAtivo = true;
-let estadoFotoDiario = null;
-
 function jogadoresComFotoObjetos() {
     return catalogoFotos.jogadores();
 }
@@ -1602,223 +1570,72 @@ function salvarEstadoFoto(estado) {
     sincronizarProgressoDiario();
 }
 
-function atualizarCompartilhamentoEstaticoFoto() {
-    const concluido = estadoFotoDiario?.status === "won" || estadoFotoDiario?.status === "lost";
-    photoShareResultBtn?.classList.toggle("hidden", !concluido);
-}
-
-function renderizarDotsFoto() {
-    photoDotsEl.innerHTML = "";
-    for (let i = 0; i < MAX_TENTATIVAS_FOTO; i++) {
-        const dot = document.createElement("span");
-        dot.className = "dot-attempt";
-        if (i < tentativasFoto.length) {
-            const acertou = tentativasFoto[i] === jogadorSecretoFoto.nome;
-            dot.classList.add(acertou ? "used" : "wrong-used");
-        }
-        photoDotsEl.appendChild(dot);
-    }
-}
-
-function atualizarImagemFoto() {
-    const nivel = NIVEIS_FOTO[Math.min(tentativasFoto.length, NIVEIS_FOTO.length - 1)];
-    const gray = pretoEBrancoAtivo ? nivel.gray : 0;
-    photoImgEl.style.filter = `blur(${nivel.blur}px) grayscale(${gray}%)`;
-}
-
-function iniciarDesafioFotoDoDia() {
-    const hoje = getDataLocalString();
-    const salvo = carregarEstadoFoto();
-    if (salvo?.data) sincronizarProgressoDiario();
-    jogadorSecretoFoto = catalogoFotos.jogadorDoEstado(salvo, hoje);
-
-    photoEndMessageEl.classList.add("hidden");
-    photoAttemptsListEl.innerHTML = "";
-    photoSearchInput.value = "";
-    fecharAutocompleteFoto();
-    photoShareResultBtn?.classList.add("hidden");
-
-    if (!jogadorSecretoFoto) {
-        photoEndMessageEl.classList.remove("hidden");
-        photoEndMessageEl.innerHTML = "Nenhuma foto cadastrada ainda em fotos-manifest.json.";
-        photoSearchInput.disabled = true;
-        photoDifficultyBadgeEl.classList.add("hidden");
-        return;
-    }
-
-    const dificuldade = catalogoFotos.dificuldade(jogadorSecretoFoto);
-    photoDifficultyBadgeEl.textContent = dificuldade.label;
-    photoDifficultyBadgeEl.className = `difficulty-badge ${dificuldade.classe}`;
-    photoDifficultyBadgeEl.classList.remove("hidden");
-
-    definirFotoJogador(photoImgEl, jogadorSecretoFoto);
-
-    if (salvo && salvo.data === hoje) {
-        estadoFotoDiario = salvo;
-        if (estadoFotoDiario.jogadorNome !== jogadorSecretoFoto.nome) {
-            estadoFotoDiario.jogadorNome = jogadorSecretoFoto.nome;
-            salvarEstadoFoto(estadoFotoDiario);
-        }
-        tentativasFoto = [...estadoFotoDiario.tentativas];
-        fotoAtiva = estadoFotoDiario.status === "playing";
-
-        tentativasFoto.forEach(nomeTentativa => {
-            const acertou = nomeTentativa === jogadorSecretoFoto.nome;
-            const item = document.createElement("div");
-            item.className = `photo-attempt-item ${acertou ? "correct" : "wrong"}`;
-            item.innerText = nomeTentativa;
-            photoAttemptsListEl.appendChild(item);
-        });
-
-        atualizarImagemFoto();
-        renderizarDotsFoto();
-        photoSearchInput.disabled = !fotoAtiva;
-        atualizarCompartilhamentoEstaticoFoto();
-
-        if (estadoFotoDiario.status === "won") {
-            photoImgEl.style.filter = "blur(0px) grayscale(0%)";
-            photoEndMessageEl.classList.remove("hidden");
-            photoEndMessageEl.innerHTML = `✓ Isso aí! Era o <strong>${jogadorSecretoFoto.nome}</strong> mesmo.`;
-        } else if (estadoFotoDiario.status === "lost") {
-            photoImgEl.style.filter = "blur(0px) grayscale(0%)";
-            photoEndMessageEl.classList.remove("hidden");
-            photoEndMessageEl.innerHTML = `✕ Suas tentativas acabaram. Era o <strong>${jogadorSecretoFoto.nome}</strong>.`;
-        } else {
-            photoAttemptsLabelEl.innerText = `${tentativasFoto.length} / ${MAX_TENTATIVAS_FOTO} TENTATIVAS`;
-        }
-    } else {
-        estadoFotoDiario = {
-            data: hoje,
-            jogadorNome: jogadorSecretoFoto.nome,
-            tentativas: [],
-            status: "playing"
-        };
-        salvarEstadoFoto(estadoFotoDiario);
-        tentativasFoto = [];
-        fotoAtiva = true;
-        photoSearchInput.disabled = false;
-        photoAttemptsLabelEl.innerText = `0 / ${MAX_TENTATIVAS_FOTO} TENTATIVAS`;
-        atualizarImagemFoto();
-        renderizarDotsFoto();
-        atualizarCompartilhamentoEstaticoFoto();
-    }
-
-    // Tutorial do botão de preto-e-branco — só na primeira vez que
-    // a pessoa abre o Modo Foto.
-    if (!localStorage.getItem(CHAVE_TUTORIAL_FOTO)) {
-        abrirModalAcessivel(photoTutorialModal, photoSearchInput, photoTutorialCloseBtn);
-    }
-}
-
-function fecharAutocompleteFoto() {
-    autocompleteFoto.fechar();
-}
-
-function fazerPalpiteFoto(palpiteJogador) {
-    if (!fotoAtiva) return;
-
-    tentativasFoto.push(palpiteJogador.nome);
-    estadoFotoDiario.tentativas = tentativasFoto;
-    salvarEstadoFoto(estadoFotoDiario);
-
-    const acertou = palpiteJogador.nome === jogadorSecretoFoto.nome;
-
-    const item = document.createElement("div");
-    item.className = `photo-attempt-item ${acertou ? "correct" : "wrong"}`;
-    item.innerText = palpiteJogador.nome;
-    photoAttemptsListEl.appendChild(item);
-
-    atualizarImagemFoto();
-    renderizarDotsFoto();
-    photoAttemptsLabelEl.innerText = `${tentativasFoto.length} / ${MAX_TENTATIVAS_FOTO} TENTATIVAS`;
-
-    if (acertou) {
-        fotoAtiva = false;
-        estadoFotoDiario.status = "won";
-        salvarEstadoFoto(estadoFotoDiario);
-        photoSearchInput.disabled = true;
-        photoImgEl.style.filter = "blur(0px) grayscale(0%)";
-        photoEndMessageEl.classList.remove("hidden");
-        photoEndMessageEl.innerHTML = `✓ Isso aí! Era o <strong>${jogadorSecretoFoto.nome}</strong> mesmo.`;
-        atualizarCompartilhamentoEstaticoFoto();
-        dispararConfetes();
-        abrirResultadoFinal("photo");
-    } else if (tentativasFoto.length >= MAX_TENTATIVAS_FOTO) {
-        fotoAtiva = false;
-        estadoFotoDiario.status = "lost";
-        salvarEstadoFoto(estadoFotoDiario);
-        photoSearchInput.disabled = true;
-        photoImgEl.style.filter = "blur(0px) grayscale(0%)";
-        photoEndMessageEl.classList.remove("hidden");
-        photoEndMessageEl.innerHTML = `✕ Suas tentativas acabaram. Era o <strong>${jogadorSecretoFoto.nome}</strong>.`;
-        atualizarCompartilhamentoEstaticoFoto();
-        abrirResultadoFinal("photo");
-    }
-}
-
-// Autocomplete do Modo Foto — restrito só aos jogadores com foto
-const autocompleteFoto = criarAutocomplete({
+photoMode = TimaodlePhotoMode.createPhotoMode({
     documentApi: document,
-    input: photoSearchInput,
-    listbox: photoAutocompleteList,
-    prefixo: "photo",
-    getLabel: jogador => jogador.nome,
-    estaAtivo: () => fotoAtiva,
-    obterSugestoes: busca => filtrarSugestoes(jogadoresComFotoObjetos(), busca, {
-        getLabel: jogador => jogador.nome,
-        incluir: jogador => !tentativasFoto.includes(jogador.nome)
-    }),
-    renderizarOpcao: (item, jogador) => {
-        item.innerText = jogador.nome;
+    elements: {
+        view: photoView,
+        playButton: btnPlayFoto,
+        backButton: backHomeBtnFoto,
+        image: photoImgEl,
+        dots: photoDotsEl,
+        attemptsLabel: photoAttemptsLabelEl,
+        difficultyBadge: photoDifficultyBadgeEl,
+        searchInput: photoSearchInput,
+        autocompleteList: photoAutocompleteList,
+        attemptsList: photoAttemptsListEl,
+        endMessage: photoEndMessageEl,
+        shareButton: photoShareResultBtn,
+        grayscaleToggle: photoGrayscaleToggle,
+        tutorialCloseButton: photoTutorialCloseBtn
     },
-    onSelect: jogador => {
-        fazerPalpiteFoto(jogador);
-        photoSearchInput.value = "";
-        fecharAutocompleteFoto();
-    }
+    getDate: getDataLocalString,
+    getCatalog: () => catalogoFotos,
+    autocomplete: { create: criarAutocomplete, filter: filtrarSugestoes },
+    storage: {
+        load: () => {
+            const salvo = carregarEstadoFoto();
+            if (salvo?.data) sincronizarProgressoDiario();
+            return salvo;
+        },
+        save: salvarEstadoFoto
+    },
+    sharing: {
+        build: construirTextoCompartilhamentoFoto,
+        share: compartilharTextoNovoModo,
+        getChallengeNumber: numeroDoDesafio,
+        getDefaultFeedbackButton: () => finalResultShareBtn,
+        officialUrl: URL_OFICIAL_TIMAODLE
+    },
+    tutorial: {
+        isSeen: () => Boolean(localStorage.getItem(CHAVE_TUTORIAL_FOTO)),
+        markSeen: () => localStorage.setItem(CHAVE_TUTORIAL_FOTO, "1"),
+        open: () => abrirModalAcessivel(photoTutorialModal, photoSearchInput, photoTutorialCloseBtn),
+        close: () => fecharModalAcessivel(photoTutorialModal, photoSearchInput)
+    },
+    navigation: {
+        beforeOpen: async () => {
+            homeView.classList.add("hidden");
+            const tarefas = [];
+            if (jogadores.length === 0) tarefas.push(carregarJogadores());
+            if (JOGADORES_COM_FOTO.length === 0) tarefas.push(carregarManifestoFotos());
+            if (tarefas.length > 0) await Promise.all(tarefas);
+        },
+        back: () => {
+            homeView.classList.remove("hidden");
+            renderizarProgressoHome();
+        }
+    },
+    setPlayerPhoto: definirFotoJogador,
+    onCelebrate: dispararConfetes,
+    onComplete: () => abrirResultadoFinal("photo")
 });
-
-// Navegação
-btnPlayFoto.addEventListener("click", async () => {
-    homeView.classList.add("hidden");
-    photoView.classList.remove("hidden");
-
-    const tarefas = [];
-    if (jogadores.length === 0) tarefas.push(carregarJogadores());
-    if (JOGADORES_COM_FOTO.length === 0) tarefas.push(carregarManifestoFotos());
-
-    if (tarefas.length > 0) await Promise.all(tarefas);
-    iniciarDesafioFotoDoDia();
-});
-
-backHomeBtnFoto.addEventListener("click", () => {
-    photoView.classList.add("hidden");
-    homeView.classList.remove("hidden");
-    renderizarProgressoHome();
-});
-
-photoGrayscaleToggle.addEventListener("click", () => {
-    pretoEBrancoAtivo = !pretoEBrancoAtivo;
-    photoGrayscaleToggle.classList.toggle("active", pretoEBrancoAtivo);
-    photoGrayscaleToggle.setAttribute("aria-pressed", pretoEBrancoAtivo);
-    atualizarImagemFoto();
-});
-
-photoShareResultBtn?.addEventListener("click", () => compartilharResultadoFoto(photoShareResultBtn));
-
-function fecharTutorialFoto() {
-    localStorage.setItem(CHAVE_TUTORIAL_FOTO, "1");
-    fecharModalAcessivel(photoTutorialModal, photoSearchInput);
-}
-
-photoTutorialCloseBtn.addEventListener("click", fecharTutorialFoto);
 
 infraestruturaDialogs.registrarDialogs([
     { dialog: finalResultModal, onClose: fecharResultadoFinal, fecharNoBackdrop: true },
     { dialog: howToPlayModal, onClose: fecharComoJogar, fecharNoBackdrop: true },
     { dialog: integratedStatsModal, onClose: fecharEstatisticasIntegradas, fecharNoBackdrop: true },
     { dialog: historyModal, onClose: fecharHistorico, fecharNoBackdrop: true },
-    { dialog: photoTutorialModal, onClose: fecharTutorialFoto, fecharNoBackdrop: false }
+    { dialog: photoTutorialModal, onClose: photoMode.fecharTutorial, fecharNoBackdrop: false }
 ]);
 
 /* ==========================================================================

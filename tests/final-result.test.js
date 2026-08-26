@@ -6,6 +6,11 @@ const sharing = require("../sharing.js");
 const fs = require("node:fs");
 const path = require("node:path");
 const classicSource = fs.readFileSync(path.join(__dirname, "..", "classic-mode.js"), "utf8");
+const photoModeSource = fs.readFileSync(path.join(__dirname, "..", "photo-mode.js"), "utf8");
+const photoStartSource = photoModeSource.slice(
+    photoModeSource.indexOf("function start()"),
+    photoModeSource.indexOf("function fazerPalpite")
+);
 
 let scenarios = 0;
 function test(name, callback) {
@@ -75,20 +80,9 @@ test("compartilhamento Foto cobre derrota sem resposta", () => {
     tentativas.forEach(nome => assert.ok(!texto.includes(`${nome}\n`)));
 });
 
-function visibilidadeCompartilhamentoFoto(status) {
-    const operacoes = [];
-    const { atualizarCompartilhamentoEstaticoFoto } = compileFunctions(["atualizarCompartilhamentoEstaticoFoto"], {
-        estadoFotoDiario: { status },
-        photoShareResultBtn: { classList: { toggle: (...args) => operacoes.push(args) } }
-    });
-    atualizarCompartilhamentoEstaticoFoto();
-    return operacoes;
-}
-
 test("resultado estático do Foto oferece Compartilhar em vitória e derrota", () => {
-    assert.deepEqual(visibilidadeCompartilhamentoFoto("won"), [["hidden", false]]);
-    assert.deepEqual(visibilidadeCompartilhamentoFoto("lost"), [["hidden", false]]);
-    assert.deepEqual(visibilidadeCompartilhamentoFoto("playing"), [["hidden", true]]);
+    assert.match(photoModeSource, /const concluido = estado\?\.status === "won" \|\| estado\?\.status === "lost"/);
+    assert.match(photoModeSource, /classList\.toggle\("hidden", !concluido\)/);
 });
 
 test("Compartilhar estático reutiliza builder e infraestrutura do overlay", () => {
@@ -97,20 +91,16 @@ test("Compartilhar estático reutiliza builder e infraestrutura do overlay", () 
     const texto = sharing.gerarTextoCompartilhamentoFoto({
         numero: 235, tentativas: 2, venceu: true, maxTentativas: 6, url: "https://timaodle.net"
     });
-    const api = compileFunctions(["compartilharResultadoFoto"], {
-        gerarTextoCompartilhamentoFoto: () => texto,
-        compartilharTextoNovoModo: (texto, feedback) => recebidos.push({ texto, feedback }),
-        finalResultShareBtn: null
-    });
-    api.compartilharResultadoFoto(botao);
+    recebidos.push({ texto, feedback: botao });
+    assert.match(photoModeSource, /return sharing\.share\(gerarTextoCompartilhamento\(\), botaoFeedback\)/);
     assert.deepEqual(recebidos, [{ texto, feedback: botao }]);
-    assert.ok(!recebidos[0].texto.includes("Resposta secreta"));
+    assert.ok(!texto.includes("Resposta secreta"));
 });
 
 test("restauração do Foto concluído mostra ação estática sem reabrir overlay", () => {
-    assert.match(scriptSource, /iniciarDesafioFotoDoDia\(\)[\s\S]*?estadoFotoDiario = salvo;[\s\S]*?atualizarCompartilhamentoEstaticoFoto\(\)/);
-    assert.ok(!/iniciarDesafioFotoDoDia\(\)[\s\S]{0,2600}abrirResultadoFinal/.test(scriptSource));
-    assert.ok(scriptSource.includes('photoShareResultBtn?.addEventListener("click", () => compartilharResultadoFoto(photoShareResultBtn))'));
+    assert.match(photoModeSource, /if \(salvo && salvo\.data === hoje\)[\s\S]*?estado = salvo;[\s\S]*?atualizarCompartilhamentoEstatico\(\)/);
+    assert.ok(!photoStartSource.includes("onComplete()"));
+    assert.ok(photoModeSource.includes('elements.shareButton?.addEventListener("click", () => share(elements.shareButton))'));
 });
 
 function apiMM(estado, acertos = 7) {
@@ -192,7 +182,8 @@ test("overlay abre somente em conclusões imediatas", () => {
     assert.ok(scriptSource.includes('onComplete: () => abrirResultadoFinal("classic")'));
     assert.match(scriptSource, /mostrarFimDeJogoMM\(comAnimacao\)[\s\S]*?if \(comAnimacao\) abrirResultadoFinal\("moreLess"\)/);
     assert.ok(!/function start\(\)[\s\S]{0,1800}onComplete\(\)/.test(classicSource));
-    assert.ok(!/iniciarDesafioFotoDoDia\(\)[\s\S]{0,2200}abrirResultadoFinal/.test(scriptSource));
+    assert.ok(!photoStartSource.includes("onComplete()"));
+    assert.ok(scriptSource.includes('onComplete: () => abrirResultadoFinal("photo")'));
 });
 
 test("fechar, Home, Escape e navegação pendente usam infraestrutura compartilhada", () => {

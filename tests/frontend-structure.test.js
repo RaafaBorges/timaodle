@@ -13,6 +13,7 @@ const ui = fs.readFileSync(path.join(root, "ui.js"), "utf8");
 const autocomplete = fs.readFileSync(path.join(root, "autocomplete.js"), "utf8");
 const classic = fs.readFileSync(path.join(root, "classic-mode.js"), "utf8");
 const photoCatalog = fs.readFileSync(path.join(root, "photo-catalog.js"), "utf8");
+const photoMode = fs.readFileSync(path.join(root, "photo-mode.js"), "utf8");
 const css = fs.readFileSync(path.join(root, "style.css"), "utf8");
 const partidas = JSON.parse(fs.readFileSync(path.join(root, "partidas.json"), "utf8"));
 
@@ -69,16 +70,19 @@ test("infraestruturas de UI carregam depois de sharing e antes do script princip
     const autocompleteIndex = html.indexOf('<script src="autocomplete.js"></script>');
     const classicIndex = html.indexOf('<script src="classic-mode.js"></script>');
     const photoCatalogIndex = html.indexOf('<script src="photo-catalog.js"></script>');
+    const photoModeIndex = html.indexOf('<script src="photo-mode.js"></script>');
     const scriptIndex = html.indexOf('<script src="script.js"></script>');
     assert.ok(uiIndex > sharingIndex);
     assert.ok(autocompleteIndex > uiIndex);
     assert.ok(classicIndex > autocompleteIndex);
     assert.ok(photoCatalogIndex > classicIndex);
-    assert.ok(scriptIndex > photoCatalogIndex);
+    assert.ok(photoModeIndex > photoCatalogIndex);
+    assert.ok(scriptIndex > photoModeIndex);
     assert.ok(ui.includes("TimaodleUI"));
     assert.ok(autocomplete.includes("TimaodleAutocomplete"));
     assert.ok(classic.includes("TimaodleClassic"));
     assert.ok(photoCatalog.includes("TimaodlePhotoCatalog"));
+    assert.ok(photoMode.includes("TimaodlePhotoMode"));
 });
 
 test("IDs literais usados por getElementById existem no HTML", () => {
@@ -111,6 +115,7 @@ test("classes dinâmicas relevantes permanecem ligadas ao JS", () => {
         !script.includes(className) && !ui.includes(className)
             && !autocomplete.includes(className) && !classic.includes(className)
             && !photoCatalog.includes(className)
+            && !photoMode.includes(className)
     );
     assert.deepEqual(missing, []);
 });
@@ -384,7 +389,7 @@ test("Modo Foto preserva layout fluido e estados visuais próprios", () => {
     assert.match(shareButton, /type=["']button["']/);
     assert.match(shareButton, />COMPARTILHAR<\/button>/);
     assert.match(cssRule("#photoView .photo-share-result"), /width:\s*min\(320px,\s*100%\)/);
-    assert.match(script, /for \(let i = 0; i < MAX_TENTATIVAS_FOTO; i\+\+\)/);
+    assert.match(photoMode, /for \(let i = 0; i < MAX_TENTATIVAS_FOTO; i\+\+\)/);
     for (const selector of [
         "#photoView .photo-dots .dot-attempt.used",
         "#photoView .photo-dots .dot-attempt.wrong-used",
@@ -535,7 +540,8 @@ test("autocompletes preservam contrato combobox, listbox e options ARIA", () => 
         assert.ok(autocomplete.includes(token), token);
     }
     assert.ok(classic.includes('prefixo: "classic"'));
-    for (const token of ['prefixo: "photo"', 'prefixo: "lineup"']) assert.ok(script.includes(token), token);
+    assert.ok(photoMode.includes('prefixo: "photo"'));
+    assert.ok(script.includes('prefixo: "lineup"'));
     assert.ok(autocomplete.includes('event.key === "Escape"'));
     assert.ok(autocomplete.includes("if (indiceAtivo < 0) return"));
 });
