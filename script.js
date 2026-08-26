@@ -43,6 +43,7 @@ const {
     filtrarSugestoes,
     criarAutocomplete
 } = globalThis.TimaodleAutocomplete;
+const { embaralharComSemente } = globalThis.TimaodleMoreLessCore;
 
 function lerJsonLocalStorage(chave) {
     try {
@@ -1660,7 +1661,10 @@ const MIN_ACERTOS_MM = 7;
 const CHAVE_ESTADO_MM = "timaodle_mm_daily_state";
 const VERSAO_ALGORITMO_MM = 2;
 const ATRASO_AVANCO_MM = 1500;
-const PLANO_DIFICULDADES_MM = ["facil", "facil", "facil", "media", "media", "media", "media", "dificil", "dificil", "dificil"];
+const moreLessCore = TimaodleMoreLessCore.createMoreLessCore({
+    getPool: jogadoresElegiveisMM,
+    hashString
+});
 
 // Elementos da interface
 const maisMenosView = document.getElementById("maisMenosView");
@@ -1697,217 +1701,6 @@ let mmAtivo = true;
 let estadoMMDiario = null;
 let timerAvancoMM = null;
 let transicaoMMAtiva = false;
-
-// Gerador de números pseudoaleatórios com semente (determinístico —
-// mesma semente sempre gera a mesma sequência).
-function gerarPRNG(semente) {
-    let s = semente >>> 0;
-    return function () {
-        s = (s + 0x6D2B79F5) >>> 0;
-        let t = s;
-        t = Math.imul(t ^ (t >>> 15), t | 1);
-        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-}
-
-function embaralharComSemente(array, semente) {
-    const rng = gerarPRNG(semente);
-    const resultado = [...array];
-    for (let i = resultado.length - 1; i > 0; i--) {
-        const j = Math.floor(rng() * (i + 1));
-        [resultado[i], resultado[j]] = [resultado[j], resultado[i]];
-    }
-    return resultado;
-}
-
-function embaralharComRngMM(array, rng) {
-    const resultado = [...array];
-    for (let i = resultado.length - 1; i > 0; i--) {
-        const j = Math.floor(rng() * (i + 1));
-        [resultado[i], resultado[j]] = [resultado[j], resultado[i]];
-    }
-    return resultado;
-}
-
-function maiorSequenciaIgualMM(plano) {
-    let maior = 1;
-    let atual = 1;
-    for (let i = 1; i < plano.length; i++) {
-        atual = plano[i] === plano[i - 1] ? atual + 1 : 1;
-        maior = Math.max(maior, atual);
-    }
-    return maior;
-}
-
-function maiorSequenciaAlternadaMM(plano) {
-    let maior = 1;
-    let atual = 1;
-    for (let i = 1; i < plano.length; i++) {
-        atual = plano[i] !== plano[i - 1] ? atual + 1 : 1;
-        maior = Math.max(maior, atual);
-    }
-    return maior;
-}
-
-function gerarPlanoDirecoesMM(rng) {
-    const quantidadeMais = 4 + Math.floor(rng() * 3);
-    const base = [
-        ...Array(quantidadeMais).fill("mais"),
-        ...Array(RODADAS_MM - quantidadeMais).fill("menos")
-    ];
-
-    for (let tentativa = 0; tentativa < 80; tentativa++) {
-        const plano = embaralharComRngMM(base, rng);
-        if (maiorSequenciaIgualMM(plano) <= 3 && maiorSequenciaAlternadaMM(plano) <= 4) {
-            return plano;
-        }
-    }
-
-    return quantidadeMais === 4
-        ? ["mais", "menos", "menos", "mais", "menos", "mais", "mais", "menos", "menos", "menos"]
-        : quantidadeMais === 6
-            ? ["mais", "mais", "menos", "mais", "menos", "menos", "mais", "mais", "menos", "mais"]
-            : ["mais", "menos", "mais", "mais", "menos", "menos", "mais", "menos", "menos", "mais"];
-}
-
-function direcaoComparacaoMM(referencia, candidato) {
-    const valorReferencia = referencia[CAMPO_STAT_MM];
-    const valorCandidato = candidato[CAMPO_STAT_MM];
-    if (valorCandidato === valorReferencia) return "empate";
-    return valorCandidato > valorReferencia ? "mais" : "menos";
-}
-
-function dificuldadeComparacaoMM(referencia, candidato) {
-    const diferenca = Math.abs(candidato[CAMPO_STAT_MM] - referencia[CAMPO_STAT_MM]);
-    if (diferenca <= 30) return "dificil";
-    if (diferenca <= 120) return "media";
-    return "facil";
-}
-
-function atendeDificuldadeExpandidaMM(referencia, candidato, dificuldade) {
-    const diferenca = Math.abs(candidato[CAMPO_STAT_MM] - referencia[CAMPO_STAT_MM]);
-    if (diferenca === 0) return false;
-    if (dificuldade === "dificil") return diferenca <= 45;
-    if (dificuldade === "media") return diferenca >= 16 && diferenca <= 160;
-    return diferenca >= 91;
-}
-
-function construirSequenciaExataMM(poolPriorizado, planoDificuldades, planoDirecoes) {
-    const MAX_TENTATIVAS_EXATAS_MM = poolPriorizado.length;
-
-    for (let tentativa = 0; tentativa < MAX_TENTATIVAS_EXATAS_MM; tentativa++) {
-        const inicial = poolPriorizado[tentativa % poolPriorizado.length];
-        const sequencia = [inicial];
-        const usados = new Set([inicial.nome]);
-        let completa = true;
-
-        for (let rodada = 0; rodada < RODADAS_MM; rodada++) {
-            const referencia = sequencia[sequencia.length - 1];
-            const candidatos = poolPriorizado.filter(candidato =>
-                !usados.has(candidato.nome)
-                && direcaoComparacaoMM(referencia, candidato) === planoDirecoes[rodada]
-                && dificuldadeComparacaoMM(referencia, candidato) === planoDificuldades[rodada]
-            );
-
-            if (candidatos.length === 0) {
-                completa = false;
-                break;
-            }
-
-            const indice = (tentativa * 7 + rodada * 3) % candidatos.length;
-            const candidato = candidatos[indice];
-            usados.add(candidato.nome);
-            sequencia.push(candidato);
-        }
-
-        if (completa) return sequencia;
-    }
-    return [];
-}
-
-function construirSequenciaComFallbackMM(poolPriorizado, planoDificuldades, planoDirecoes) {
-    const sequencia = [poolPriorizado[0]];
-    const usados = new Set([poolPriorizado[0].nome]);
-    const fallbacks = [];
-
-    for (let rodada = 0; rodada < RODADAS_MM; rodada++) {
-        const referencia = sequencia[sequencia.length - 1];
-        const disponiveis = poolPriorizado.filter(j => !usados.has(j.nome));
-        const direcao = planoDirecoes[rodada];
-        const dificuldade = planoDificuldades[rodada];
-        const grupos = [
-            disponiveis.filter(j => direcaoComparacaoMM(referencia, j) === direcao && dificuldadeComparacaoMM(referencia, j) === dificuldade),
-            disponiveis.filter(j => direcaoComparacaoMM(referencia, j) === direcao && atendeDificuldadeExpandidaMM(referencia, j, dificuldade)),
-            disponiveis.filter(j => direcaoComparacaoMM(referencia, j) === direcao),
-            disponiveis.filter(j => direcaoComparacaoMM(referencia, j) !== "empate"),
-            disponiveis
-        ];
-        const indiceGrupo = grupos.findIndex(grupo => grupo.length > 0);
-        const candidato = grupos[indiceGrupo][0];
-        fallbacks.push(indiceGrupo);
-        usados.add(candidato.nome);
-        sequencia.push(candidato);
-    }
-
-    return { sequencia, fallbacks };
-}
-
-function gerarDesafioMMV2(dataStr) {
-    const pool = jogadoresElegiveisMM();
-    if (pool.length < RODADAS_MM + 1) {
-        return { sequencia: [], planoDificuldades: [], planoDirecoes: [], fallbacks: [] };
-    }
-
-    const rng = gerarPRNG(hashString(dataStr + "-mm-v2"));
-    let ultimoPlanoDificuldades = [];
-    let ultimoPlanoDirecoes = [];
-    let ultimoPoolPriorizado = [];
-
-    // Alguns planos são inviáveis quando uma direção e uma faixa não têm
-    // candidato a partir da referência atual. Tentamos novos planos, sempre
-    // com o mesmo PRNG diário, antes de flexibilizar qualquer regra.
-    for (let tentativaPlano = 0; tentativaPlano < 12; tentativaPlano++) {
-        ultimoPlanoDificuldades = embaralharComRngMM(PLANO_DIFICULDADES_MM, rng);
-        ultimoPlanoDirecoes = gerarPlanoDirecoesMM(rng);
-        ultimoPoolPriorizado = embaralharComRngMM(pool, rng);
-        const sequenciaExata = construirSequenciaExataMM(
-            ultimoPoolPriorizado,
-            ultimoPlanoDificuldades,
-            ultimoPlanoDirecoes
-        );
-
-        if (sequenciaExata.length === RODADAS_MM + 1) {
-            return {
-                sequencia: sequenciaExata,
-                planoDificuldades: ultimoPlanoDificuldades,
-                planoDirecoes: ultimoPlanoDirecoes,
-                fallbacks: Array(RODADAS_MM).fill(0),
-                tentativasPlano: tentativaPlano + 1
-            };
-        }
-    }
-
-    const resultadoFallback = construirSequenciaComFallbackMM(
-        ultimoPoolPriorizado,
-        ultimoPlanoDificuldades,
-        ultimoPlanoDirecoes
-    );
-    return {
-        ...resultadoFallback,
-        planoDificuldades: ultimoPlanoDificuldades,
-        planoDirecoes: ultimoPlanoDirecoes,
-        tentativasPlano: 12
-    };
-}
-
-// Mantido somente para migrar com segurança partidas v1 iniciadas antes
-// da publicação do algoritmo balanceado.
-function gerarSequenciaMMV1(dataStr) {
-    const pool = jogadoresElegiveisMM();
-    if (pool.length < RODADAS_MM + 1) return [];
-    return embaralharComSemente(pool, hashString(dataStr + "-mm")).slice(0, RODADAS_MM + 1);
-}
 
 function carregarEstadoMM() {
     const salvo = lerJsonLocalStorage(CHAVE_ESTADO_MM);
@@ -2049,8 +1842,8 @@ function iniciarDesafioMMDoDia() {
             // Estados anteriores ao v2 não guardavam a sequência. Recriamos
             // a v1 uma única vez e passamos a persistir seu snapshot.
             sequenciaMM = estadoMMDiario.versaoAlgoritmo === VERSAO_ALGORITMO_MM
-                ? gerarDesafioMMV2(hoje).sequencia
-                : gerarSequenciaMMV1(hoje);
+                ? moreLessCore.gerarDesafioMMV2(hoje).sequencia
+                : moreLessCore.gerarSequenciaMMV1(hoje);
             registrarSequenciaNoEstadoMM(
                 estadoMMDiario,
                 sequenciaMM,
@@ -2079,7 +1872,7 @@ function iniciarDesafioMMDoDia() {
             renderizarRodadaMM();
         }
     } else {
-        const desafioV2 = gerarDesafioMMV2(hoje);
+        const desafioV2 = moreLessCore.gerarDesafioMMV2(hoje);
         sequenciaMM = desafioV2.sequencia;
 
         if (sequenciaMM.length < RODADAS_MM + 1) {

@@ -7,7 +7,9 @@ const { scriptSource, compileFunctions } = require("./script-harness");
 const core = require("../core.js");
 const classic = require("../classic-mode.js");
 const photoCatalog = require("../photo-catalog.js");
+const moreLessCore = require("../more-less-core.js");
 const photoCatalogSource = fs.readFileSync(path.join(__dirname, "..", "photo-catalog.js"), "utf8");
+const moreLessCoreSource = fs.readFileSync(path.join(__dirname, "..", "more-less-core.js"), "utf8");
 
 const root = path.join(__dirname, "..");
 const jogadores = JSON.parse(fs.readFileSync(path.join(root, "jogadores.json"), "utf8"));
@@ -23,22 +25,15 @@ const classicApi = {
     sortearJogadorDoDia: data => classic.selecionarJogadorDiario(jogadores, data, core.hashString)
 };
 const photoApi = photoCatalog.createPhotoCatalog({ jogadores, manifesto: nomesComFoto, hashString: core.hashString });
-const mmApi = compileFunctions([
-    "gerarPRNG", "embaralharComSemente", "embaralharComRngMM",
-    "maiorSequenciaIgualMM", "maiorSequenciaAlternadaMM", "gerarPlanoDirecoesMM",
-    "direcaoComparacaoMM", "dificuldadeComparacaoMM", "atendeDificuldadeExpandidaMM",
-    "construirSequenciaExataMM", "construirSequenciaComFallbackMM", "gerarDesafioMMV2",
-    "gerarSequenciaMMV1"
-], {
-    CAMPO_STAT_MM: "jogos",
-    RODADAS_MM: 10,
-    PLANO_DIFICULDADES_MM: ["facil", "facil", "facil", "media", "media", "media", "media", "dificil", "dificil", "dificil"],
-    jogadoresElegiveisMM: () => poolMM,
-    hashString: core.hashString
-});
+const mmApi = moreLessCore.createMoreLessCore({ getPool: () => poolMM, hashString: core.hashString });
 const lineupApi = compileFunctions([
-    "gerarPRNG", "embaralharComSemente", "selecionarPartidaDoDia"
-], { PARTIDAS_ESCALACAO: partidas, MAX_OCULTOS_ESCALACAO: 3, hashString: core.hashString });
+    "selecionarPartidaDoDia"
+], {
+    PARTIDAS_ESCALACAO: partidas,
+    MAX_OCULTOS_ESCALACAO: 3,
+    hashString: core.hashString,
+    embaralharComSemente: moreLessCore.embaralharComSemente
+});
 
 function fnv1a(text) {
     let hash = 0x811c9dc5;
@@ -165,8 +160,8 @@ for (const [pool, value] of Object.entries(expectedFingerprints)) {
 }
 
 matches(photoCatalogSource, /hashString\(dataStr \+ "-foto"\)/, "seed da Foto mudou");
-matches(scriptSource, /hashString\(dataStr \+ "-mm"\)/, "seed do MM v1 mudou");
-matches(scriptSource, /hashString\(dataStr \+ "-mm-v2"\)/, "seed do MM v2 mudou");
+matches(moreLessCoreSource, /hashString\(dataStr \+ "-mm"\)/, "seed do MM v1 mudou");
+matches(moreLessCoreSource, /hashString\(dataStr \+ "-mm-v2"\)/, "seed do MM v2 mudou");
 matches(scriptSource, /hashString\(dataStr \+ "-onze"\)/, "seed da partida do Onze Inicial mudou");
 matches(scriptSource, /hashString\(dataStr \+ "-onze-slots-" \+ partida\.id\)/, "seed dos ocultos do Onze Inicial mudou");
 

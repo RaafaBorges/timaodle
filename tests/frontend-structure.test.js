@@ -14,6 +14,7 @@ const autocomplete = fs.readFileSync(path.join(root, "autocomplete.js"), "utf8")
 const classic = fs.readFileSync(path.join(root, "classic-mode.js"), "utf8");
 const photoCatalog = fs.readFileSync(path.join(root, "photo-catalog.js"), "utf8");
 const photoMode = fs.readFileSync(path.join(root, "photo-mode.js"), "utf8");
+const moreLessCore = fs.readFileSync(path.join(root, "more-less-core.js"), "utf8");
 const css = fs.readFileSync(path.join(root, "style.css"), "utf8");
 const partidas = JSON.parse(fs.readFileSync(path.join(root, "partidas.json"), "utf8"));
 
@@ -71,18 +72,21 @@ test("infraestruturas de UI carregam depois de sharing e antes do script princip
     const classicIndex = html.indexOf('<script src="classic-mode.js"></script>');
     const photoCatalogIndex = html.indexOf('<script src="photo-catalog.js"></script>');
     const photoModeIndex = html.indexOf('<script src="photo-mode.js"></script>');
+    const moreLessCoreIndex = html.indexOf('<script src="more-less-core.js"></script>');
     const scriptIndex = html.indexOf('<script src="script.js"></script>');
     assert.ok(uiIndex > sharingIndex);
     assert.ok(autocompleteIndex > uiIndex);
     assert.ok(classicIndex > autocompleteIndex);
     assert.ok(photoCatalogIndex > classicIndex);
     assert.ok(photoModeIndex > photoCatalogIndex);
-    assert.ok(scriptIndex > photoModeIndex);
+    assert.ok(moreLessCoreIndex > photoModeIndex);
+    assert.ok(scriptIndex > moreLessCoreIndex);
     assert.ok(ui.includes("TimaodleUI"));
     assert.ok(autocomplete.includes("TimaodleAutocomplete"));
     assert.ok(classic.includes("TimaodleClassic"));
     assert.ok(photoCatalog.includes("TimaodlePhotoCatalog"));
     assert.ok(photoMode.includes("TimaodlePhotoMode"));
+    assert.ok(moreLessCore.includes("TimaodleMoreLessCore"));
 });
 
 test("IDs literais usados por getElementById existem no HTML", () => {

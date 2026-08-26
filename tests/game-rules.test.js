@@ -7,6 +7,8 @@ const storage = require("../storage-normalizers.js");
 const core = require("../core.js");
 const historyStats = require("../history-stats.js");
 const sharing = require("../sharing.js");
+const moreLessCore = require("../more-less-core.js");
+const moreLessCoreSource = fs.readFileSync(path.join(__dirname, "..", "more-less-core.js"), "utf8");
 const { scriptSource, compileFunctions } = require("./script-harness.js");
 
 let scenarios = 0;
@@ -141,18 +143,8 @@ const photoNames = new Set(JSON.parse(fs.readFileSync(path.join(__dirname, "..",
 const mmPool = players.filter(player => photoNames.has(player.nome)
     && Object.prototype.hasOwnProperty.call(player, "jogos")
     && typeof player.jogos === "number" && Number.isFinite(player.jogos));
-const mmApi = compileFunctions([
-    "gerarPRNG", "embaralharComRngMM", "maiorSequenciaIgualMM",
-    "maiorSequenciaAlternadaMM", "gerarPlanoDirecoesMM", "direcaoComparacaoMM",
-    "dificuldadeComparacaoMM", "atendeDificuldadeExpandidaMM",
-    "construirSequenciaExataMM", "construirSequenciaComFallbackMM", "gerarDesafioMMV2"
-], {
-    CAMPO_STAT_MM: "jogos",
-    RODADAS_MM: 10,
-    PLANO_DIFICULDADES_MM: ["facil", "facil", "facil", "media", "media", "media", "media", "dificil", "dificil", "dificil"],
-    jogadoresElegiveisMM: () => mmPool,
-    hashString: core.hashString
-});
+const mmRuntime = moreLessCore.createMoreLessCore({ getPool: () => mmPool, hashString: core.hashString });
+const mmApi = { ...moreLessCore, ...mmRuntime };
 
 function isoDateFromOffset(offset) {
     return new Date(Date.UTC(2026, 0, 1 + offset)).toISOString().slice(0, 10);
@@ -196,7 +188,7 @@ test(`MM v2: invariantes em ${MM_DATES} datas`, () => {
     assert.ok(signatures.size >= Math.floor(MM_DATES * 0.9), "datas diferentes devem gerar variedade razoável");
 });
 test("MM v2: seed explícita permanece data + -mm-v2", () => {
-    assert.match(scriptSource, /hashString\(dataStr \+ "-mm-v2"\)/);
+    assert.match(moreLessCoreSource, /hashString\(dataStr \+ "-mm-v2"\)/);
 });
 
 // RESULTADO E LIMITES DO MM.
