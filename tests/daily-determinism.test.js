@@ -6,6 +6,8 @@ const assert = require("node:assert/strict");
 const { scriptSource, compileFunctions } = require("./script-harness");
 const core = require("../core.js");
 const classic = require("../classic-mode.js");
+const photoCatalog = require("../photo-catalog.js");
+const photoCatalogSource = fs.readFileSync(path.join(__dirname, "..", "photo-catalog.js"), "utf8");
 
 const root = path.join(__dirname, "..");
 const jogadores = JSON.parse(fs.readFileSync(path.join(root, "jogadores.json"), "utf8"));
@@ -20,9 +22,7 @@ const datas = ["2025-01-01", "2025-07-09", "2026-08-25", "2027-03-12", "2028-12-
 const classicApi = {
     sortearJogadorDoDia: data => classic.selecionarJogadorDiario(jogadores, data, core.hashString)
 };
-const photoApi = compileFunctions([
-    "jogadoresComFotoObjetos", "sortearJogadorFotoDoDia"
-], { jogadores, JOGADORES_COM_FOTO: nomesComFoto, hashString: core.hashString });
+const photoApi = photoCatalog.createPhotoCatalog({ jogadores, manifesto: nomesComFoto, hashString: core.hashString });
 const mmApi = compileFunctions([
     "gerarPRNG", "embaralharComSemente", "embaralharComRngMM",
     "maiorSequenciaIgualMM", "maiorSequenciaAlternadaMM", "gerarPlanoDirecoesMM",
@@ -64,7 +64,7 @@ function observeDate(data) {
     return {
         hash: core.hashString(data),
         classic: classicApi.sortearJogadorDoDia(data).nome,
-        photo: photoApi.sortearJogadorFotoDoDia(data).nome,
+        photo: photoApi.jogadorDoDia(data).nome,
         mmV1: mmApi.gerarSequenciaMMV1(data).map(jogador => jogador.nome).join(" > "),
         mmV2: v2.sequencia.map(jogador => jogador.nome).join(" > "),
         mmDirections: v2.planoDirecoes.join(" > "),
@@ -164,7 +164,7 @@ for (const [pool, value] of Object.entries(expectedFingerprints)) {
     deepEqual(observedFingerprints[pool], value, `${pool}: o conteúdo ou a ordem deste pool mudou`);
 }
 
-matches(scriptSource, /hashString\(dataStr \+ "-foto"\)/, "seed da Foto mudou");
+matches(photoCatalogSource, /hashString\(dataStr \+ "-foto"\)/, "seed da Foto mudou");
 matches(scriptSource, /hashString\(dataStr \+ "-mm"\)/, "seed do MM v1 mudou");
 matches(scriptSource, /hashString\(dataStr \+ "-mm-v2"\)/, "seed do MM v2 mudou");
 matches(scriptSource, /hashString\(dataStr \+ "-onze"\)/, "seed da partida do Onze Inicial mudou");

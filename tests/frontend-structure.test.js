@@ -12,6 +12,7 @@ const historyStats = fs.readFileSync(path.join(root, "history-stats.js"), "utf8"
 const ui = fs.readFileSync(path.join(root, "ui.js"), "utf8");
 const autocomplete = fs.readFileSync(path.join(root, "autocomplete.js"), "utf8");
 const classic = fs.readFileSync(path.join(root, "classic-mode.js"), "utf8");
+const photoCatalog = fs.readFileSync(path.join(root, "photo-catalog.js"), "utf8");
 const css = fs.readFileSync(path.join(root, "style.css"), "utf8");
 const partidas = JSON.parse(fs.readFileSync(path.join(root, "partidas.json"), "utf8"));
 
@@ -67,14 +68,17 @@ test("infraestruturas de UI carregam depois de sharing e antes do script princip
     const uiIndex = html.indexOf('<script src="ui.js"></script>');
     const autocompleteIndex = html.indexOf('<script src="autocomplete.js"></script>');
     const classicIndex = html.indexOf('<script src="classic-mode.js"></script>');
+    const photoCatalogIndex = html.indexOf('<script src="photo-catalog.js"></script>');
     const scriptIndex = html.indexOf('<script src="script.js"></script>');
     assert.ok(uiIndex > sharingIndex);
     assert.ok(autocompleteIndex > uiIndex);
     assert.ok(classicIndex > autocompleteIndex);
-    assert.ok(scriptIndex > classicIndex);
+    assert.ok(photoCatalogIndex > classicIndex);
+    assert.ok(scriptIndex > photoCatalogIndex);
     assert.ok(ui.includes("TimaodleUI"));
     assert.ok(autocomplete.includes("TimaodleAutocomplete"));
     assert.ok(classic.includes("TimaodleClassic"));
+    assert.ok(photoCatalog.includes("TimaodlePhotoCatalog"));
 });
 
 test("IDs literais usados por getElementById existem no HTML", () => {
@@ -106,6 +110,7 @@ test("classes dinâmicas relevantes permanecem ligadas ao JS", () => {
     const missing = all.filter(className =>
         !script.includes(className) && !ui.includes(className)
             && !autocomplete.includes(className) && !classic.includes(className)
+            && !photoCatalog.includes(className)
     );
     assert.deepEqual(missing, []);
 });
