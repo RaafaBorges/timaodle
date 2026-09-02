@@ -1780,12 +1780,16 @@ const escNextChallengeCountdownEl = document.getElementById("escNextChallengeCou
 const escShareLineupBtn = document.getElementById("escShareLineupBtn");
 
 let PARTIDAS_ESCALACAO = [];
+const lineupCore = TimaodleLineupCore.createLineupCore({
+    getMatches: () => PARTIDAS_ESCALACAO,
+    hashString,
+    embaralharComSemente
+});
 let dadosEscalacao = null;
 let nomesJaResolvidos = new Set(); // nomes já revelados (visíveis + ocultos acertados)
 let nomesForaDaLista = [];
 let acertosEscalacao = 0;
 let errosEscalacao = 0;
-const MAX_OCULTOS_ESCALACAO = 3;
 let estadoEscalacao = null;
 
 async function carregarPartidasEscalacao() {
@@ -1802,46 +1806,7 @@ async function carregarPartidasEscalacao() {
 // quais 3 dos 11 titulares ficam ocultos — mesma sequência pra todo
 // mundo, no mesmo dia.
 function selecionarPartidaDoDia(dataStr) {
-    if (PARTIDAS_ESCALACAO.length === 0) return null;
-
-    const hashPartida = hashString(dataStr + "-onze");
-    const partida = PARTIDAS_ESCALACAO[hashPartida % PARTIDAS_ESCALACAO.length];
-
-    const hashSlots = hashString(dataStr + "-onze-slots-" + partida.id);
-    const indices = embaralharComSemente(
-        partida.titulares.map((_, i) => i),
-        hashSlots
-    );
-    const indicesOcultos = new Set(indices.slice(0, MAX_OCULTOS_ESCALACAO));
-
-    const jogadores_visiveis = [];
-    const jogadores_ocultos = [];
-    partida.titulares.forEach((j, i) => {
-        if (indicesOcultos.has(i)) {
-            jogadores_ocultos.push({
-                slot_id: `slot-${i}`,
-                posicao_abrev: j.posicao_abrev,
-                top: j.top,
-                left: j.left,
-                nome_correto: j.nome,
-            });
-        } else {
-            jogadores_visiveis.push({ nome: j.nome, posicao_abrev: j.posicao_abrev, top: j.top, left: j.left });
-        }
-    });
-
-    return {
-        id: partida.id,
-        competicao: partida.competicao,
-        mandante: partida.mandante,
-        visitante: partida.visitante,
-        local_tag: partida.local_tag,
-        data: partida.data,
-        estadio: partida.estadio,
-        placar_real: partida.placar_real,
-        jogadores_visiveis,
-        jogadores_ocultos,
-    };
+    return lineupCore.selecionarPartidaDoDia(dataStr);
 }
 
 function fotoOuGenerico(nome) {

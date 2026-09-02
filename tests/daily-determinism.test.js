@@ -3,13 +3,14 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const assert = require("node:assert/strict");
-const { scriptSource, compileFunctions } = require("./script-harness");
 const core = require("../core.js");
 const classic = require("../classic-mode.js");
 const photoCatalog = require("../photo-catalog.js");
 const moreLessCore = require("../more-less-core.js");
+const lineupCore = require("../lineup-core.js");
 const photoCatalogSource = fs.readFileSync(path.join(__dirname, "..", "photo-catalog.js"), "utf8");
 const moreLessCoreSource = fs.readFileSync(path.join(__dirname, "..", "more-less-core.js"), "utf8");
+const lineupCoreSource = fs.readFileSync(path.join(__dirname, "..", "lineup-core.js"), "utf8");
 
 const root = path.join(__dirname, "..");
 const jogadores = JSON.parse(fs.readFileSync(path.join(root, "jogadores.json"), "utf8"));
@@ -26,11 +27,8 @@ const classicApi = {
 };
 const photoApi = photoCatalog.createPhotoCatalog({ jogadores, manifesto: nomesComFoto, hashString: core.hashString });
 const mmApi = moreLessCore.createMoreLessCore({ getPool: () => poolMM, hashString: core.hashString });
-const lineupApi = compileFunctions([
-    "selecionarPartidaDoDia"
-], {
-    PARTIDAS_ESCALACAO: partidas,
-    MAX_OCULTOS_ESCALACAO: 3,
+const lineupApi = lineupCore.createLineupCore({
+    getMatches: () => partidas,
     hashString: core.hashString,
     embaralharComSemente: moreLessCore.embaralharComSemente
 });
@@ -162,8 +160,8 @@ for (const [pool, value] of Object.entries(expectedFingerprints)) {
 matches(photoCatalogSource, /hashString\(dataStr \+ "-foto"\)/, "seed da Foto mudou");
 matches(moreLessCoreSource, /hashString\(dataStr \+ "-mm"\)/, "seed do MM v1 mudou");
 matches(moreLessCoreSource, /hashString\(dataStr \+ "-mm-v2"\)/, "seed do MM v2 mudou");
-matches(scriptSource, /hashString\(dataStr \+ "-onze"\)/, "seed da partida do Onze Inicial mudou");
-matches(scriptSource, /hashString\(dataStr \+ "-onze-slots-" \+ partida\.id\)/, "seed dos ocultos do Onze Inicial mudou");
+matches(lineupCoreSource, /hashString\(dataStr \+ "-onze"\)/, "seed da partida do Onze Inicial mudou");
+matches(lineupCoreSource, /hashString\(dataStr \+ "-onze-slots-" \+ partida\.id\)/, "seed dos ocultos do Onze Inicial mudou");
 
 for (const data of datas) {
     const actual = observed[data];

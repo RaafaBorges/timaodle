@@ -5617,3 +5617,50 @@ Pendências:
 Próximo passo:
 - em tarefa própria, auditar e planejar a extração incremental do Onze Inicial, preservando
   seleção determinística, exatamente três ocultos, placar, campo, autocomplete e persistência.
+
+## 02/09/2026 — Checkpoint 6G: core determinístico do Onze Inicial
+
+**Status: CONCLUÍDO — SEM COMMIT**
+
+Implementado:
+- seleção determinística da partida diária e dos três slots ocultos extraída para
+  `lineup-core.js`, com namespace browser `TimaodleLineupCore` e export CommonJS;
+- preservadas byte a byte as seeds `${data}-onze` e
+  `${data}-onze-slots-${partida.id}`;
+- preservados `TimaodleCore.hashString`, o shuffle determinístico existente, a ordem original
+  das partidas e dos titulares, IDs reais de partida, IDs `slot-${indice}`, oito jogadores
+  visíveis, três ocultos e fallback `null` para coleção vazia;
+- `script.js` mantém apenas factory/adapter do core e todo o runtime do Onze Inicial: fetch,
+  placar, DOM, campo, coordenadas, autocomplete, palpites, save, migração, resultado,
+  compartilhamento, overlay, countdown e listeners;
+- `lineup-core.js` carregado após `more-less-mode.js` e antes de `script.js`;
+- adicionado `tests/lineup-core.test.js` com 17 cenários diretos;
+- teste diário deixou de compilar a seleção a partir do texto de `script.js` e passou a usar
+  o módulo real, sem atualizar fixtures.
+
+Auditoria do algoritmo real:
+- partida: `hashString(dataStr + "-onze") % partidas.length`;
+- slots: shuffle de `[0..titulares.length - 1]` com
+  `hashString(dataStr + "-onze-slots-" + partida.id)`, seguido dos três primeiros índices;
+- não existem retries ou fallback adicional; um `Set` decide ocultação, enquanto a projeção
+  percorre os titulares na ordem original;
+- o core não conhece storage; compatibilidade de saves e migração de `partidaId: null`
+  permanecem inalteradas em `script.js` e `storage-normalizers.js`.
+
+Testado:
+- 17 cenários do novo core aprovados, incluindo seeds, cinco datas congeladas, três slots
+  únicos/válidos, ordem, IDs, coordenadas, independência entre chamadas e não mutação;
+- determinismo preservado com as mesmas 65 assertions em cinco datas;
+- MM v2 preservado em 180 datas; estrutura preservada com 48 cenários e 168 IDs;
+- fingerprint Git de `partidas.json` idêntico ao `HEAD` (`e36f92cdc5b9dca64a072c954a40d64b8fb06546`);
+- checklist em Chrome real aprovado: partida diária, placar, 11 chips, três ocultos, oito
+  visíveis, autocomplete, um acerto, um erro/Fora, F5/restauração e bootstrap dos outros modos;
+- nenhuma mudança visual intencional; CSS, JSONs, fotos e módulos estabilizados fora do diff.
+
+Pendências:
+- nenhuma pendência automatizada ou manual conhecida deste checkpoint;
+- extração do runtime do Onze Inicial permanece para checkpoint futuro separado.
+
+Próximo passo:
+- após aprovação final do 6G, planejar em tarefa própria o runtime do Onze Inicial sem ampliar
+  o escopo deste checkpoint.
