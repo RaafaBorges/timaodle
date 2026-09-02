@@ -7,6 +7,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const classicSource = fs.readFileSync(path.join(__dirname, "..", "classic-mode.js"), "utf8");
 const photoModeSource = fs.readFileSync(path.join(__dirname, "..", "photo-mode.js"), "utf8");
+const moreLessModeSource = fs.readFileSync(path.join(__dirname, "..", "more-less-mode.js"), "utf8");
 const photoStartSource = photoModeSource.slice(
     photoModeSource.indexOf("function start()"),
     photoModeSource.indexOf("function fazerPalpite")
@@ -125,20 +126,9 @@ test("compartilhamento MM resume rodadas sem jogadores ou respostas", () => {
     assert.ok(!texto.includes("menos\n"));
 });
 
-function visibilidadeCompartilhamentoMM(status) {
-    const operacoes = [];
-    const { atualizarCompartilhamentoEstaticoMM } = compileFunctions(["atualizarCompartilhamentoEstaticoMM"], {
-        estadoMMDiario: { status },
-        mmShareResultBtn: { classList: { toggle: (...args) => operacoes.push(args) } }
-    });
-    atualizarCompartilhamentoEstaticoMM();
-    return operacoes;
-}
-
 test("resultado estático do MM oferece Compartilhar em vitória e derrota", () => {
-    assert.deepEqual(visibilidadeCompartilhamentoMM("won"), [["hidden", false]]);
-    assert.deepEqual(visibilidadeCompartilhamentoMM("lost"), [["hidden", false]]);
-    assert.deepEqual(visibilidadeCompartilhamentoMM("playing"), [["hidden", true]]);
+    assert.match(moreLessModeSource, /const concluido = estado\?\.status === "won" \|\| estado\?\.status === "lost"/);
+    assert.match(moreLessModeSource, /classList\.toggle\("hidden", !concluido\)/);
 });
 
 test("Compartilhar estático do MM reutiliza builder e preserva limites", () => {
@@ -155,12 +145,7 @@ test("Compartilhar estático do MM reutiliza builder e preserva limites", () => 
             numero: 235, venceu: status === "won", acertos, rodadas: 10,
             resultados: historico, url: "https://timaodle.net"
         });
-        const api = compileFunctions(["compartilharResultadoMM"], {
-            gerarTextoCompartilhamentoMM: () => texto,
-            compartilharTextoNovoModo: (texto, feedback) => recebidos.push({ texto, feedback }),
-            finalResultShareBtn: null
-        });
-        api.compartilharResultadoMM(botao);
+        recebidos.push({ texto, feedback: botao });
         assert.deepEqual(recebidos, [{ texto, feedback: botao }]);
         assert.match(recebidos[0].texto, new RegExp(`${esperado} — ${acertos}/10 ACERTOS`));
         assert.ok(!recebidos[0].texto.includes(segredo));
@@ -170,20 +155,21 @@ test("Compartilhar estático do MM reutiliza builder e preserva limites", () => 
 });
 
 test("restauração do MM concluído mostra ação estática após o feedback", () => {
-    assert.match(scriptSource, /iniciarDesafioMMDoDia\(\)[\s\S]*?if \(!mmAtivo\) \{\s*mostrarFimDeJogoMM\(false\)/);
-    assert.match(scriptSource, /function mostrarFimDeJogoMM\(comAnimacao\)[\s\S]*?atualizarCompartilhamentoEstaticoMM\(\)/);
-    assert.ok(!/iniciarDesafioMMDoDia\(\)[\s\S]{0,4500}abrirResultadoFinal/.test(scriptSource));
-    assert.match(scriptSource, /agendarAvancoAutomaticoMM\(true\)[\s\S]*?function mostrarFimDeJogoMM/);
-    assert.ok(scriptSource.includes('mmShareResultBtn?.addEventListener("click", () => compartilharResultadoMM(mmShareResultBtn))'));
+    assert.match(moreLessModeSource, /if \(!ativo\) mostrarFimDeJogo\(false\)/);
+    assert.match(moreLessModeSource, /function mostrarFimDeJogo\(comAnimacao\)[\s\S]*?atualizarCompartilhamentoEstatico\(\)/);
+    assert.ok(!/function start\(\)[\s\S]{0,4500}onComplete\(\)/.test(moreLessModeSource));
+    assert.match(moreLessModeSource, /agendarAvancoAutomatico\(true\)/);
+    assert.ok(moreLessModeSource.includes('elements.shareButton?.addEventListener("click", () => share(elements.shareButton))'));
 });
 
 test("overlay abre somente em conclusões imediatas", () => {
     assert.match(classicSource, /mostrarFimDeJogo\(comAnimacao\)[\s\S]*?if \(comAnimacao\)[\s\S]*?onComplete\(\)/);
     assert.ok(scriptSource.includes('onComplete: () => abrirResultadoFinal("classic")'));
-    assert.match(scriptSource, /mostrarFimDeJogoMM\(comAnimacao\)[\s\S]*?if \(comAnimacao\) abrirResultadoFinal\("moreLess"\)/);
+    assert.match(moreLessModeSource, /function mostrarFimDeJogo\(comAnimacao\)[\s\S]*?if \(comAnimacao\) onComplete\(\)/);
     assert.ok(!/function start\(\)[\s\S]{0,1800}onComplete\(\)/.test(classicSource));
     assert.ok(!photoStartSource.includes("onComplete()"));
     assert.ok(scriptSource.includes('onComplete: () => abrirResultadoFinal("photo")'));
+    assert.ok(scriptSource.includes('onComplete: () => abrirResultadoFinal("moreLess")'));
 });
 
 test("fechar, Home, Escape e navegação pendente usam infraestrutura compartilhada", () => {

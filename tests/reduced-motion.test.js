@@ -7,6 +7,7 @@ const { scriptSource, compileFunctions } = require("./script-harness.js");
 const { calcularProgressoDoResumo } = require("../history-stats.js");
 
 const css = fs.readFileSync(path.join(__dirname, "..", "style.css"), "utf8");
+const moreLessModeSource = fs.readFileSync(path.join(__dirname, "..", "more-less-mode.js"), "utf8");
 
 let scenarios = 0;
 function test(name, callback) {
@@ -53,8 +54,8 @@ test("conclusão 4/4 independe do confete", () => {
 });
 
 test("Mais ou Menos preserva o atraso lógico de 1,5 segundo", () => {
-    assert.match(scriptSource, /const ATRASO_AVANCO_MM = 1500;/);
-    assert.match(scriptSource, /setTimeout\([\s\S]*?}, ATRASO_AVANCO_MM\);/);
+    assert.match(moreLessModeSource, /const ATRASO_AVANCO_MM = 1500;/);
+    assert.match(moreLessModeSource, /setTimeoutFn\([\s\S]*?}, ATRASO_AVANCO_MM\);/);
 });
 
 test("Foto remove apenas transições decorativas sob movimento reduzido", () => {

@@ -68,6 +68,7 @@ function persistirNormalizacaoSegura(chave, original, normalizado) {
 let jogadores = [];
 let classicMode = null;
 let photoMode = null;
+let moreLessMode = null;
 
 // Estatísticas legadas do Clássico. Não representam o streak geral e são
 // mantidas somente por compatibilidade com instalações existentes.
@@ -1120,8 +1121,8 @@ function dadosResultadoFinal(tipo) {
         return { outcome: venceu ? "won" : "lost", title: venceu ? "GANHOU" : "PERDEU", metric: `${tentativas} / ${TimaodlePhotoMode.MAX_TENTATIVAS_FOTO} TENTATIVAS` };
     }
     if (tipo === "moreLess") {
-        const venceu = estadoMMDiario?.status === "won";
-        return { outcome: venceu ? "won" : "lost", title: venceu ? "GANHOU" : "PERDEU", metric: `${acertosMM} / ${RODADAS_MM} ACERTOS` };
+        const venceu = moreLessMode?.getState()?.status === "won";
+        return { outcome: venceu ? "won" : "lost", title: venceu ? "GANHOU" : "PERDEU", metric: `${moreLessMode?.getHits() || 0} / ${TimaodleMoreLessMode.RODADAS_MM} ACERTOS` };
     }
     const total = dadosEscalacao?.jogadores_ocultos?.length || 3;
     const erros = Number.isFinite(errosEscalacao) ? errosEscalacao : 0;
@@ -1201,7 +1202,7 @@ function navegarDoResultadoParaModo(tipo) {
 
 function voltarParaHomeDoResultado() {
     fecharResultadoFinal();
-    cancelarAvancoAutomaticoMM();
+    moreLessMode?.cancelPendingAdvance();
     ocultarViewsDeJogo();
     homeView.classList.remove("hidden");
     renderizarProgressoHome();
@@ -1223,7 +1224,7 @@ finalResultHomeBtn?.addEventListener("click", voltarParaHomeDoResultado);
 finalResultShareBtn?.addEventListener("click", () => {
     if (finalResultModeType === "classic") compartilharResultado();
     else if (finalResultModeType === "photo") photoMode.share();
-    else if (finalResultModeType === "moreLess") compartilharResultadoMM();
+    else if (finalResultModeType === "moreLess") moreLessMode.share();
     else if (finalResultModeType === "lineup") compartilharResultadoEscalacao();
 });
 // ==========================================================================
@@ -1255,9 +1256,7 @@ function atualizarTimer() {
     // perdeu), o rótulo de tentativas vira a contagem pro próximo dia.
     photoMode?.atualizarContagemRegressiva(texto);
 
-    if (typeof mmRoundLabelEl !== "undefined" && mmRoundLabelEl && estadoMMDiario && estadoMMDiario.status !== "playing") {
-        mmRoundLabelEl.innerText = `Próximo em ${texto}`;
-    }
+    moreLessMode?.updateCountdown(texto);
 }
 
 function iniciarTimer() {
@@ -1419,19 +1418,6 @@ async function compartilharTextoNovoModo(texto, botaoFeedback = finalResultShare
     return false;
 }
 
-function gerarTextoCompartilhamentoMM() {
-    const numero = numeroDoDesafio(getDataLocalString());
-    const venceu = estadoMMDiario?.status === "won";
-    return construirTextoCompartilhamentoMM({
-        numero, venceu, acertos: acertosMM, rodadas: RODADAS_MM,
-        resultados: estadoMMDiario?.historico || [], url: URL_OFICIAL_TIMAODLE
-    });
-}
-
-function compartilharResultadoMM(botaoFeedback = finalResultShareBtn) {
-    return compartilharTextoNovoModo(gerarTextoCompartilhamentoMM(), botaoFeedback);
-}
-
 shareDailyResultBtn?.addEventListener("click", compartilharResultadoDiario);
 
 // ==========================================================================
@@ -1548,9 +1534,9 @@ function jogadoresComFotoObjetos() {
 
 function jogadorTemJogosValidosMM(jogador) {
     return jogador
-        && Object.prototype.hasOwnProperty.call(jogador, CAMPO_STAT_MM)
-        && typeof jogador[CAMPO_STAT_MM] === "number"
-        && Number.isFinite(jogador[CAMPO_STAT_MM]);
+        && Object.prototype.hasOwnProperty.call(jogador, TimaodleMoreLessMode.CAMPO_STAT_MM)
+        && typeof jogador[TimaodleMoreLessMode.CAMPO_STAT_MM] === "number"
+        && Number.isFinite(jogador[TimaodleMoreLessMode.CAMPO_STAT_MM]);
 }
 
 function jogadoresElegiveisMM() {
@@ -1641,66 +1627,14 @@ infraestruturaDialogs.registrarDialogs([
 
 /* ==========================================================================
    TIMÃODLE — JOGOU MAIS OU MENOS
-   Desafio diário (mesma sequência pra todo mundo, no mesmo dia): compara
-   estatísticas de 11 jogadores em sequência (1 referência inicial + 10
-   comparações). Acerta se adivinha se o próximo jogador tem MAIS ou MENOS
-   que o atual — a referência sempre avança pro jogador seguinte, acertando
-   ou errando. Precisa de pelo menos 7 acertos em 10 pra vencer.
-
-   IMPORTANTE: o jogadores.json agora tem o campo "jogos" (número de
-   partidas disputadas pelo Corinthians), usado como estatística de
-   comparação. Pra trocar por outro critério no futuro (ex: gols),
-   troque só a constante CAMPO_STAT_MM abaixo — o resto se adapta.
+   Runtime extraído para more-less-mode.js; composição e integrações globais.
    ========================================================================== */
 
-const CAMPO_STAT_MM = "jogos"; // agora usando o dado real de partidas jogadas
-const ROTULOS_STAT_MM = { gols: "gols", jogos: "jogos", assistencias: "assistências" };
-function rotuloStatMM() { return ROTULOS_STAT_MM[CAMPO_STAT_MM] || CAMPO_STAT_MM; }
-const RODADAS_MM = 10;
-const MIN_ACERTOS_MM = 7;
 const CHAVE_ESTADO_MM = "timaodle_mm_daily_state";
-const VERSAO_ALGORITMO_MM = 2;
-const ATRASO_AVANCO_MM = 1500;
 const moreLessCore = TimaodleMoreLessCore.createMoreLessCore({
     getPool: jogadoresElegiveisMM,
     hashString
 });
-
-// Elementos da interface
-const maisMenosView = document.getElementById("maisMenosView");
-const btnPlayMaisMenos = document.getElementById("btnPlayMaisMenos");
-const backHomeBtnMM = document.getElementById("backHomeBtnMM");
-const mmRoundLabelEl = document.getElementById("mmRoundLabel");
-const mmDotsEl = document.getElementById("mmDots");
-const mmHitsLabelEl = document.getElementById("mmHitsLabel");
-const mmRefFotoEl = document.getElementById("mmRefFoto");
-const mmRefNomeEl = document.getElementById("mmRefNome");
-const mmRefMetaEl = document.getElementById("mmRefMeta");
-const mmRefStatEl = document.getElementById("mmRefStat");
-const mmRefStatLabelEl = document.getElementById("mmRefStatLabel");
-const mmCandFotoEl = document.getElementById("mmCandFoto");
-const mmCandNomeEl = document.getElementById("mmCandNome");
-const mmCandMetaEl = document.getElementById("mmCandMeta");
-const mmCandStatEl = document.getElementById("mmCandStat");
-const mmCandStatLabelEl = document.getElementById("mmCandStatLabel");
-const mmCandRowEl = document.getElementById("mmCandRow");
-const mmDividerTextEl = document.getElementById("mmDividerText");
-const mmBtnMenos = document.getElementById("mmBtnMenos");
-const mmBtnMais = document.getElementById("mmBtnMais");
-const mmRoundResultEl = document.getElementById("mmRoundResult");
-const mmEndMessageEl = document.getElementById("mmEndMessage");
-const mmShareResultBtn = document.getElementById("mmShareResultBtn");
-const mmCardEl = maisMenosView.querySelector(".mm-card");
-
-let sequenciaMM = [];
-let referenciaAtualMM = null;
-let rodadaAtualMM = 0;
-let acertosMM = 0;
-let historicoMM = [];
-let mmAtivo = true;
-let estadoMMDiario = null;
-let timerAvancoMM = null;
-let transicaoMMAtiva = false;
 
 function carregarEstadoMM() {
     const salvo = lerJsonLocalStorage(CHAVE_ESTADO_MM);
@@ -1713,326 +1647,69 @@ function salvarEstadoMM(estado) {
     sincronizarProgressoDiario();
 }
 
-function atualizarCompartilhamentoEstaticoMM() {
-    const concluido = estadoMMDiario?.status === "won" || estadoMMDiario?.status === "lost";
-    mmShareResultBtn?.classList.toggle("hidden", !concluido);
-}
-
-function snapshotSequenciaMM(sequencia) {
-    return sequencia.map(jogador => ({ ...jogador }));
-}
-
-function restaurarSequenciaSalvaMM(estado) {
-    if (Array.isArray(estado?.sequenciaJogadores) && estado.sequenciaJogadores.length === RODADAS_MM + 1) {
-        const snapshotsValidos = estado.sequenciaJogadores.every(j =>
-            j && typeof j.nome === "string" && Number.isFinite(j[CAMPO_STAT_MM])
-        );
-        if (snapshotsValidos) return snapshotSequenciaMM(estado.sequenciaJogadores);
-    }
-
-    if (Array.isArray(estado?.sequenciaNomes) && estado.sequenciaNomes.length === RODADAS_MM + 1) {
-        const restaurada = estado.sequenciaNomes.map(nome => jogadores.find(j => j.nome === nome));
-        if (restaurada.every(jogadorTemJogosValidosMM)) return restaurada;
-    }
-    return [];
-}
-
-function registrarSequenciaNoEstadoMM(estado, sequencia, versao, detalhes = {}) {
-    estado.versaoAlgoritmo = versao;
-    estado.sequenciaNomes = sequencia.map(j => j.nome);
-    estado.sequenciaJogadores = snapshotSequenciaMM(sequencia);
-    if (detalhes.planoDificuldades) estado.planoDificuldades = [...detalhes.planoDificuldades];
-    if (detalhes.planoDirecoes) estado.planoDirecoes = [...detalhes.planoDirecoes];
-}
-
-function renderizarDotsMM() {
-    mmDotsEl.innerHTML = "";
-    for (let i = 0; i < RODADAS_MM; i++) {
-        const dot = document.createElement("span");
-        dot.className = "dot-attempt";
-        if (i < historicoMM.length) {
-            dot.classList.add(historicoMM[i].correto ? "used" : "wrong-used");
+const maisMenosView = document.getElementById("maisMenosView");
+moreLessMode = TimaodleMoreLessMode.createMoreLessMode({
+    documentApi: document,
+    elements: {
+        view: maisMenosView,
+        playButton: document.getElementById("btnPlayMaisMenos"),
+        backButton: document.getElementById("backHomeBtnMM"),
+        roundLabel: document.getElementById("mmRoundLabel"),
+        dots: document.getElementById("mmDots"),
+        hitsLabel: document.getElementById("mmHitsLabel"),
+        referencePhoto: document.getElementById("mmRefFoto"),
+        referenceName: document.getElementById("mmRefNome"),
+        referenceMeta: document.getElementById("mmRefMeta"),
+        referenceStat: document.getElementById("mmRefStat"),
+        referenceStatLabel: document.getElementById("mmRefStatLabel"),
+        candidatePhoto: document.getElementById("mmCandFoto"),
+        candidateName: document.getElementById("mmCandNome"),
+        candidateMeta: document.getElementById("mmCandMeta"),
+        candidateStat: document.getElementById("mmCandStat"),
+        candidateStatLabel: document.getElementById("mmCandStatLabel"),
+        candidateRow: document.getElementById("mmCandRow"),
+        dividerText: document.getElementById("mmDividerText"),
+        lessButton: document.getElementById("mmBtnMenos"),
+        moreButton: document.getElementById("mmBtnMais"),
+        roundResult: document.getElementById("mmRoundResult"),
+        endMessage: document.getElementById("mmEndMessage"),
+        shareButton: document.getElementById("mmShareResultBtn"),
+        card: maisMenosView.querySelector(".mm-card")
+    },
+    getDate: getDataLocalString,
+    getPlayers: () => jogadores,
+    isEligiblePlayer: jogadorTemJogosValidosMM,
+    core: {
+        generateV1: moreLessCore.gerarSequenciaMMV1,
+        generateV2: moreLessCore.gerarDesafioMMV2,
+        direction: TimaodleMoreLessCore.direcaoComparacaoMM
+    },
+    storage: { load: carregarEstadoMM, save: salvarEstadoMM },
+    onStateLoaded: sincronizarProgressoDiario,
+    sharing: {
+        build: construirTextoCompartilhamentoMM,
+        share: compartilharTextoNovoModo,
+        getChallengeNumber: numeroDoDesafio,
+        getDefaultFeedbackButton: () => finalResultShareBtn,
+        officialUrl: URL_OFICIAL_TIMAODLE
+    },
+    navigation: {
+        beforeOpen: () => homeView.classList.add("hidden"),
+        loadData: async () => {
+            const tarefas = [];
+            if (jogadores.length === 0) tarefas.push(carregarJogadores());
+            if (JOGADORES_COM_FOTO.length === 0) tarefas.push(carregarManifestoFotos());
+            if (tarefas.length > 0) await Promise.all(tarefas);
+        },
+        back: () => {
+            homeView.classList.remove("hidden");
+            renderizarProgressoHome();
         }
-        mmDotsEl.appendChild(dot);
-    }
-    mmHitsLabelEl.innerText = `${acertosMM} ${acertosMM === 1 ? "ACERTO" : "ACERTOS"}`;
-}
-
-function cancelarAvancoAutomaticoMM() {
-    if (timerAvancoMM !== null) {
-        clearTimeout(timerAvancoMM);
-        timerAvancoMM = null;
-    }
-    transicaoMMAtiva = false;
-}
-
-function agendarAvancoAutomaticoMM(finalizou) {
-    if (timerAvancoMM !== null) clearTimeout(timerAvancoMM);
-
-    timerAvancoMM = setTimeout(() => {
-        timerAvancoMM = null;
-        transicaoMMAtiva = false;
-
-        // Sair do modo cancela o timer, mas esta guarda também impede uma
-        // mutação tardia caso a view tenha sido ocultada por outro fluxo.
-        if (maisMenosView.classList.contains("hidden")) return;
-
-        if (finalizou) {
-            mostrarFimDeJogoMM(true);
-        } else if (mmAtivo && estadoMMDiario?.status === "playing") {
-            renderizarRodadaMM();
-        }
-    }, ATRASO_AVANCO_MM);
-}
-
-function renderizarRodadaMM() {
-    transicaoMMAtiva = false;
-    mmRoundLabelEl.innerText = `Rodada ${rodadaAtualMM + 1}/${RODADAS_MM}`;
-    mmDividerTextEl.innerText = `FEZ MAIS OU MENOS ${rotuloStatMM().toUpperCase()}?`;
-    mmRoundResultEl.classList.add("hidden");
-    mmRoundResultEl.classList.remove("correct", "wrong", "tie");
-    mmCandRowEl.classList.remove("answered", "answer-correct", "answer-wrong");
-    mmCandStatEl.classList.remove("revealed");
-
-    definirFotoJogador(mmRefFotoEl, referenciaAtualMM);
-    mmRefNomeEl.innerText = referenciaAtualMM.nome;
-    mmRefMetaEl.innerText = `${referenciaAtualMM.nacionalidade} · ${referenciaAtualMM.posicao}`;
-    mmRefStatEl.innerText = referenciaAtualMM[CAMPO_STAT_MM];
-    mmRefStatLabelEl.innerText = rotuloStatMM().toUpperCase();
-
-    const candidato = sequenciaMM[rodadaAtualMM + 1];
-    definirFotoJogador(mmCandFotoEl, candidato);
-    mmCandNomeEl.innerText = candidato.nome;
-    mmCandMetaEl.innerText = `${candidato.nacionalidade} · ${candidato.posicao}`;
-    mmCandStatEl.innerText = "?";
-    mmCandStatLabelEl.innerText = rotuloStatMM().toUpperCase();
-
-    mmBtnMenos.disabled = false;
-    mmBtnMais.disabled = false;
-    mmBtnMenos.innerHTML = `▼ Menos ${rotuloStatMM()}`;
-    mmBtnMais.innerHTML = `▲ Mais ${rotuloStatMM()}`;
-    mmBtnMenos.classList.remove("correct", "wrong");
-    mmBtnMais.classList.remove("correct", "wrong");
-    mmBtnMenos.classList.remove("correct-answer");
-    mmBtnMais.classList.remove("correct-answer");
-
-    renderizarDotsMM();
-
-    mmCardEl.classList.remove("mm-round-enter");
-    void mmCardEl.offsetWidth;
-    mmCardEl.classList.add("mm-round-enter");
-}
-
-function iniciarDesafioMMDoDia() {
-    cancelarAvancoAutomaticoMM();
-    const hoje = getDataLocalString();
-    mmEndMessageEl.classList.add("hidden");
-    mmShareResultBtn?.classList.add("hidden");
-    maisMenosView.classList.remove("resultado-final");
-
-    const salvo = carregarEstadoMM();
-
-    if (salvo?.data) sincronizarProgressoDiario();
-
-    if (salvo && salvo.data === hoje) {
-        estadoMMDiario = salvo;
-        sequenciaMM = restaurarSequenciaSalvaMM(estadoMMDiario);
-
-        if (sequenciaMM.length !== RODADAS_MM + 1) {
-            // Estados anteriores ao v2 não guardavam a sequência. Recriamos
-            // a v1 uma única vez e passamos a persistir seu snapshot.
-            sequenciaMM = estadoMMDiario.versaoAlgoritmo === VERSAO_ALGORITMO_MM
-                ? moreLessCore.gerarDesafioMMV2(hoje).sequencia
-                : moreLessCore.gerarSequenciaMMV1(hoje);
-            registrarSequenciaNoEstadoMM(
-                estadoMMDiario,
-                sequenciaMM,
-                estadoMMDiario.versaoAlgoritmo === VERSAO_ALGORITMO_MM ? VERSAO_ALGORITMO_MM : 1
-            );
-            salvarEstadoMM(estadoMMDiario);
-        }
-
-        if (sequenciaMM.length < RODADAS_MM + 1) {
-            mmEndMessageEl.classList.remove("hidden");
-            mmEndMessageEl.innerHTML = "Fotos insuficientes cadastradas ainda para este modo.";
-            return;
-        }
-
-        rodadaAtualMM = estadoMMDiario.rodadaAtual;
-        acertosMM = estadoMMDiario.acertos;
-        historicoMM = estadoMMDiario.historico || [];
-        referenciaAtualMM = sequenciaMM[rodadaAtualMM]
-            || sequenciaMM.find(j => j.nome === estadoMMDiario.referenciaAtualNome)
-            || sequenciaMM[0];
-        mmAtivo = estadoMMDiario.status === "playing";
-
-        if (!mmAtivo) {
-            mostrarFimDeJogoMM(false);
-        } else {
-            renderizarRodadaMM();
-        }
-    } else {
-        const desafioV2 = moreLessCore.gerarDesafioMMV2(hoje);
-        sequenciaMM = desafioV2.sequencia;
-
-        if (sequenciaMM.length < RODADAS_MM + 1) {
-            mmEndMessageEl.classList.remove("hidden");
-            mmEndMessageEl.innerHTML = "Fotos insuficientes cadastradas ainda para este modo.";
-            return;
-        }
-
-        estadoMMDiario = {
-            data: hoje,
-            rodadaAtual: 0,
-            acertos: 0,
-            referenciaAtualNome: sequenciaMM[0].nome,
-            historico: [],
-            status: "playing",
-        };
-        registrarSequenciaNoEstadoMM(estadoMMDiario, sequenciaMM, VERSAO_ALGORITMO_MM, desafioV2);
-        salvarEstadoMM(estadoMMDiario);
-
-        rodadaAtualMM = 0;
-        acertosMM = 0;
-        historicoMM = [];
-        referenciaAtualMM = sequenciaMM[0];
-        mmAtivo = true;
-
-        renderizarRodadaMM();
-    }
-}
-
-function responderMM(direcaoEscolhida) {
-    if (!mmAtivo || transicaoMMAtiva) return;
-    transicaoMMAtiva = true;
-
-    const candidato = sequenciaMM[rodadaAtualMM + 1];
-    const statRef = referenciaAtualMM[CAMPO_STAT_MM];
-    const statCand = candidato[CAMPO_STAT_MM];
-    const empate = statCand === statRef;
-    const direcaoCorreta = empate ? "empate" : (statCand > statRef ? "mais" : "menos");
-    const correto = empate || (direcaoEscolhida === "mais" ? statCand > statRef : statCand < statRef);
-
-    mmBtnMenos.disabled = true;
-    mmBtnMais.disabled = true;
-    const botaoEscolhido = direcaoEscolhida === "mais" ? mmBtnMais : mmBtnMenos;
-    botaoEscolhido.classList.add(correto ? "correct" : "wrong");
-    if (!correto) {
-        const botaoCorreto = direcaoCorreta === "mais" ? mmBtnMais : mmBtnMenos;
-        botaoCorreto.classList.add("correct-answer");
-    }
-
-    mmCandStatEl.innerText = statCand;
-    mmCandStatEl.classList.add("revealed");
-    mmCandRowEl.classList.add("answered", correto ? "answer-correct" : "answer-wrong");
-
-    if (correto) acertosMM++;
-    historicoMM.push({ candidato: candidato.nome, correto });
-    renderizarDotsMM();
-
-    mmRoundResultEl.classList.remove("hidden");
-    if (empate) {
-        mmRoundResultEl.classList.add("tie");
-        mmRoundResultEl.innerHTML = `
-            <span class="mm-feedback-announcement">Acertou. ${candidato.nome} tinha o mesmo número de jogos. ${statCand} jogos pelo Corinthians.</span>
-            <span class="mm-feedback-visual" aria-hidden="true">
-                <span class="mm-feedback-icon">✓</span>
-                <strong class="mm-feedback-title">ACERTOU!</strong>
-                <span class="mm-feedback-comparison"><em>${candidato.nome}</em> tinha o mesmo número de jogos</span>
-                <span class="mm-feedback-stat"><b>${statCand}</b> jogos pelo Corinthians</span>
-            </span>`;
-    } else if (correto) {
-        mmRoundResultEl.classList.add("correct");
-        mmRoundResultEl.innerHTML = `
-            <span class="mm-feedback-announcement">Acertou. ${candidato.nome} tinha ${direcaoCorreta} jogos. ${statCand} jogos pelo Corinthians.</span>
-            <span class="mm-feedback-visual" aria-hidden="true">
-                <span class="mm-feedback-icon">✓</span>
-                <strong class="mm-feedback-title">ACERTOU!</strong>
-                <span class="mm-feedback-comparison"><em>${candidato.nome}</em> tinha <b>${direcaoCorreta.toUpperCase()}</b> jogos</span>
-                <span class="mm-feedback-stat"><b>${statCand}</b> jogos pelo Corinthians</span>
-            </span>`;
-    } else {
-        mmRoundResultEl.classList.add("wrong");
-        mmRoundResultEl.innerHTML = `
-            <span class="mm-feedback-announcement">Quase. ${candidato.nome} tinha ${direcaoCorreta} jogos. ${statCand} jogos pelo Corinthians.</span>
-            <span class="mm-feedback-visual" aria-hidden="true">
-                <span class="mm-feedback-icon">✕</span>
-                <strong class="mm-feedback-title">QUASE!</strong>
-                <span class="mm-feedback-comparison"><em>${candidato.nome}</em> tinha <b>${direcaoCorreta.toUpperCase()}</b> jogos</span>
-                <span class="mm-feedback-stat"><b>${statCand}</b> jogos pelo Corinthians</span>
-            </span>`;
-    }
-
-    // O jogador de referência sempre avança pro próximo candidato,
-    // acertando ou errando — só a pontuação (acertosMM) depende do acerto.
-    referenciaAtualMM = candidato;
-    rodadaAtualMM++;
-
-    estadoMMDiario.rodadaAtual = rodadaAtualMM;
-    estadoMMDiario.acertos = acertosMM;
-    estadoMMDiario.referenciaAtualNome = referenciaAtualMM.nome;
-    estadoMMDiario.historico = historicoMM;
-
-    if (rodadaAtualMM >= RODADAS_MM) {
-        estadoMMDiario.status = acertosMM >= MIN_ACERTOS_MM ? "won" : "lost";
-        salvarEstadoMM(estadoMMDiario);
-        mmAtivo = false;
-        agendarAvancoAutomaticoMM(true);
-    } else {
-        estadoMMDiario.status = "playing";
-        salvarEstadoMM(estadoMMDiario);
-        agendarAvancoAutomaticoMM(false);
-    }
-}
-
-function mostrarFimDeJogoMM(comAnimacao) {
-    mmRoundResultEl.classList.add("hidden");
-    mmEndMessageEl.classList.remove("hidden");
-    maisMenosView.classList.add("resultado-final");
-
-    const venceu = acertosMM >= MIN_ACERTOS_MM;
-    mmEndMessageEl.className = `mm-result-card ${venceu ? "won" : "lost"}`;
-    atualizarCompartilhamentoEstaticoMM();
-    mmEndMessageEl.innerHTML = `
-        <span class="mm-result-kicker">MAIS OU MENOS</span>
-        <h3>${venceu ? "VITÓRIA!" : "NÃO FOI DESTA VEZ"}</h3>
-        <p>${venceu ? "Você bateu a meta do desafio diário." : `Você precisava de ${MIN_ACERTOS_MM} acertos para vencer.`}</p>
-        <div class="mm-result-score">
-            <strong>${acertosMM}<span>/${RODADAS_MM}</span></strong>
-            <small>ACERTOS</small>
-        </div>
-        <div class="mm-result-goal ${venceu ? "reached" : "missed"}">
-            ${venceu ? "✓ META DE 7 ALCANÇADA" : `FALTARAM ${MIN_ACERTOS_MM - acertosMM} PARA A META`}
-        </div>
-        <p class="mm-result-return">Novo desafio à meia-noite.</p>`;
-    if (venceu && comAnimacao) dispararConfetes();
-    if (comAnimacao) abrirResultadoFinal("moreLess");
-}
-
-mmBtnMenos.addEventListener("click", () => responderMM("menos"));
-mmBtnMais.addEventListener("click", () => responderMM("mais"));
-mmShareResultBtn?.addEventListener("click", () => compartilharResultadoMM(mmShareResultBtn));
-
-btnPlayMaisMenos.addEventListener("click", async () => {
-    cancelarAvancoAutomaticoMM();
-    homeView.classList.add("hidden");
-    maisMenosView.classList.remove("hidden");
-
-    const tarefas = [];
-    if (jogadores.length === 0) tarefas.push(carregarJogadores());
-    if (JOGADORES_COM_FOTO.length === 0) tarefas.push(carregarManifestoFotos());
-
-    if (tarefas.length > 0) await Promise.all(tarefas);
-    iniciarDesafioMMDoDia();
+    },
+    setPlayerPhoto: definirFotoJogador,
+    onCelebrate: dispararConfetes,
+    onComplete: () => abrirResultadoFinal("moreLess")
 });
-
-backHomeBtnMM.addEventListener("click", () => {
-    cancelarAvancoAutomaticoMM();
-    maisMenosView.classList.add("hidden");
-    homeView.classList.remove("hidden");
-    renderizarProgressoHome();
-});
-
 /* ==========================================================================
    TIMÃODLE — ONZE INICIAL (protótipo do "Modo Escalação")
    Ainda SEM persistência diária de propósito — é um protótipo funcional

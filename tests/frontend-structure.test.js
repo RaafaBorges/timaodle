@@ -15,6 +15,7 @@ const classic = fs.readFileSync(path.join(root, "classic-mode.js"), "utf8");
 const photoCatalog = fs.readFileSync(path.join(root, "photo-catalog.js"), "utf8");
 const photoMode = fs.readFileSync(path.join(root, "photo-mode.js"), "utf8");
 const moreLessCore = fs.readFileSync(path.join(root, "more-less-core.js"), "utf8");
+const moreLessMode = fs.readFileSync(path.join(root, "more-less-mode.js"), "utf8");
 const css = fs.readFileSync(path.join(root, "style.css"), "utf8");
 const partidas = JSON.parse(fs.readFileSync(path.join(root, "partidas.json"), "utf8"));
 
@@ -73,6 +74,7 @@ test("infraestruturas de UI carregam depois de sharing e antes do script princip
     const photoCatalogIndex = html.indexOf('<script src="photo-catalog.js"></script>');
     const photoModeIndex = html.indexOf('<script src="photo-mode.js"></script>');
     const moreLessCoreIndex = html.indexOf('<script src="more-less-core.js"></script>');
+    const moreLessModeIndex = html.indexOf('<script src="more-less-mode.js"></script>');
     const scriptIndex = html.indexOf('<script src="script.js"></script>');
     assert.ok(uiIndex > sharingIndex);
     assert.ok(autocompleteIndex > uiIndex);
@@ -80,13 +82,15 @@ test("infraestruturas de UI carregam depois de sharing e antes do script princip
     assert.ok(photoCatalogIndex > classicIndex);
     assert.ok(photoModeIndex > photoCatalogIndex);
     assert.ok(moreLessCoreIndex > photoModeIndex);
-    assert.ok(scriptIndex > moreLessCoreIndex);
+    assert.ok(moreLessModeIndex > moreLessCoreIndex);
+    assert.ok(scriptIndex > moreLessModeIndex);
     assert.ok(ui.includes("TimaodleUI"));
     assert.ok(autocomplete.includes("TimaodleAutocomplete"));
     assert.ok(classic.includes("TimaodleClassic"));
     assert.ok(photoCatalog.includes("TimaodlePhotoCatalog"));
     assert.ok(photoMode.includes("TimaodlePhotoMode"));
     assert.ok(moreLessCore.includes("TimaodleMoreLessCore"));
+    assert.ok(moreLessMode.includes("TimaodleMoreLessMode"));
 });
 
 test("IDs literais usados por getElementById existem no HTML", () => {
@@ -119,7 +123,7 @@ test("classes dinâmicas relevantes permanecem ligadas ao JS", () => {
         !script.includes(className) && !ui.includes(className)
             && !autocomplete.includes(className) && !classic.includes(className)
             && !photoCatalog.includes(className)
-            && !photoMode.includes(className)
+            && !photoMode.includes(className) && !moreLessMode.includes(className)
     );
     assert.deepEqual(missing, []);
 });
@@ -449,8 +453,8 @@ test("Mais ou Menos preserva layout, overlay e escala responsiva", () => {
     assert.match(html, /class="mm-goal">Meta: <strong>7 acertos<\/strong>/);
     assert.ok(!html.includes('class="mm-progress-label"'));
     assert.ok(!html.includes('id="mmCaptionRound"'));
-    assert.match(script, /for \(let i = 0; i < RODADAS_MM; i\+\+\)/);
-    assert.ok(script.includes("const ATRASO_AVANCO_MM = 1500"));
+    assert.match(moreLessMode, /for \(let indice = 0; indice < RODADAS_MM; indice\+\+\)/);
+    assert.ok(moreLessMode.includes("const ATRASO_AVANCO_MM = 1500"));
     for (const breakpoint of [680, 480, 360]) {
         assert.ok(css.includes(`@media (max-width: ${breakpoint}px)`), `${breakpoint}px`);
     }

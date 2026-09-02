@@ -5576,3 +5576,44 @@ Decisão de release:
 - **A — v3.0 PRONTA E OFICIALMENTE CONCLUÍDA**;
 - nenhum item do backlog bloqueia a versão;
 - não iniciar Fase G, v3.1 ou nova rodada de redesign neste encerramento.
+
+## 02/09/2026 — Extração do runtime do modo Mais ou Menos
+
+**Status: CONCLUÍDA**
+
+Implementado:
+- runtime, estado da sessão, renderização, respostas, transição de rodadas, resultado e
+  compartilhamento do Mais ou Menos extraídos de `script.js` para `more-less-mode.js`;
+- `script.js` mantido como orquestrador dos adapters de dados, storage, navegação, foto,
+  progresso diário, confete e overlay final;
+- carregamento do novo módulo incluído em `index.html` depois de `more-less-core.js` e antes
+  de `script.js`;
+- preservados algoritmo determinístico v1/v2, snapshots, migração de saves legados, dez
+  rodadas, meta de sete acertos, empate, atraso funcional de 1,5 s, F5/reentrada e regra de
+  abrir o overlay apenas na conclusão imediata;
+- adicionada suíte unitária do runtime com 17 cenários;
+- contratos de resultado final, movimento reduzido e estrutura atualizados para a nova
+  fronteira modular;
+- sincronização do histórico ao abrir o modo mantida por callback explícito, evitando
+  reentrada recursiva no adapter de leitura identificada durante a validação em navegador.
+
+Testado:
+- `node --check script.js` e `node --check more-less-mode.js` aprovados;
+- `node tests/run-tests.js` aprovado integralmente, incluindo storage A–X, testes dos módulos,
+  39 cenários de regras com 180 datas MM, 118 cenários históricos, 13 de resultado final,
+  cinco de movimento reduzido e 48 estruturais com 168 IDs;
+- `git diff --check` aprovado, somente com avisos de normalização LF/CRLF;
+- checklist em Chrome real aprovado para novo jogo, acerto, erro, bloqueio temporário,
+  avanço único após aproximadamente 1,5 s, F5/reentrada, sequência e acertos preservados,
+  dez rodadas, resultado estático, overlay, fechamento, recarga sem reabertura, compartilhar
+  e regressão rápida de Foto, Clássico e Onze Inicial;
+- viewport móvel 390×844 inspecionado com cards, botões e feedback visíveis, sem overflow
+  horizontal no documento ou no `body`; nenhuma diferença visual intencional observada.
+
+Pendências:
+- nenhuma pendência automatizada conhecida desta extração;
+- validação futura em outros navegadores permanece recomendada, mas não bloqueia o checkpoint.
+
+Próximo passo:
+- em tarefa própria, auditar e planejar a extração incremental do Onze Inicial, preservando
+  seleção determinística, exatamente três ocultos, placar, campo, autocomplete e persistência.
