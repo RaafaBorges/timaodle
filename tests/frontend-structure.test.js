@@ -17,6 +17,7 @@ const photoMode = fs.readFileSync(path.join(root, "photo-mode.js"), "utf8");
 const moreLessCore = fs.readFileSync(path.join(root, "more-less-core.js"), "utf8");
 const moreLessMode = fs.readFileSync(path.join(root, "more-less-mode.js"), "utf8");
 const lineupCore = fs.readFileSync(path.join(root, "lineup-core.js"), "utf8");
+const lineupMode = fs.readFileSync(path.join(root, "lineup-mode.js"), "utf8");
 const css = fs.readFileSync(path.join(root, "style.css"), "utf8");
 const partidas = JSON.parse(fs.readFileSync(path.join(root, "partidas.json"), "utf8"));
 
@@ -77,6 +78,7 @@ test("infraestruturas de UI carregam depois de sharing e antes do script princip
     const moreLessCoreIndex = html.indexOf('<script src="more-less-core.js"></script>');
     const moreLessModeIndex = html.indexOf('<script src="more-less-mode.js"></script>');
     const lineupCoreIndex = html.indexOf('<script src="lineup-core.js"></script>');
+    const lineupModeIndex = html.indexOf('<script src="lineup-mode.js"></script>');
     const scriptIndex = html.indexOf('<script src="script.js"></script>');
     assert.ok(uiIndex > sharingIndex);
     assert.ok(autocompleteIndex > uiIndex);
@@ -86,7 +88,8 @@ test("infraestruturas de UI carregam depois de sharing e antes do script princip
     assert.ok(moreLessCoreIndex > photoModeIndex);
     assert.ok(moreLessModeIndex > moreLessCoreIndex);
     assert.ok(lineupCoreIndex > moreLessModeIndex);
-    assert.ok(scriptIndex > lineupCoreIndex);
+    assert.ok(lineupModeIndex > lineupCoreIndex);
+    assert.ok(scriptIndex > lineupModeIndex);
     assert.ok(ui.includes("TimaodleUI"));
     assert.ok(autocomplete.includes("TimaodleAutocomplete"));
     assert.ok(classic.includes("TimaodleClassic"));
@@ -95,6 +98,7 @@ test("infraestruturas de UI carregam depois de sharing e antes do script princip
     assert.ok(moreLessCore.includes("TimaodleMoreLessCore"));
     assert.ok(moreLessMode.includes("TimaodleMoreLessMode"));
     assert.ok(lineupCore.includes("TimaodleLineupCore"));
+    assert.ok(lineupMode.includes("TimaodleLineupMode"));
 });
 
 test("IDs literais usados por getElementById existem no HTML", () => {
@@ -128,6 +132,7 @@ test("classes dinâmicas relevantes permanecem ligadas ao JS", () => {
             && !autocomplete.includes(className) && !classic.includes(className)
             && !photoCatalog.includes(className)
             && !photoMode.includes(className) && !moreLessMode.includes(className)
+            && !lineupMode.includes(className)
     );
     assert.deepEqual(missing, []);
 });
@@ -484,11 +489,11 @@ test("Onze Inicial preserva campo, dense-line, placar e resultado", () => {
     assert.ok(css.includes("#escalacaoView .lineup-result-errors"));
     assert.ok(css.includes("#escalacaoView .lineup-next-challenge-time"));
     assert.match(lineupCore, /const MAX_OCULTOS_ESCALACAO = 3/);
-    assert.match(script, /escalacaoProgressEl\.innerText = `\$\{acertosEscalacao\}\/\$\{total\} JOGADORES`/);
+    assert.match(lineupMode, /elements\.progress\.innerText = `\$\{hits\}\/\$\{total\} JOGADORES`/);
     assert.match(lineupCore, /partida\.titulares\.forEach\(\(jogador, indice\) =>/);
     assert.match(lineupCore, /top: jogador\.top,[\s\S]*?left: jogador\.left/);
-    assert.match(script, /function restaurarEstadoOnzeInicial\(\) \{\s*iniciarOnzeInicial\(\)/);
-    assert.ok(script.includes("compartilharResultadoEscalacao"));
+    assert.match(lineupMode, /if \(state\?\.concluido\)[\s\S]*renderCompletion\(\)/);
+    assert.ok(lineupMode.includes("buildShareText"));
     assert.ok(html.includes('id="escalacaoSearchInput"'));
     assert.ok(html.includes('id="escalacaoAutocompleteList"'));
     assert.ok(html.includes('id="escalacaoDots"'));
@@ -553,7 +558,7 @@ test("autocompletes preservam contrato combobox, listbox e options ARIA", () => 
     }
     assert.ok(classic.includes('prefixo: "classic"'));
     assert.ok(photoMode.includes('prefixo: "photo"'));
-    assert.ok(script.includes('prefixo: "lineup"'));
+    assert.ok(lineupMode.includes('prefixo: "lineup"'));
     assert.ok(autocomplete.includes('event.key === "Escape"'));
     assert.ok(autocomplete.includes("if (indiceAtivo < 0) return"));
 });

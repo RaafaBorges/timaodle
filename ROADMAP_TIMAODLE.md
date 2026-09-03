@@ -5664,3 +5664,36 @@ Pendências:
 Próximo passo:
 - após aprovação final do 6G, planejar em tarefa própria o runtime do Onze Inicial sem ampliar
   o escopo deste checkpoint.
+
+## 03/09/2026 — Checkpoint 6H: runtime do Onze Inicial
+
+**Status: IMPLEMENTADO — AGUARDANDO COMMIT**
+
+Implementado:
+- runtime específico do Onze Inicial extraído de `script.js` para `lineup-mode.js`, com
+  namespace browser `TimaodleLineupMode` e export CommonJS;
+- estado, placar, campo, autocomplete específico, palpites, Fora, progresso, restauração,
+  conclusão, resultado estático, sharing e listeners internos encapsulados no novo módulo;
+- `script.js` preservado como orquestrador de fetch, normalização/storage, navegação, progresso
+  diário, infraestrutura compartilhada de autocomplete/sharing, confete e overlay;
+- `lineup-core.js` mantido como fonte única da partida diária e dos três slots ocultos;
+- preservados save shape, chave `timaodle_escalacao_daily_state`, migração de `partidaId: null`,
+  placar obrigatório, `exactScore`, 11/8/3, IDs de slots, F5/reentrada e Fora deduplicado;
+- atraso funcional de 500 ms e ordem save → render/resultado → confete → callback externo do
+  overlay preservados; reentrada concluída mantém resultado estático sem reabrir o overlay;
+- countdown e intervalo global de um segundo permaneceram em `script.js`;
+- caracterização migrada para o módulo real com 28 cenários e 85 assertions.
+
+Testado:
+- suíte automatizada completa aprovada, incluindo 17 cenários do Lineup Core, determinismo com
+  65 assertions em cinco datas, MM em 180 datas, Storage A–X, Histórico 118, Resultado Final 13,
+  Reduced Motion 5 e estrutura 48 cenários/168 IDs;
+- verificações de sintaxe do novo módulo e do `script.js` aprovadas;
+- nenhum CSS, JSON, foto, fixture, seed ou módulo estabilizado alterado.
+
+Pendências:
+- concluir checklist final no Chrome real antes do commit do checkpoint.
+
+Próximo passo:
+- validar o Checkpoint 6H no Chrome e, se aprovado, criar commit isolado em tarefa própria;
+- não iniciar cleanup pós-modos antes dessa aprovação.
