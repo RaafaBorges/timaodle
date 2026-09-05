@@ -5697,3 +5697,51 @@ Pendências:
 Próximo passo:
 - validar o Checkpoint 6H no Chrome e, se aprovado, criar commit isolado em tarefa própria;
 - não iniciar cleanup pós-modos antes dessa aprovação.
+
+## 03/09/2026 — Checkpoint 6I: extração da History UI
+
+**Status: IMPLEMENTADO — AGUARDANDO VALIDAÇÃO MANUAL E COMMIT**
+
+Implementado:
+- estado visual, calendário, limites, seleção, resumo diário, navegação mensal, roving tabindex,
+  teclado e listeners específicos do Histórico extraídos de `script.js` para `history-ui.js`;
+- novo módulo disponível como `globalThis.TimaodleHistoryUI` no navegador e `module.exports` no
+  Node, carregado depois de `lineup-mode.js` e antes de `script.js`;
+- `estadoHistoricoUI` encapsulado na factory `createHistoryUI`, com API pública pequena para
+  inicialização, abertura, fechamento, renderização e leitura de estado;
+- `script.js` preservado como composition root e owner da chave/versão do histórico, leitura,
+  escrita, normalização, sincronização dos quatro saves, Home, Stats, resultado final e dialogs;
+- APIs existentes de `core.js` e `history-stats.js` reutilizadas sem alteração ou duplicação;
+- os 13 helpers substanciais de calendário deixaram de ser compilados do texto de `script.js` e
+  passaram a ser testados diretamente pela API `calendar` do módulo real;
+- `carregarHistorico` permanece como a única função relacionada ao Histórico extraída pelo
+  `script-harness.js`, por pertencer ao storage transversal mantido no orquestrador;
+- adicionado `tests/history-ui.test.js` com 10 cenários diretos para contratos Node/browser,
+  factory, init idempotente, mês atual, grade, ARIA, roving tabindex, navegação, teclado, resumo,
+  streak e adapters de dialog;
+- `script.js` reduzido de 1.900 para 1.438 linhas; 495 linhas foram removidas e 33 linhas de
+  integração foram adicionadas; `history-ui.js` possui 501 linhas.
+
+Testado:
+- `node tests/history-ui.test.js`: 10 cenários aprovados;
+- `node tests/history-calendar.test.js`: 118 cenários aprovados usando o módulo real;
+- suíte automatizada completa aprovada, incluindo Lineup Mode 28 cenários/85 assertions, Lineup
+  Core 17, MM v2 em 180 datas, determinismo diário 65 assertions em cinco datas, Storage A–X,
+  Resultado Final 13, Reduced Motion 5 e estrutura 48 cenários/168 IDs;
+- todos os testes obrigatórios do checkpoint foram executados também isoladamente e aprovados;
+- `node --check history-ui.js`, `script.js`, `history-stats.js`, `core.js` e
+  `tests/history-ui.test.js` aprovados;
+- `git diff --check` aprovado, somente com avisos de normalização LF/CRLF;
+- `style.css`, HTML estrutural, JSONs, Core, HistoryStats, sharing, UI e módulos dos quatro modos
+  permanecem fora do diff.
+
+Pendências:
+- executar checklist manual no Chrome real para Histórico, Home, Stats, smoke dos quatro modos,
+  resultado e viewport móvel 390×844;
+- criar commit isolado somente após aprovação manual explícita;
+- nenhum push realizado.
+
+Próximo passo:
+- validar o Checkpoint 6I no Chrome e, se aprovado, criar commit isolado em tarefa própria;
+- depois deste checkpoint, parar a modularização: não iniciar Stats UI, Final Result, Home,
+  router ou cleanup geral.

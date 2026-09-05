@@ -18,6 +18,7 @@ const moreLessCore = fs.readFileSync(path.join(root, "more-less-core.js"), "utf8
 const moreLessMode = fs.readFileSync(path.join(root, "more-less-mode.js"), "utf8");
 const lineupCore = fs.readFileSync(path.join(root, "lineup-core.js"), "utf8");
 const lineupMode = fs.readFileSync(path.join(root, "lineup-mode.js"), "utf8");
+const historyUI = fs.readFileSync(path.join(root, "history-ui.js"), "utf8");
 const css = fs.readFileSync(path.join(root, "style.css"), "utf8");
 const partidas = JSON.parse(fs.readFileSync(path.join(root, "partidas.json"), "utf8"));
 
@@ -79,6 +80,7 @@ test("infraestruturas de UI carregam depois de sharing e antes do script princip
     const moreLessModeIndex = html.indexOf('<script src="more-less-mode.js"></script>');
     const lineupCoreIndex = html.indexOf('<script src="lineup-core.js"></script>');
     const lineupModeIndex = html.indexOf('<script src="lineup-mode.js"></script>');
+    const historyUIIndex = html.indexOf('<script src="history-ui.js"></script>');
     const scriptIndex = html.indexOf('<script src="script.js"></script>');
     assert.ok(uiIndex > sharingIndex);
     assert.ok(autocompleteIndex > uiIndex);
@@ -89,7 +91,8 @@ test("infraestruturas de UI carregam depois de sharing e antes do script princip
     assert.ok(moreLessModeIndex > moreLessCoreIndex);
     assert.ok(lineupCoreIndex > moreLessModeIndex);
     assert.ok(lineupModeIndex > lineupCoreIndex);
-    assert.ok(scriptIndex > lineupModeIndex);
+    assert.ok(historyUIIndex > lineupModeIndex);
+    assert.ok(scriptIndex > historyUIIndex);
     assert.ok(ui.includes("TimaodleUI"));
     assert.ok(autocomplete.includes("TimaodleAutocomplete"));
     assert.ok(classic.includes("TimaodleClassic"));
@@ -99,10 +102,11 @@ test("infraestruturas de UI carregam depois de sharing e antes do script princip
     assert.ok(moreLessMode.includes("TimaodleMoreLessMode"));
     assert.ok(lineupCore.includes("TimaodleLineupCore"));
     assert.ok(lineupMode.includes("TimaodleLineupMode"));
+    assert.ok(historyUI.includes("TimaodleHistoryUI"));
 });
 
 test("IDs literais usados por getElementById existem no HTML", () => {
-    const referenced = [...script.matchAll(/getElementById\(\s*["']([^"']+)["']\s*\)/g)]
+    const referenced = [...`${script}\n${historyUI}`.matchAll(/getElementById\(\s*["']([^"']+)["']\s*\)/g)]
         .map(match => match[1]);
     const missing = [...new Set(referenced)].filter(id => !htmlIdSet.has(id));
     assert.deepEqual(missing, []);
@@ -128,7 +132,7 @@ test("CSS permanece estruturalmente balanceado", () => {
 test("classes dinâmicas relevantes permanecem ligadas ao JS", () => {
     const all = [...new Set(Object.values(contract.dynamicClasses).flat())];
     const missing = all.filter(className =>
-        !script.includes(className) && !ui.includes(className)
+        !script.includes(className) && !ui.includes(className) && !historyUI.includes(className)
             && !autocomplete.includes(className) && !classic.includes(className)
             && !photoCatalog.includes(className)
             && !photoMode.includes(className) && !moreLessMode.includes(className)
@@ -200,7 +204,7 @@ test("Histórico preserva modal, calendário e estados acessíveis", () => {
     assert.match(cssRule(".history-calendar-grid"), /grid-template-columns:\s*repeat\(7/);
     for (const state of ["future", "before-tracking", "no-record", "recorded", "started", "partial", "complete"]) {
         assert.ok(css.includes(`.history-day-cell.is-${state}`), state);
-        assert.ok(script.includes(`is-${state}`), state);
+        assert.ok(historyUI.includes(`is-${state}`), state);
     }
     for (const token of [
         'setAttribute("aria-selected"', 'setAttribute("aria-pressed"',
@@ -208,10 +212,10 @@ test("Histórico preserva modal, calendário e estados acessíveis", () => {
         "botao.tabIndex = obterTabIndexDiaHistorico", 'addEventListener("keydown", navegarCalendarioHistoricoPorTeclado)',
         "function resolverNavegacaoTecladoHistorico", "function atualizarFocoRovingHistorico",
         "renderizarCalendarioHistorico(false)", "event.preventDefault()",
-        "historyPreviousMonth.disabled = !grade.navigation.canGoPrevious",
-        "historyNextMonth.disabled = !grade.navigation.canGoNext",
-        "abrirModalAcessivel(historyModal", "fecharModalAcessivel(historyModal"
-    ]) assert.ok(script.includes(token), token);
+        "elements.previousMonth.disabled = !grade.navigation.canGoPrevious",
+        "elements.nextMonth.disabled = !grade.navigation.canGoNext",
+        "openDialog(elements.modal", "closeDialog(elements.modal"
+    ]) assert.ok(historyUI.includes(token), token);
     assert.match(ui, /button:not\(\[disabled\]\):not\(\[tabindex="-1"\]\)/);
     assert.match(cssRule(".history-day-button:focus-visible"), /outline:/);
 });
@@ -249,15 +253,15 @@ test("Resumo histórico preserva quatro modos, progresso e estado sem registro",
     }
     assert.ok(!htmlIdSet.has("historyDayPlaceholder"));
     assert.ok(historyStats.includes("function obterResumoHistoricoDia(data, historico)"));
-    assert.ok(script.includes("historyClassicSummary.textContent = resumo.classic.statusText"));
-    assert.ok(script.includes("historyPhotoSummary.textContent = resumo.photo.statusText"));
-    assert.ok(script.includes("historyMoreLessSummary.textContent = resumo.moreLess.statusText"));
-    assert.ok(script.includes("historyLineupSummary.textContent = resumo.lineup.statusText"));
-    assert.ok(script.includes('historyLineupExactScore?.classList.toggle("hidden", !resumo.lineup.exactScore)'));
-    assert.ok(script.includes('historyOverallProgress.classList.toggle("is-complete", resumo.complete)'));
+    assert.ok(historyUI.includes("elements.classicSummary.textContent = resumo.classic.statusText"));
+    assert.ok(historyUI.includes("elements.photoSummary.textContent = resumo.photo.statusText"));
+    assert.ok(historyUI.includes("elements.moreLessSummary.textContent = resumo.moreLess.statusText"));
+    assert.ok(historyUI.includes("elements.lineupSummary.textContent = resumo.lineup.statusText"));
+    assert.ok(historyUI.includes('elements.lineupExactScore?.classList.toggle("hidden", !resumo.lineup.exactScore)'));
+    assert.ok(historyUI.includes('elements.overallProgress.classList.toggle("is-complete", resumo.complete)'));
     assert.ok(historyStats.includes("function obterSequenciaHistoricaDoDia(data, historico"));
-    assert.ok(script.includes('historyHistoricalStreak?.classList.toggle("hidden", !mostrarSequencia)'));
-    assert.ok(script.includes("sequencia.throughSelectedDate"));
+    assert.ok(historyUI.includes('elements.historicalStreak?.classList.toggle("hidden", !mostrarSequencia)'));
+    assert.ok(historyUI.includes("sequencia.throughSelectedDate"));
     for (const selector of [
         ".history-day-summary", ".history-no-record", ".history-mode-summary",
         ".history-exact-score", ".history-overall-progress.is-complete", ".history-historical-streak"
@@ -273,7 +277,7 @@ test("Detalhe diário prioriza data e progresso sem criar cards por modo", () =>
     const lineupIndex = details.indexOf('data-history-mode="lineup"');
     assert.ok(progressIndex >= 0 && progressIndex < classicIndex);
     assert.ok(classicIndex < photoIndex && photoIndex < moreLessIndex && moreLessIndex < lineupIndex);
-    assert.ok(script.includes("historySelectedDateTitle.textContent = formatarDataHistorico(dia.date);"));
+    assert.ok(historyUI.includes("elements.selectedDateTitle.textContent = formatarDataHistorico(dia.date);"));
     assert.match(cssRule(".history-day-summary"), /background:\s*transparent/);
     assert.doesNotMatch(cssRule(".history-day-summary"), /border-left:/);
     assert.match(cssRule(".history-mode-summary"), /border-bottom:/);
@@ -318,7 +322,7 @@ test("Estatísticas gerais preservam dados e separam hierarquia sem caixas redun
 test("Estatísticas por modo usam detalhes nativos fechados e preservam ordem e dados", () => {
     const statsRender = script.slice(
         script.indexOf("function renderizarEstatisticasIntegradas()"),
-        script.indexOf("const MESES_HISTORICO")
+        script.indexOf("const historyUIElements")
     );
     const modeTitles = ["CLÁSSICO", "FOTO", "MAIS OU MENOS", "ONZE INICIAL"];
     let previousIndex = -1;

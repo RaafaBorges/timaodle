@@ -12,15 +12,12 @@ const VERSAO_HISTORICO = 1;
 const URL_OFICIAL_TIMAODLE = "timaodle.net";
 const NormalizadoresStorage = globalThis.TimaodleStorage;
 const {
-    formatarDataLocal, componentesDataCivil, criarDataCivilString,
-    compararDatasCivis, diasNoMesCivil, deslocamentoPrimeiraSemanaCivil,
-    moverMesCivil, moverDataCivil, hashString
+    formatarDataLocal, hashString
 } = globalThis.TimaodleCore;
 const {
     quantidadeSegura, criarResumoDiaVazio,
     normalizarResumoClassico, normalizarResumoFoto, normalizarResumoMaisMenos,
-    normalizarResumoOnzeInicial, calcularProgressoDoResumo, obterResumoHistoricoDia,
-    obterSequenciaHistoricaDoDia, numeroHistoricoValido,
+    normalizarResumoOnzeInicial, calcularProgressoDoResumo, numeroHistoricoValido,
     obterProgressoHistorico, calcularStreakGeral, calcularEstatisticasIntegradas
 } = globalThis.TimaodleHistoryStats;
 const {
@@ -117,26 +114,6 @@ const btnOpenIntegratedStats = document.getElementById("btnOpenIntegratedStats")
 const integratedStatsModal = document.getElementById("integratedStatsModal");
 const btnCloseIntegratedStats = document.getElementById("btnCloseIntegratedStats");
 const integratedStatsContent = document.getElementById("integratedStatsContent");
-const btnOpenHistory = document.getElementById("btnOpenHistory");
-const historyModal = document.getElementById("historyModal");
-const btnCloseHistory = document.getElementById("btnCloseHistory");
-const historyPreviousMonth = document.getElementById("historyPreviousMonth");
-const historyNextMonth = document.getElementById("historyNextMonth");
-const historyMonthTitle = document.getElementById("historyMonthTitle");
-const historyCalendarGrid = document.getElementById("historyCalendarGrid");
-const historyDaySummary = document.getElementById("historyDaySummary");
-const historySummaryEmpty = document.getElementById("historySummaryEmpty");
-const historyNoRecord = document.getElementById("historyNoRecord");
-const historyDayDetails = document.getElementById("historyDayDetails");
-const historySelectedDateTitle = document.getElementById("historySelectedDateTitle");
-const historyClassicSummary = document.getElementById("historyClassicSummary");
-const historyPhotoSummary = document.getElementById("historyPhotoSummary");
-const historyMoreLessSummary = document.getElementById("historyMoreLessSummary");
-const historyLineupSummary = document.getElementById("historyLineupSummary");
-const historyLineupExactScore = document.getElementById("historyLineupExactScore");
-const historyOverallProgress = document.getElementById("historyOverallProgress");
-const historyHistoricalStreak = document.getElementById("historyHistoricalStreak");
-const historyHistoricalStreakText = document.getElementById("historyHistoricalStreakText");
 const btnOpenHowToPlay = document.getElementById("btnOpenHowToPlay");
 const howToPlayModal = document.getElementById("howToPlayModal");
 const btnCloseHowToPlay = document.getElementById("btnCloseHowToPlay");
@@ -229,10 +206,6 @@ function getDataLocalString() {
 // fonte de verdade do desafio atual.
 // ==========================================================================
 
-function dataHistoricoValida(data) {
-    return NormalizadoresStorage.validDate(data);
-}
-
 function carregarHistorico() {
     const salvo = lerJsonLocalStorage(CHAVE_HISTORICO);
     const normalizado = NormalizadoresStorage.normalizeHistory(
@@ -253,168 +226,6 @@ function salvarHistorico(historico) {
     } catch (error) {
         console.warn("Não foi possível salvar o histórico diário:", error);
     }
-}
-
-function dataNavegavelHistorico(data, historico, hoje = getDataLocalString()) {
-    if (!dataHistoricoValida(data) || !dataHistoricoValida(hoje)) return false;
-    const inicio = dataHistoricoValida(historico?.trackingStartedAt) ? historico.trackingStartedAt : hoje;
-    return compararDatasCivis(data, inicio) >= 0 && compararDatasCivis(data, hoje) <= 0;
-}
-
-function limitarDataNavegavelHistorico(data, historico, hoje = getDataLocalString()) {
-    if (!dataHistoricoValida(data) || !dataHistoricoValida(hoje)) return null;
-    const inicio = dataHistoricoValida(historico?.trackingStartedAt) ? historico.trackingStartedAt : hoje;
-    if (compararDatasCivis(inicio, hoje) > 0) return null;
-    if (compararDatasCivis(data, inicio) < 0) return inicio;
-    if (compararDatasCivis(data, hoje) > 0) return hoje;
-    return data;
-}
-
-function obterDataFocoSemanaHistorico(data, limiteFinal, historico, hoje = getDataLocalString()) {
-    const civil = componentesDataCivil(data);
-    if (!civil || (limiteFinal !== "inicio" && limiteFinal !== "fim")) return null;
-    const diaSemana = new Date(Date.UTC(civil.year, civil.month - 1, civil.day)).getUTCDay();
-    const deslocamentoSegunda = (diaSemana + 6) % 7;
-    const deslocamento = limiteFinal === "inicio" ? -deslocamentoSegunda : 6 - deslocamentoSegunda;
-    return limitarDataNavegavelHistorico(moverDataCivil(data, deslocamento), historico, hoje);
-}
-
-function obterDataFocoMesHistorico(data, direcao, historico, hoje = getDataLocalString()) {
-    const civil = componentesDataCivil(data);
-    if (!civil || (direcao !== -1 && direcao !== 1)) return null;
-    const destino = moverMesCivil(civil.year, civil.month, direcao);
-    const limites = obterLimitesMesesHistorico(historico, hoje);
-    if (compararMesesCivis(destino, limites.firstMonth) < 0
-        || compararMesesCivis(destino, limites.currentMonth) > 0) return data;
-    const dia = Math.min(civil.day, diasNoMesCivil(destino.year, destino.month));
-    return limitarDataNavegavelHistorico(
-        criarDataCivilString(destino.year, destino.month, dia), historico, hoje
-    ) || data;
-}
-
-function resolverNavegacaoTecladoHistorico(tecla, dataFoco, dataSelecionada, historico, hoje = getDataLocalString()) {
-    if (!dataNavegavelHistorico(dataFoco, historico, hoje)) return { handled: false };
-    if (tecla === "Enter" || tecla === " " || tecla === "Spacebar") {
-        return { handled: true, focusDate: dataFoco, selectedDate: dataFoco, selectionChanged: dataSelecionada !== dataFoco };
-    }
-
-    const deslocamentos = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
-    let proximoFoco = dataFoco;
-    if (Object.prototype.hasOwnProperty.call(deslocamentos, tecla)) {
-        const candidato = moverDataCivil(dataFoco, deslocamentos[tecla]);
-        proximoFoco = dataNavegavelHistorico(candidato, historico, hoje) ? candidato : dataFoco;
-    } else if (tecla === "Home" || tecla === "End") {
-        proximoFoco = obterDataFocoSemanaHistorico(
-            dataFoco, tecla === "Home" ? "inicio" : "fim", historico, hoje
-        ) || dataFoco;
-    } else if (tecla === "PageUp" || tecla === "PageDown") {
-        proximoFoco = obterDataFocoMesHistorico(
-            dataFoco, tecla === "PageUp" ? -1 : 1, historico, hoje
-        ) || dataFoco;
-    } else {
-        return { handled: false };
-    }
-
-    return { handled: true, focusDate: proximoFoco, selectedDate: dataSelecionada, selectionChanged: false };
-}
-
-function compararMesesCivis(mesA, mesB) {
-    if (!mesA || !mesB || !Number.isInteger(mesA.year) || !Number.isInteger(mesA.month)
-        || !Number.isInteger(mesB.year) || !Number.isInteger(mesB.month)) return null;
-    const indiceA = mesA.year * 12 + mesA.month - 1;
-    const indiceB = mesB.year * 12 + mesB.month - 1;
-    return indiceA === indiceB ? 0 : indiceA < indiceB ? -1 : 1;
-}
-
-function obterLimitesMesesHistorico(historico, hoje = getDataLocalString()) {
-    const hojeCivil = componentesDataCivil(hoje) || componentesDataCivil(getDataLocalString());
-    const tracking = dataHistoricoValida(historico?.trackingStartedAt)
-        ? componentesDataCivil(historico.trackingStartedAt)
-        : hojeCivil;
-    const currentMonth = { year: hojeCivil.year, month: hojeCivil.month };
-    const trackingMonth = { year: tracking.year, month: tracking.month };
-    const firstMonth = compararMesesCivis(trackingMonth, currentMonth) > 0
-        ? currentMonth
-        : trackingMonth;
-    return { firstMonth, currentMonth };
-}
-
-function limitarMesAoHistorico(year, month, historico, hoje = getDataLocalString()) {
-    const solicitado = moverMesCivil(year, month, 0);
-    const limites = obterLimitesMesesHistorico(historico, hoje);
-    if (!solicitado || compararMesesCivis(solicitado, limites.firstMonth) < 0) return { ...limites.firstMonth };
-    if (compararMesesCivis(solicitado, limites.currentMonth) > 0) return { ...limites.currentMonth };
-    return solicitado;
-}
-
-function obterNavegacaoMesHistorico(year, month, historico, hoje = getDataLocalString()) {
-    const displayedMonth = limitarMesAoHistorico(year, month, historico, hoje);
-    const { firstMonth, currentMonth } = obterLimitesMesesHistorico(historico, hoje);
-    const canGoPrevious = compararMesesCivis(displayedMonth, firstMonth) > 0;
-    const canGoNext = compararMesesCivis(displayedMonth, currentMonth) < 0;
-    return {
-        displayedMonth,
-        firstMonth,
-        currentMonth,
-        canGoPrevious,
-        canGoNext,
-        previousMonth: canGoPrevious ? moverMesCivil(displayedMonth.year, displayedMonth.month, -1) : null,
-        nextMonth: canGoNext ? moverMesCivil(displayedMonth.year, displayedMonth.month, 1) : null
-    };
-}
-
-function obterEstadoDiaHistorico(data, historico, hoje = getDataLocalString()) {
-    const isToday = data === hoje;
-    const isFuture = compararDatasCivis(data, hoje) === 1;
-    const trackingStartedAt = dataHistoricoValida(historico?.trackingStartedAt)
-        ? historico.trackingStartedAt
-        : hoje;
-    const isBeforeTracking = compararDatasCivis(data, trackingStartedAt) === -1;
-    const hasRecord = Object.prototype.hasOwnProperty.call(historico?.days || {}, data);
-    const registro = hasRecord && historico.days[data] && typeof historico.days[data] === "object"
-        ? historico.days[data]
-        : criarResumoDiaVazio();
-    const progresso = calcularProgressoDoResumo(registro);
-    let state = "no-record";
-    if (isFuture) state = "future";
-    else if (isBeforeTracking) state = "before-tracking";
-    else if (hasRecord && progresso.complete) state = "complete";
-    else if (hasRecord && progresso.completed > 0) state = "partial";
-    else if (hasRecord && progresso.started > 0) state = "started";
-    else if (hasRecord) state = "recorded";
-
-    return {
-        date: data,
-        day: componentesDataCivil(data)?.day || null,
-        isToday,
-        isFuture,
-        isBeforeTracking,
-        hasRecord,
-        startedCount: progresso.started,
-        completedCount: progresso.completed,
-        complete: progresso.complete,
-        state
-    };
-}
-
-
-
-function gerarGradeMensalHistorico(year, month, historico, hoje = getDataLocalString()) {
-    const navigation = obterNavegacaoMesHistorico(year, month, historico, hoje);
-    const displayedMonth = navigation.displayedMonth;
-    const totalDays = diasNoMesCivil(displayedMonth.year, displayedMonth.month);
-    const days = Array.from({ length: totalDays }, (_, index) => {
-        const date = criarDataCivilString(displayedMonth.year, displayedMonth.month, index + 1);
-        return obterEstadoDiaHistorico(date, historico, hoje);
-    });
-    return {
-        year: displayedMonth.year,
-        month: displayedMonth.month,
-        daysInMonth: totalDays,
-        firstWeekOffset: deslocamentoPrimeiraSemanaCivil(displayedMonth.year, displayedMonth.month),
-        days,
-        navigation
-    };
 }
 
 function sincronizarProgressoDiario() {
@@ -780,305 +591,37 @@ function renderizarEstatisticasIntegradas() {
         </div>`;
 }
 
-const MESES_HISTORICO = [
-    "JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO",
-    "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"
-];
-const CLASSES_ESTADO_HISTORICO = [
-    "is-future", "is-before-tracking", "is-no-record", "is-recorded",
-    "is-started", "is-partial", "is-complete"
-];
-const estadoHistoricoUI = {
-    year: null,
-    month: null,
-    selectedDate: null,
-    focusedDate: null,
-    history: null,
-    today: null
+const historyUIElements = {
+    openButton: document.getElementById("btnOpenHistory"),
+    modal: document.getElementById("historyModal"),
+    closeButton: document.getElementById("btnCloseHistory"),
+    previousMonth: document.getElementById("historyPreviousMonth"),
+    nextMonth: document.getElementById("historyNextMonth"),
+    monthTitle: document.getElementById("historyMonthTitle"),
+    calendarGrid: document.getElementById("historyCalendarGrid"),
+    daySummary: document.getElementById("historyDaySummary"),
+    summaryEmpty: document.getElementById("historySummaryEmpty"),
+    noRecord: document.getElementById("historyNoRecord"),
+    dayDetails: document.getElementById("historyDayDetails"),
+    selectedDateTitle: document.getElementById("historySelectedDateTitle"),
+    classicSummary: document.getElementById("historyClassicSummary"),
+    photoSummary: document.getElementById("historyPhotoSummary"),
+    moreLessSummary: document.getElementById("historyMoreLessSummary"),
+    lineupSummary: document.getElementById("historyLineupSummary"),
+    lineupExactScore: document.getElementById("historyLineupExactScore"),
+    overallProgress: document.getElementById("historyOverallProgress"),
+    historicalStreak: document.getElementById("historyHistoricalStreak"),
+    historicalStreakText: document.getElementById("historyHistoricalStreakText")
 };
-
-function obterDataFocoInicialHistorico(grade, dataSelecionada, hoje) {
-    const navegaveis = grade?.days?.filter(dia => !dia.isFuture && !dia.isBeforeTracking) || [];
-    if (navegaveis.length === 0) return null;
-    const datasNavegaveis = new Set(navegaveis.map(dia => dia.date));
-    if (datasNavegaveis.has(dataSelecionada)) return dataSelecionada;
-    if (datasNavegaveis.has(hoje)) return hoje;
-    return navegaveis.filter(dia => dia.hasRecord).at(-1)?.date || navegaveis[0].date;
-}
-
-function obterTabIndexDiaHistorico(dia, dataFoco) {
-    return dia && !dia.isFuture && !dia.isBeforeTracking && dia.date === dataFoco ? 0 : -1;
-}
-
-function formatarDataHistorico(data, incluirAno = true) {
-    const civil = componentesDataCivil(data);
-    if (!civil) return "";
-    const texto = `${civil.day} DE ${MESES_HISTORICO[civil.month - 1]}`;
-    return incluirAno ? `${texto} DE ${civil.year}` : texto;
-}
-
-function rotuloAcessivelDiaHistorico(dia) {
-    const partes = [formatarDataHistorico(dia.date).toLocaleLowerCase("pt-BR")];
-    if (dia.isToday) partes.push("hoje");
-    if (dia.isFuture) partes.push("data futura");
-    else if (dia.isBeforeTracking) partes.push("histórico indisponível para esta data");
-    else if (!dia.hasRecord) partes.push("sem registro disponível");
-    else if (dia.complete) partes.push("4 de 4 desafios concluídos");
-    else if (dia.completedCount > 0) partes.push(`${dia.completedCount} de 4 desafios concluídos`);
-    else if (dia.startedCount > 0) partes.push("desafio iniciado, nenhum de 4 concluído");
-    else partes.push("registro sem progresso concluído");
-    return partes.join(", ");
-}
-
-function textoIndicadorDiaHistorico(dia) {
-    if (dia.complete) return "✓ 4/4";
-    if (dia.completedCount > 0) return `${dia.completedCount}/4`;
-    if (dia.state === "started") return "• 0/4";
-    if (dia.state === "recorded") return "0/4";
-    return "";
-}
-
-function renderizarResumoDiaHistorico(dia) {
-    if (!historyDaySummary) return;
-    if (!dia) {
-        historySummaryEmpty?.classList.remove("hidden");
-        historySelectedDateTitle?.classList.add("hidden");
-        historyNoRecord?.classList.add("hidden");
-        historyDayDetails?.classList.add("hidden");
-        historyHistoricalStreak?.classList.add("hidden");
-        return;
-    }
-    const resumo = obterResumoHistoricoDia(dia.date, estadoHistoricoUI.history);
-    historySummaryEmpty?.classList.add("hidden");
-    if (historySelectedDateTitle) {
-        historySelectedDateTitle.textContent = formatarDataHistorico(dia.date);
-        historySelectedDateTitle.classList.remove("hidden");
-    }
-
-    if (!resumo.hasRecord) {
-        historyNoRecord?.classList.remove("hidden");
-        historyDayDetails?.classList.add("hidden");
-        historyHistoricalStreak?.classList.add("hidden");
-        return;
-    }
-
-    historyNoRecord?.classList.add("hidden");
-    historyDayDetails?.classList.remove("hidden");
-    if (historyClassicSummary) historyClassicSummary.textContent = resumo.classic.statusText;
-    if (historyPhotoSummary) historyPhotoSummary.textContent = resumo.photo.statusText;
-    if (historyMoreLessSummary) historyMoreLessSummary.textContent = resumo.moreLess.statusText;
-    if (historyLineupSummary) historyLineupSummary.textContent = resumo.lineup.statusText;
-    historyLineupExactScore?.classList.toggle("hidden", !resumo.lineup.exactScore);
-
-    const estados = {
-        classic: resumo.classic,
-        photo: resumo.photo,
-        moreLess: resumo.moreLess,
-        lineup: resumo.lineup
-    };
-    Object.entries(estados).forEach(([modo, estado]) => {
-        const linha = historyDayDetails?.querySelector(`[data-history-mode="${modo}"]`);
-        if (!linha) return;
-        linha.classList.remove("is-not-started", "is-in-progress", "is-completed", "is-won", "is-lost");
-        linha.classList.add(!estado.started ? "is-not-started" : estado.completed ? "is-completed" : "is-in-progress");
-        if (estado.outcome === "won") linha.classList.add("is-won");
-        if (estado.outcome === "lost") linha.classList.add("is-lost");
-    });
-
-    if (historyOverallProgress) {
-        historyOverallProgress.textContent = `${resumo.completedCount}/4 DESAFIOS`;
-        historyOverallProgress.classList.toggle("is-complete", resumo.complete);
-    }
-    const sequencia = resumo.complete
-        ? obterSequenciaHistoricaDoDia(dia.date, estadoHistoricoUI.history, estadoHistoricoUI.today)
-        : null;
-    const mostrarSequencia = sequencia?.belongs === true;
-    historyHistoricalStreak?.classList.toggle("hidden", !mostrarSequencia);
-    if (mostrarSequencia && historyHistoricalStreakText) {
-        const dias = sequencia.throughSelectedDate;
-        historyHistoricalStreakText.textContent = `Sequência até este dia: ${dias} ${dias === 1 ? "dia" : "dias"}`;
-    }
-}
-
-function selecionarDiaHistorico(data, devolverFoco = false) {
-    const grade = gerarGradeMensalHistorico(
-        estadoHistoricoUI.year,
-        estadoHistoricoUI.month,
-        estadoHistoricoUI.history,
-        estadoHistoricoUI.today
-    );
-    const dia = grade.days.find(item => item.date === data && !item.isFuture && !item.isBeforeTracking);
-    if (!dia) return;
-    estadoHistoricoUI.selectedDate = data;
-    estadoHistoricoUI.focusedDate = data;
-    renderizarCalendarioHistorico();
-    if (devolverFoco) historyCalendarGrid?.querySelector(`[data-history-date="${data}"]`)?.focus();
-}
-
-function renderizarCalendarioHistorico(atualizarResumo = true) {
-    if (!historyCalendarGrid || !estadoHistoricoUI.history || !estadoHistoricoUI.today) return;
-    const grade = gerarGradeMensalHistorico(
-        estadoHistoricoUI.year,
-        estadoHistoricoUI.month,
-        estadoHistoricoUI.history,
-        estadoHistoricoUI.today
-    );
-    estadoHistoricoUI.year = grade.year;
-    estadoHistoricoUI.month = grade.month;
-    const focoExisteNaGrade = grade.days.some(dia => dia.date === estadoHistoricoUI.focusedDate
-        && !dia.isFuture && !dia.isBeforeTracking);
-    if (!focoExisteNaGrade) {
-        estadoHistoricoUI.focusedDate = obterDataFocoInicialHistorico(
-            grade, estadoHistoricoUI.selectedDate, estadoHistoricoUI.today
-        );
-    }
-    if (historyMonthTitle) historyMonthTitle.textContent = `${MESES_HISTORICO[grade.month - 1]} ${grade.year}`;
-    if (historyPreviousMonth) historyPreviousMonth.disabled = !grade.navigation.canGoPrevious;
-    if (historyNextMonth) historyNextMonth.disabled = !grade.navigation.canGoNext;
-
-    historyCalendarGrid.replaceChildren();
-    for (let index = 0; index < grade.firstWeekOffset; index++) {
-        const vazio = document.createElement("span");
-        vazio.className = "history-calendar-empty";
-        vazio.setAttribute("aria-hidden", "true");
-        historyCalendarGrid.appendChild(vazio);
-    }
-
-    grade.days.forEach(dia => {
-        const selecionado = dia.date === estadoHistoricoUI.selectedDate;
-        const classeEstado = `is-${dia.state}`;
-        const celula = document.createElement("div");
-        celula.className = `history-day-cell ${CLASSES_ESTADO_HISTORICO.includes(classeEstado) ? classeEstado : "is-no-record"}${dia.isToday ? " is-today" : ""}${selecionado ? " is-selected" : ""}`;
-        celula.setAttribute("role", "gridcell");
-        celula.setAttribute("aria-selected", String(selecionado));
-
-        const botao = document.createElement("button");
-        botao.type = "button";
-        botao.className = "history-day-button";
-        botao.dataset.historyDate = dia.date;
-        botao.disabled = dia.isFuture || dia.isBeforeTracking;
-        botao.tabIndex = obterTabIndexDiaHistorico(dia, estadoHistoricoUI.focusedDate);
-        botao.setAttribute("aria-label", rotuloAcessivelDiaHistorico(dia));
-        botao.setAttribute("aria-pressed", String(selecionado));
-        if (dia.isToday) botao.setAttribute("aria-current", "date");
-
-        const numero = document.createElement("span");
-        numero.className = "history-day-number";
-        numero.textContent = String(dia.day);
-        botao.appendChild(numero);
-
-        if (dia.isToday) {
-            const hoje = document.createElement("span");
-            hoje.className = "history-today-marker";
-            hoje.textContent = "HOJE";
-            botao.appendChild(hoje);
-        }
-
-        const indicador = textoIndicadorDiaHistorico(dia);
-        if (indicador) {
-            const progresso = document.createElement("span");
-            progresso.className = "history-day-progress";
-            progresso.textContent = indicador;
-            botao.appendChild(progresso);
-        }
-
-        if (!botao.disabled) botao.addEventListener("click", () => selecionarDiaHistorico(dia.date, true));
-        celula.appendChild(botao);
-        historyCalendarGrid.appendChild(celula);
-    });
-
-    if (atualizarResumo) {
-        const selecionado = estadoHistoricoUI.selectedDate
-            ? obterEstadoDiaHistorico(estadoHistoricoUI.selectedDate, estadoHistoricoUI.history, estadoHistoricoUI.today)
-            : null;
-        renderizarResumoDiaHistorico(selecionado);
-    }
-}
-
-function atualizarFocoRovingHistorico(data) {
-    if (!historyCalendarGrid || !dataNavegavelHistorico(data, estadoHistoricoUI.history, estadoHistoricoUI.today)) return;
-    const alvo = historyCalendarGrid.querySelector(`[data-history-date="${data}"]`);
-    if (!alvo || alvo.disabled) return;
-    historyCalendarGrid.querySelectorAll(".history-day-button").forEach(botao => {
-        botao.tabIndex = botao === alvo ? 0 : -1;
-    });
-    estadoHistoricoUI.focusedDate = data;
-    alvo.focus();
-}
-
-function navegarCalendarioHistoricoPorTeclado(event) {
-    const botao = event.target.closest?.(".history-day-button");
-    if (!botao || botao.disabled || !historyCalendarGrid?.contains(botao)) return;
-    const resultado = resolverNavegacaoTecladoHistorico(
-        event.key,
-        botao.dataset.historyDate,
-        estadoHistoricoUI.selectedDate,
-        estadoHistoricoUI.history,
-        estadoHistoricoUI.today
-    );
-    if (!resultado.handled) return;
-    event.preventDefault();
-
-    if (event.key === "Enter" || event.key === " " || event.key === "Spacebar") {
-        selecionarDiaHistorico(resultado.focusDate, true);
-        return;
-    }
-
-    const civil = componentesDataCivil(resultado.focusDate);
-    if (!civil) return;
-    if (civil.year === estadoHistoricoUI.year && civil.month === estadoHistoricoUI.month) {
-        atualizarFocoRovingHistorico(resultado.focusDate);
-        return;
-    }
-    estadoHistoricoUI.year = civil.year;
-    estadoHistoricoUI.month = civil.month;
-    estadoHistoricoUI.focusedDate = resultado.focusDate;
-    renderizarCalendarioHistorico(false);
-    historyCalendarGrid.querySelector(`[data-history-date="${resultado.focusDate}"]`)?.focus();
-}
-
-function navegarMesHistorico(direcao) {
-    if (direcao !== -1 && direcao !== 1) return;
-    const gradeAtual = gerarGradeMensalHistorico(
-        estadoHistoricoUI.year,
-        estadoHistoricoUI.month,
-        estadoHistoricoUI.history,
-        estadoHistoricoUI.today
-    );
-    const destino = direcao < 0 ? gradeAtual.navigation.previousMonth : gradeAtual.navigation.nextMonth;
-    if (!destino) return;
-    estadoHistoricoUI.year = destino.year;
-    estadoHistoricoUI.month = destino.month;
-    const novaGrade = gerarGradeMensalHistorico(
-        destino.year,
-        destino.month,
-        estadoHistoricoUI.history,
-        estadoHistoricoUI.today
-    );
-    estadoHistoricoUI.selectedDate = novaGrade.days
-        .filter(dia => dia.hasRecord && !dia.isFuture && !dia.isBeforeTracking)
-        .at(-1)?.date || null;
-    estadoHistoricoUI.focusedDate = null;
-    renderizarCalendarioHistorico();
-}
-
-function abrirHistorico() {
-    const today = getDataLocalString();
-    const civil = componentesDataCivil(today);
-    if (!civil) return;
-    estadoHistoricoUI.history = carregarHistorico();
-    estadoHistoricoUI.today = today;
-    estadoHistoricoUI.year = civil.year;
-    estadoHistoricoUI.month = civil.month;
-    estadoHistoricoUI.selectedDate = today;
-    estadoHistoricoUI.focusedDate = today;
-    renderizarCalendarioHistorico();
-    abrirModalAcessivel(historyModal, btnOpenHistory, btnCloseHistory);
-}
-
-function fecharHistorico() {
-    fecharModalAcessivel(historyModal, btnOpenHistory);
-}
+const historyUI = TimaodleHistoryUI.createHistoryUI({
+    documentApi: document,
+    elements: historyUIElements,
+    getHistory: carregarHistorico,
+    getCurrentDate: getDataLocalString,
+    openDialog: abrirModalAcessivel,
+    closeDialog: fecharModalAcessivel
+});
+historyUI.init();
 
 function abrirEstatisticasIntegradas() {
     renderizarEstatisticasIntegradas();
@@ -1211,11 +754,6 @@ function voltarParaHomeDoResultado() {
 
 btnOpenIntegratedStats?.addEventListener("click", abrirEstatisticasIntegradas);
 btnCloseIntegratedStats?.addEventListener("click", fecharEstatisticasIntegradas);
-btnOpenHistory?.addEventListener("click", abrirHistorico);
-btnCloseHistory?.addEventListener("click", fecharHistorico);
-historyPreviousMonth?.addEventListener("click", () => navegarMesHistorico(-1));
-historyNextMonth?.addEventListener("click", () => navegarMesHistorico(1));
-historyCalendarGrid?.addEventListener("keydown", navegarCalendarioHistoricoPorTeclado);
 btnOpenHowToPlay?.addEventListener("click", abrirComoJogar);
 btnCloseHowToPlay?.addEventListener("click", fecharComoJogar);
 finalResultCloseBtn?.addEventListener("click", fecharResultadoFinal);
@@ -1620,7 +1158,7 @@ infraestruturaDialogs.registrarDialogs([
     { dialog: finalResultModal, onClose: fecharResultadoFinal, fecharNoBackdrop: true },
     { dialog: howToPlayModal, onClose: fecharComoJogar, fecharNoBackdrop: true },
     { dialog: integratedStatsModal, onClose: fecharEstatisticasIntegradas, fecharNoBackdrop: true },
-    { dialog: historyModal, onClose: fecharHistorico, fecharNoBackdrop: true },
+    { dialog: historyUIElements.modal, onClose: historyUI.close, fecharNoBackdrop: true },
     { dialog: photoTutorialModal, onClose: photoMode.fecharTutorial, fecharNoBackdrop: false }
 ]);
 
