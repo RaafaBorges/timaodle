@@ -5745,3 +5745,41 @@ Próximo passo:
 - validar o Checkpoint 6I no Chrome e, se aprovado, criar commit isolado em tarefa própria;
 - depois deste checkpoint, parar a modularização: não iniciar Stats UI, Final Result, Home,
   router ou cleanup geral.
+
+## 04/09/2026 — Campo blackscale do Onze Inicial
+
+**Status: IMPLEMENTADO — AGUARDANDO VALIDAÇÃO VISUAL MANUAL**
+
+Implementado:
+- gramado do Onze Inicial convertido de verde para faixas alternadas sutis em preto e grafite;
+- moldura e marcações do campo ajustadas para cinza translúcido, preservando estrutura e
+  proporções existentes;
+- fotos removidas somente dos jogadores renderizados no campinho, substituídas por marcador
+  circular minimalista em grafite com detalhe cinza;
+- nomes reforçados como informação principal, com branco, peso alto, fundo quase preto, borda
+  discreta e quebra existente de até duas linhas preservada;
+- slots ocultos mantidos com `?`, posição e borda dourada tracejada, agora sobre fundo preto e
+  com sombra dourada sutil;
+- autocomplete e demais consumidores continuam utilizando as fotos normalmente;
+- regras, exatamente três ocultos, ordem, formação, coordenadas, seeds, determinismo, storage,
+  dados e demais modos permaneceram inalterados.
+
+Testado:
+- `node tests/lineup-mode.test.js`: 28 cenários e 86 assertions aprovadas, incluindo marcador
+  sem `<img>`, 11 chips, oito visíveis, três ocultos e coordenadas preservadas;
+- `node tests/lineup-core.test.js`: 17 cenários aprovados;
+- determinismo diário: 65 assertions em cinco datas aprovadas;
+- estrutura: 48 cenários e 168 IDs aprovados;
+- suíte automatizada completa aprovada;
+- `node --check lineup-mode.js`, `node --check script.js` e `git diff --check` aprovados, este
+  último somente com avisos de normalização LF/CRLF.
+
+Pendências:
+- validar visualmente em Chrome real no desktop e em 390×844: blackscale sem verde, faixas,
+  linhas, nomes longos, ausência de sobreposição/overflow, teclado/autocomplete, acerto, F5 e
+  conclusão;
+- nenhum commit e nenhum push realizados nesta etapa.
+
+Próximo passo:
+- executar somente o checklist visual manual e, se aprovado, fechar esta alteração isolada;
+- não iniciar novo checkpoint, refatoração ou cleanup durante essa validação.

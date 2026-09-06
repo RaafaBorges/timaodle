@@ -212,11 +212,7 @@
             chip.className = `player-chip${dense ? " dense-line" : ""}`;
             chip.style.top = `${top}%`;
             chip.style.left = `${left}%`;
-            const photo = getPlayerPhoto(name);
-            const dotHtml = photo
-                ? `<img src="${photo}" class="chip-dot" alt="Foto de ${name}" style="object-fit:cover;object-position:center top;">`
-                : '<span class="chip-dot" aria-hidden="true"></span>';
-            chip.innerHTML = `${dotHtml}<span class="chip-label${revealed ? " correct" : ""}">${name}</span>`;
+            chip.innerHTML = `<span class="chip-dot" aria-hidden="true"></span><span class="chip-label${revealed ? " correct" : ""}">${name}</span>`;
             return chip;
         }
 
